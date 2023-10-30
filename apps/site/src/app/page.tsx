@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <main className='flex h-screen flex-col items-center justify-between bg-yellow-950 px-4 py-8 text-orange-200'>
+    <main className='flex h-[100dvh] flex-col items-center justify-between bg-yellow-950 px-4 py-8 text-orange-200'>
       <header className='grid h-[80px] place-items-center'>
         <span className='rounded-md border border-orange-300 p-0.5 px-1.5  text-sm text-orange-300'>
           <abbr className='no-underline' title='Work in progress'>
@@ -9,8 +9,8 @@ export default function Home() {
         </span>
       </header>
       <section className='space-y-6 text-center'>
-        <h2 className='text-7xl font-bold'>My place on the web</h2>
-        <p className='max-w-2xl text-xl text-orange-200/60'>
+        <h2 className='text-6xl font-bold md:text-7xl'>My place on the web</h2>
+        <p className='max-w-2xl text-base text-orange-200/60 md:text-xl'>
           I&apos;m still planning what to do on this site, maybe blog posts,
           track games that I&apos;m playing, share some thoughts, etc...
         </p>
