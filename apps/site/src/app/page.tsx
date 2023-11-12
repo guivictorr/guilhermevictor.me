@@ -1,3 +1,6 @@
+import { SpotifyWidget } from '@/components/spotify-widget';
+import { Suspense } from 'react';
+
 export default function Home() {
   return (
     <main className='bg-background text-primary flex h-[100dvh] flex-col items-center justify-between px-4 py-8'>
@@ -15,6 +18,9 @@ export default function Home() {
           track games that I&apos;m playing, share some thoughts, etc...
         </p>
       </section>
+      <Suspense fallback={<p>loading...</p>}>
+        <SpotifyWidget />
+      </Suspense>
       <footer className='text-secondary flex h-[80px] items-center space-x-4'>
         <a
           className='hover:bg-secondary/5 rounded-md p-2 transition'
