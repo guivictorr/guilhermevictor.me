@@ -1,3 +1,5 @@
+import { SpotifyWidget } from '@/components/spotify-widget';
+
 export default function Home() {
   return (
     <main className='bg-background text-primary flex h-[100dvh] flex-col items-center justify-between px-4 py-8'>
@@ -14,6 +16,7 @@ export default function Home() {
           I&apos;m still planning what to do on this site, maybe blog posts,
           track games that I&apos;m playing, share some thoughts, etc...
         </p>
+        <SpotifyWidget />
       </section>
       <footer className='text-secondary flex h-[80px] items-center space-x-4'>
         <a
