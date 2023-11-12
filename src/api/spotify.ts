@@ -1,25 +1,51 @@
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
+const recentTrackEndpoint = `${process.env.SPOTIFY_API_URL}/me/player/recently-played?limit=1`;
+const tokenEndpoint = `${process.env.SPOTIFY_ACCOUNTS_URL}/token`;
 
-const options = {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
-  },
-  body: 'grant_type=client_credentials',
+export const getAccessToken = async () => {
+  if (!refreshToken) return null;
+
+  const basic = btoa(`${clientId}:${clientSecret}`);
+  const query = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  });
+
+  const response = await fetch(tokenEndpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${basic}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: query.toString(),
+  });
+
+  return response.json();
 };
 
-export const getSpotifyAccessToken = async () => {
-  const response = await fetch(
-    'https://accounts.spotify.com/api/token',
-    options,
-  );
+export const getLatestPlayedTrack = async () => {
+  const { access_token } = await getAccessToken();
+
+  const response = await fetch(recentTrackEndpoint, {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+    next: {
+      revalidate: 30,
+    },
+  });
 
   if (response.ok) {
-    const { access_token } = await response.json();
-    return access_token;
+    const { items } = await response.json();
+
+    return {
+      name: items[0].track.name,
+      artist: items[0].track.artists[0].name,
+      playedAt: items[0].played_at,
+    };
   } else {
-    throw new Error();
+    throw new Error(response.statusText);
   }
 };
