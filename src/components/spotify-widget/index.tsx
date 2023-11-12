@@ -10,10 +10,8 @@ export const SpotifyWidget = async () => {
         <h3 className='font-black text-xl'>last played song</h3>
         <Time dateTime={playedAt} />
       </div>
-      <div className='mt-1'>
-        <p>{name}</p>
-        <p className='text-secondary text-sm'>{artist}</p>
-      </div>
+      <p>{name}</p>
+      <p className='text-secondary text-sm'>{artist}</p>
     </section>
   );
 };
