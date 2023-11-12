@@ -19,9 +19,9 @@ export default function Home() {
           track games that I&apos;m playing, share some thoughts, etc...
         </p>
       </section>
-      <div className='flex items-center gap-8'>
+      <div className='flex items-start sm:items-center flex-col sm:flex-row gap-8'>
         <SpotifyWidget />
-        <div className='h-full w-[1px] mx-8 bg-secondary/10'></div>
+        <div className='h-full hidden sm:block w-[1px] mx-8 bg-secondary/10'></div>
         <SteamWidget />
       </div>
       <footer className='text-secondary flex h-[80px] items-center space-x-4'>
