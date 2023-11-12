@@ -1,4 +1,5 @@
 import { SpotifyWidget } from '@/components/spotify-widget';
+import { SteamWidget } from '@/components/steam-widget';
 import { Suspense } from 'react';
 
 export default function Home() {
@@ -18,9 +19,11 @@ export default function Home() {
           track games that I&apos;m playing, share some thoughts, etc...
         </p>
       </section>
-      <Suspense fallback={<p>loading...</p>}>
+      <div className='flex items-center gap-8'>
         <SpotifyWidget />
-      </Suspense>
+        <div className='h-full w-[1px] mx-8 bg-secondary/10'></div>
+        <SteamWidget />
+      </div>
       <footer className='text-secondary flex h-[80px] items-center space-x-4'>
         <a
           className='hover:bg-secondary/5 rounded-md p-2 transition'
