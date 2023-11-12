@@ -1,11 +1,12 @@
 import formatRelative from 'date-fns/formatRelative';
+import subHours from 'date-fns/subHours';
 import { getLatestPlayedTrack } from '@/api/spotify';
 
 export const SpotifyWidget = async () => {
   const { name, artist, playedAt } = await getLatestPlayedTrack();
   const formattedDate = formatRelative(
-    new Date(playedAt),
-    Date.now(),
+    subHours(new Date(playedAt), 3),
+    subHours(Date.now(), 3),
   ).toLowerCase();
 
   return (
