@@ -1,4 +1,4 @@
-import { getLatestPlayedTrack } from '@/api/spotify';
+import { getLatestPlayedTrack } from '@/services/spotify';
 import { Time } from './time';
 
 export const SpotifyWidget = async () => {
