@@ -20,13 +20,9 @@ export default function Home() {
         </p>
       </section>
       <div className='flex items-center gap-8'>
-        <Suspense fallback={<p>loading...</p>}>
-          <SpotifyWidget />
-        </Suspense>
-
-        <Suspense fallback={<p>loading...</p>}>
-          <SteamWidget />
-        </Suspense>
+        <SpotifyWidget />
+        <div className='h-full w-[1px] mx-8 bg-secondary/10'></div>
+        <SteamWidget />
       </div>
       <footer className='text-secondary flex h-[80px] items-center space-x-4'>
         <a
