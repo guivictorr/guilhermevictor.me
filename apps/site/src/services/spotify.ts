@@ -4,7 +4,7 @@ const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 const recentTrackEndpoint = `${process.env.SPOTIFY_API_URL}/me/player/recently-played?limit=1`;
 const tokenEndpoint = `${process.env.SPOTIFY_ACCOUNTS_URL}/token`;
 
-export const getAccessToken = async () => {
+const getAccessToken = async () => {
   if (!refreshToken) return null;
 
   const basic = btoa(`${clientId}:${clientSecret}`);
