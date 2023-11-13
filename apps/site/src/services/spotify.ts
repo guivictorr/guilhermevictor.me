@@ -46,6 +46,7 @@ export const getLatestPlayedTrack = async () => {
       playedAt: items[0].played_at,
     };
   } else {
-    throw new Error(response.statusText);
+    const { error } = await response.json();
+    throw new Error(error.message);
   }
 };
