@@ -27,6 +27,7 @@ const getAccessToken = async () => {
 
 export const getLatestPlayedTrack = async () => {
   const { access_token } = await getAccessToken();
+  console.log(access_token);
 
   const response = await fetch(recentTrackEndpoint, {
     headers: {
