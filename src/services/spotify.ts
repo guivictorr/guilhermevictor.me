@@ -22,8 +22,6 @@ const getAccessToken = async () => {
     body: query.toString(),
   });
 
-  console.log(await response.json());
-
   return response.json();
 };
 
@@ -38,8 +36,6 @@ export const getLatestPlayedTrack = async () => {
       revalidate: 30,
     },
   });
-
-  console.log(await response.json());
 
   if (response.ok) {
     const { items } = await response.json();
