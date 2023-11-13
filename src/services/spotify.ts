@@ -19,6 +19,9 @@ const getAccessToken = async () => {
       Authorization: `Basic ${basic}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
+    next: {
+      revalidate: 3400,
+    },
     body: query.toString(),
   });
 
