@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang='en' className='bg-background'>
       <body className={playfair.className}>
-        <div className='md:max-w-3xl mx-auto px-4 h-[100dvh] text-secondary'>
+        <div className='md:max-w-3xl mx-auto px-4 sm:px-8 text-secondary'>
           {children}
         </div>
       </body>

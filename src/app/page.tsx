@@ -5,7 +5,7 @@ import { SteamWidget } from '@/components/steam-widget';
 export default function Home() {
   return (
     <main className='flex flex-col gap-8'>
-      <section className='mt-32'>
+      <section className='mt-24 sm:mt-32'>
         <p className='text-sm'>Guilherme Victor</p>
         <h1 className='text-xl sm:text-2xl text-primary'>
           empathetic frontend developer.
@@ -50,7 +50,7 @@ export default function Home() {
           </article>
         </div>
       </section>
-      <section className='flex flex-col items-start justify-between gap-4'>
+      <section className='flex flex-col sm:flex-row items-start justify-between gap-4'>
         <SpotifyWidget />
         <SteamWidget />
       </section>
