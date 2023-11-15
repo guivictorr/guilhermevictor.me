@@ -1,7 +1,7 @@
 import { getLatestPlayedTrack } from '@/services/spotify';
-import { GoArrowUpRight } from 'react-icons/go';
 import { Time } from './time';
 import { Play } from './play';
+import { ExternalLink } from '../external-link';
 
 export const SpotifyWidget = async () => {
   const { track, played_at } = await getLatestPlayedTrack();
@@ -15,19 +15,7 @@ export const SpotifyWidget = async () => {
         <h3 className='font-black text-xl text-primary'>last played song</h3>
         <Time dateTime={played_at} />
       </div>
-      <a
-        className='underline underline-offset-2'
-        href={track.external_urls.spotify}
-        target='_blank'
-      >
-        {name}
-
-        <span aria-hidden className='[&>svg]:inline'>
-          &nbsp;
-          <GoArrowUpRight />
-        </span>
-      </a>
-
+      <ExternalLink href={track.external_urls.spotify}>{name}</ExternalLink>
       <p className='text-secondary text-sm'>{artistNames}</p>
     </section>
   );
