@@ -1,53 +1,59 @@
+import { ExternalLink } from '@/components/external-link';
 import { SpotifyWidget } from '@/components/spotify-widget';
 import { SteamWidget } from '@/components/steam-widget';
 
 export default function Home() {
   return (
-    <main className='bg-background text-secondary flex h-[100dvh] flex-col items-center justify-between px-4 py-8'>
-      <header className='grid h-[80px] place-items-center'>
-        <span className='text-secondary border-secondary rounded-md border p-0.5  px-1.5 text-sm'>
-          <abbr className='no-underline' title='Work in progress'>
-            wip
-          </abbr>
-        </span>
-      </header>
-      <section className='space-y-6 text-center'>
-        <h2 className='text-6xl font-bold md:text-7xl text-primary'>
-          My place on the web
-        </h2>
-        <p className='text-secondary max-w-2xl text-base md:text-xl'>
-          I&apos;m still planning what to do on this site, maybe blog posts,
-          track games that I&apos;m playing, share some thoughts, etc...
-        </p>
+    <main className='flex flex-col gap-8'>
+      <section className='mt-32'>
+        <p className='text-sm'>Guilherme Victor</p>
+        <h1 className='text-xl sm:text-2xl text-primary'>
+          empathetic frontend developer.
+          <br />
+          future native mobile developer. <br />
+          neovim user.
+        </h1>
+        <nav aria-label='External links for social media'>
+          <ul className='flex items-center gap-4 mt-4 text-sm sm:text-base'>
+            <li>
+              <ExternalLink href='https://github.com/guivictorr'>
+                github
+              </ExternalLink>
+            </li>
+
+            <li>
+              <ExternalLink href='https://x.com/oguivictor'>
+                twitter
+              </ExternalLink>
+            </li>
+
+            <li>
+              <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
+                linkedin
+              </ExternalLink>
+            </li>
+          </ul>
+        </nav>
       </section>
-      <div className='flex items-start sm:items-center flex-col sm:flex-row gap-8'>
+      <section className='border-b'>
+        <div className='flex items-center gap-2'>
+          <h2 className='text-xl sm:text-2xl shrink-0'>latest posts</h2>
+          <hr className='w-full mt-1' />
+        </div>
+        <div className='mb-6 mt-4'>
+          <article>
+            <div className='flex items-center gap-1'>
+              <p className='text-primary'>post title</p>
+              <p>2023</p>
+            </div>
+            <p>a little subtitle to give context</p>
+          </article>
+        </div>
+      </section>
+      <section className='flex flex-col items-center justify-between gap-4'>
         <SpotifyWidget />
-        <div className='h-full hidden sm:block w-[1px] mx-8 bg-secondary/10'></div>
         <SteamWidget />
-      </div>
-      <footer className='text-secondary flex h-[80px] items-center space-x-4'>
-        <a
-          className='hover:bg-secondary/5 rounded-md p-2 transition'
-          target='_blank'
-          href='https://github.com/guivictorr'
-        >
-          Github
-        </a>
-        <a
-          className='hover:bg-secondary/5 rounded-md p-2 transition'
-          target='_blank'
-          href='https://linkedin.com/in/guilhermeviictor'
-        >
-          Linkedin
-        </a>
-        <a
-          className='hover:bg-secondary/5 rounded-md p-2 transition'
-          target='_blank'
-          href='https://x.com/oguivictor'
-        >
-          Twitter
-        </a>
-      </footer>
+      </section>
     </main>
   );
 }
