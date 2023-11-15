@@ -14,8 +14,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
-      <body className={playfair.className}>{children}</body>
+    <html lang='en' className='bg-background'>
+      <body className={playfair.className}>
+        <div className='md:max-w-3xl mx-auto px-4 sm:px-8 text-secondary'>
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
