@@ -24,7 +24,7 @@ export const Play = ({ audioUrl }: PlayProps) => {
 
   useEffect(() => {
     if (!audioRef.current) return;
-    audioRef.current.volume = 0.03;
+    audioRef.current.volume = 0.1;
 
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
@@ -37,7 +37,7 @@ export const Play = ({ audioUrl }: PlayProps) => {
 
       <button
         aria-label={ariaLabel}
-        className='w-4 [&>svg]:mt-0.5'
+        className='w-2 sm:w-4 [&>svg]:mt-0.5'
         type='button'
         onClick={toggleAudio}
       >

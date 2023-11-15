@@ -9,14 +9,16 @@ export const SpotifyWidget = async () => {
   const artistNames = artists.map(artist => artist.name).join(', ');
 
   return (
-    <section className='text-start'>
+    <section className='text-start text-sm sm:text-base'>
       <div className='flex items-center gap-2'>
         <Play audioUrl={track.preview_url} />
-        <h3 className='font-black text-xl text-primary'>last played song</h3>
+        <h3 className='font-black text-lg sm:text-xl text-primary'>
+          last played song
+        </h3>
         <Time dateTime={played_at} />
       </div>
       <ExternalLink href={track.external_urls.spotify}>{name}</ExternalLink>
-      <p className='text-secondary text-sm'>{artistNames}</p>
+      <p className='text-secondary text-xs sm:text-sm mt-0.5'>{artistNames}</p>
     </section>
   );
 };
