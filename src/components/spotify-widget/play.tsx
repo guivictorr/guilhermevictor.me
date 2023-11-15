@@ -24,7 +24,7 @@ export const Play = ({ audioUrl }: PlayProps) => {
 
   useEffect(() => {
     if (!audioRef.current) return;
-    audioRef.current.volume = 0.03;
+    audioRef.current.volume = 0.1;
 
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
