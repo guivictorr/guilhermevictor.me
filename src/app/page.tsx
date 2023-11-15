@@ -50,7 +50,7 @@ export default function Home() {
           </article>
         </div>
       </section>
-      <section className='flex flex-col items-center justify-between gap-4'>
+      <section className='flex flex-col items-start justify-between gap-4'>
         <SpotifyWidget />
         <SteamWidget />
       </section>

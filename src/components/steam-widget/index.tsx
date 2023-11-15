@@ -11,10 +11,12 @@ export const SteamWidget = async () => {
   return (
     <section className='text-start'>
       <div className='flex items-center gap-2'>
-        <h3 className='font-black text-xl text-primary'>last played game</h3>
+        <h3 className='font-black text-lg sm:text-xl text-primary'>
+          last played game
+        </h3>
       </div>
-      <p>{name}</p>
-      <p className='text-sm'>
+      <p className='text-sm sm:text-base'>{name}</p>
+      <p className='text-xs sm:text-sm'>
         {playtimeInHours.toFixed(2)} hours past two weeks
       </p>
     </section>
