@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { IoMdPause, IoMdPlay } from 'react-icons/io';
 
 type PlayProps = {
   audioUrl: string;
@@ -36,11 +37,11 @@ export const Play = ({ audioUrl }: PlayProps) => {
 
       <button
         aria-label={ariaLabel}
-        className='w-4'
+        className='w-4 [&>svg]:mt-0.5'
         type='button'
         onClick={toggleAudio}
       >
-        {isPlaying ? <span>&#x23F9;</span> : <span>&#x23F5;</span>}
+        {isPlaying ? <IoMdPause /> : <IoMdPlay />}
       </button>
     </>
   );

@@ -1,4 +1,5 @@
 import { getLatestPlayedTrack } from '@/services/spotify';
+import { GoArrowUpRight } from 'react-icons/go';
 import { Time } from './time';
 import { Play } from './play';
 
@@ -21,8 +22,9 @@ export const SpotifyWidget = async () => {
       >
         {name}
 
-        <span aria-hidden className='text-xs'>
-          &nbsp; &#x2197;
+        <span aria-hidden className='[&>svg]:inline'>
+          &nbsp;
+          <GoArrowUpRight />
         </span>
       </a>
 
