@@ -1,14 +1,32 @@
-const steamUserId = process.env.STEAM_USER_ID as string;
-const steamApiKey = process.env.STEAM_API_KEY as string;
+const steamUserId = process.env.STEAM_USER_ID;
+const steamApiKey = process.env.STEAM_API_KEY;
 const steamRecentlyPlayedGames = `${process.env.STEAM_API_URL}/IPlayerService/GetRecentlyPlayedGames/v0001`;
 
-const TWENTY_FOUR_HOURS_IN_SECONDS = 86400;
+const ONE_HOUR = 3600;
+
+type SteamGame = {
+  appid: number;
+  name: string;
+  playtime_2weeks: number;
+  playtime_forever: number;
+  img_icon_url: string;
+  img_logo_url: string;
+};
+
+type RecentlyPlayedGamesResponse = {
+  response: {
+    total_count: number;
+    games: SteamGame[];
+  };
+};
 
 export const getLatestPlayedGame = async () => {
-  const options = {
+  if (!steamUserId || !steamApiKey) return null;
+
+  const options: RequestInit = {
     method: 'GET',
     next: {
-      revalidate: TWENTY_FOUR_HOURS_IN_SECONDS,
+      revalidate: ONE_HOUR,
     },
   };
 
@@ -22,9 +40,8 @@ export const getLatestPlayedGame = async () => {
   const response = await fetch(url, options);
 
   if (response.ok) {
-    const {
-      response: { games },
-    } = await response.json();
+    const result = (await response.json()) as RecentlyPlayedGamesResponse;
+    const { games } = result.response;
 
     return games[0];
   } else {
