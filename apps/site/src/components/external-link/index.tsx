@@ -8,7 +8,7 @@ type ExternalLinkProps = PropsWithChildren & {
 export const ExternalLink = ({ href, children }: ExternalLinkProps) => {
   return (
     <a
-      className='text-secondary underline underline-offset-2'
+      className='text-secondary underline underline-offset-2 focus:text-primary transition-colors duration-300'
       href={href}
       target='_blank'
     >
