@@ -1,10 +1,9 @@
 import { SpotifyWidget } from '@/components/spotify-widget';
 import { SteamWidget } from '@/components/steam-widget';
-import { Suspense } from 'react';
 
 export default function Home() {
   return (
-    <main className='bg-background text-primary flex h-[100dvh] flex-col items-center justify-between px-4 py-8'>
+    <main className='bg-background text-secondary flex h-[100dvh] flex-col items-center justify-between px-4 py-8'>
       <header className='grid h-[80px] place-items-center'>
         <span className='text-secondary border-secondary rounded-md border p-0.5  px-1.5 text-sm'>
           <abbr className='no-underline' title='Work in progress'>
@@ -13,7 +12,9 @@ export default function Home() {
         </span>
       </header>
       <section className='space-y-6 text-center'>
-        <h2 className='text-6xl font-bold md:text-7xl'>My place on the web</h2>
+        <h2 className='text-6xl font-bold md:text-7xl text-primary'>
+          My place on the web
+        </h2>
         <p className='text-secondary max-w-2xl text-base md:text-xl'>
           I&apos;m still planning what to do on this site, maybe blog posts,
           track games that I&apos;m playing, share some thoughts, etc...
