@@ -6,6 +6,7 @@ export const SteamWidget = async () => {
   if (!latestGame) return;
 
   const { name, playtime_2weeks } = latestGame;
+  const playtimeInHours = playtime_2weeks / 60;
 
   return (
     <section className='text-start'>
@@ -13,8 +14,8 @@ export const SteamWidget = async () => {
         <h3 className='font-black text-xl text-primary'>last played game</h3>
       </div>
       <p>{name}</p>
-      <p className='text-secondary text-sm'>
-        {playtime_2weeks / 60}h past two weeks
+      <p className='text-sm'>
+        {playtimeInHours.toFixed(2)} hours past two weeks
       </p>
     </section>
   );
