@@ -5,7 +5,12 @@ import { SteamWidget } from '@/components/steam-widget';
 export default function Home() {
   return (
     <main className='flex flex-col gap-8'>
-      <section className='mt-24 sm:mt-32'>
+      <header className='mx-auto py-10'>
+        <div className='border rounded-md text-center w-fit px-2 h-8 grid place-items-center'>
+          <abbr title='Work in progress'>wip</abbr>
+        </div>
+      </header>
+      <section>
         <p className='text-sm'>Guilherme Victor</p>
         <h1 className='text-xl sm:text-2xl text-primary'>
           empathetic frontend developer.
@@ -37,7 +42,7 @@ export default function Home() {
       </section>
       <section className='border-b'>
         <div className='flex items-center gap-2'>
-          <h2 className='text-xl sm:text-2xl shrink-0'>latest posts</h2>
+          <h2 className='text-xl sm:text-2xl shrink-0'>writing</h2>
           <hr className='w-full mt-1' />
         </div>
         <div className='mb-6 mt-4'>
