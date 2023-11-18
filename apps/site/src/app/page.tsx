@@ -5,9 +5,9 @@ import { SteamWidget } from '@/components/steam-widget';
 
 export default function Home() {
   return (
-    <main className='flex flex-col gap-8'>
-      <header className='mx-auto py-10'>
-        <div className='border rounded-md text-center w-fit px-2 h-8 grid place-items-center'>
+    <main className='flex flex-col gap-8 max-w-xl mx-auto'>
+      <header className='w-full py-8'>
+        <div className='mx-auto border rounded-md text-center w-fit px-2 h-8 grid place-items-center'>
           <abbr title='Work in progress'>wip</abbr>
         </div>
       </header>
