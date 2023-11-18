@@ -1,3 +1,4 @@
+import { Article } from '@/components/article';
 import { ExternalLink } from '@/components/external-link';
 import { SpotifyWidget } from '@/components/spotify-widget';
 import { SteamWidget } from '@/components/steam-widget';
@@ -45,15 +46,10 @@ export default function Home() {
           <h2 className='text-xl sm:text-2xl shrink-0'>writing</h2>
           <hr className='w-full mt-1' />
         </div>
-        <div className='mb-6 mt-4'>
-          <article>
-            <div className='flex items-center gap-1'>
-              <p className='text-primary'>post title</p>
-              <p>2023</p>
-            </div>
-            <p>a little subtitle to give context</p>
-          </article>
-        </div>
+        <ul className='mb-4 mt-2 hover:text-secondary/50 focus-within:text-secondary/50 w-fit'>
+          <Article />
+          <Article />
+        </ul>
       </section>
       <section className='flex flex-col sm:flex-row items-start justify-between gap-4'>
         <SpotifyWidget />
