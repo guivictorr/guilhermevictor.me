@@ -1,7 +1,9 @@
+import Link from 'next/link';
+
 export const Article = () => (
   <li>
-    <a
-      href='https://github.com/guivictorr'
+    <Link
+      href='/writing/testing'
       className='transition-colors hover:text-primary focus:text-primary py-2 block w-fit'
     >
       <div className='flex items-center gap-1'>
@@ -9,6 +11,6 @@ export const Article = () => (
         <p>2023</p>
       </div>
       <p>a little subtitle to give context</p>
-    </a>
+    </Link>
   </li>
 );
