@@ -9,7 +9,7 @@ export default function Article() {
       <div className='grid grid-cols-1 md:grid-cols-[max-content,1fr]'>
         <nav className='mb-8'>
           <Link
-            href='/writing'
+            href='/'
             className='sticky top-[56px] [&>svg]:w-3 [&>svg]:mt-0.5 italic flex items-center gap-1.5 font-medium text-primary w-fit'
           >
             <PiArrowUUpLeft />
