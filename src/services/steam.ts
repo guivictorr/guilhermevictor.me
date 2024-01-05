@@ -20,7 +20,13 @@ type RecentlyPlayedGamesResponse = {
   };
 };
 
-export const getLatestPlayedGame = async () => {
+type GetLatestPlayedGamesParams = {
+  count: number;
+};
+
+export const getLatestPlayedGames = async ({
+  count,
+}: GetLatestPlayedGamesParams) => {
   if (!steamUserId || !steamApiKey) return null;
 
   const options: RequestInit = {
@@ -33,7 +39,7 @@ export const getLatestPlayedGame = async () => {
   const query = new URLSearchParams({
     key: steamApiKey,
     steamid: steamUserId,
-    count: '1',
+    count: String(count ?? 3),
   });
   const url = `${steamRecentlyPlayedGames}?${query.toString()}`;
 
@@ -43,7 +49,7 @@ export const getLatestPlayedGame = async () => {
     const result = (await response.json()) as RecentlyPlayedGamesResponse;
     const { games } = result.response;
 
-    return games[0];
+    return games;
   } else {
     throw new Error('Error trying to fetch recently played games');
   }
