@@ -8,11 +8,16 @@ const config: Config = {
   ],
   theme: {
     colors: {
-      primary: '#FFD6B0',
-      secondary: '#FFD6B0BD',
-      background: '#362318',
+      primary: '#FDDCBD',
+      secondary: '#FDDCBDBD',
+      background: '#180F0A',
     },
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['var(--font-geist-sans)'],
+        serif: ['var(--font-playfair-display)'],
+      },
+    },
   },
   plugins: [],
 };

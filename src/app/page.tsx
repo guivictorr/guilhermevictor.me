@@ -1,7 +1,5 @@
-import { Article } from '@/components/article';
+import { ListColumn } from '@/components/article';
 import { ExternalLink } from '@/components/external-link';
-import { SpotifyWidget } from '@/components/spotify-widget';
-import { SteamWidget } from '@/components/steam-widget';
 
 export default function Home() {
   return (
@@ -11,49 +9,51 @@ export default function Home() {
           <abbr title='Work in progress'>wip</abbr>
         </div>
       </header>
-      <section>
-        <p className='text-sm'>Guilherme Victor</p>
-        <h1 className='text-xl sm:text-2xl text-primary'>
+      <section className='mt-12'>
+        <p className='leading-4'>Guilherme Victor</p>
+        <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
           empathetic frontend developer.
           <br />
-          future native mobile developer. <br />
+          learning golang. <br />
           neovim user.
         </h1>
-        <nav aria-label='External links for social media'>
-          <ul className='flex items-center gap-4 mt-4 text-sm sm:text-base'>
-            <li>
-              <ExternalLink href='https://github.com/guivictorr'>
-                github
-              </ExternalLink>
-            </li>
-
-            <li>
-              <ExternalLink href='https://x.com/oguivictor'>
-                twitter
-              </ExternalLink>
-            </li>
-
-            <li>
-              <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
-                linkedin
-              </ExternalLink>
-            </li>
-          </ul>
-        </nav>
+        <p>
+          You can find me on{' '}
+          <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>{' '}
+          or{' '}
+          <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
+            Linkedin
+          </ExternalLink>{' '}
+          and see my code on{' '}
+          <ExternalLink href='https://github.com/guivictorr'>
+            Github
+          </ExternalLink>
+        </p>
       </section>
-      <section className='border-b'>
-        <div className='flex items-center gap-2'>
-          <h2 className='text-xl sm:text-2xl shrink-0'>writing</h2>
-          <hr className='w-full mt-1' />
-        </div>
-        <ul className='mb-4 mt-2 hover:text-secondary/50 focus-within:text-secondary/50 w-fit'>
-          <Article />
-          <Article />
-        </ul>
-      </section>
-      <section className='flex flex-col sm:flex-row items-start justify-between gap-4'>
-        <SpotifyWidget />
-        <SteamWidget />
+      <section className='grid grid-cols-3 mt-14'>
+        <ListColumn title='Crafts'>
+          <ListColumn.Item
+            title='Animated Tabs'
+            description='Animated Tabs built with framer motion'
+            href='/'
+          />
+        </ListColumn>
+
+        <ListColumn title='Writing'>
+          <ListColumn.Item
+            title='Accessibility on web'
+            description='How to build accessible websites'
+            href='/'
+          />
+        </ListColumn>
+
+        <ListColumn title='Gaming'>
+          <ListColumn.Item
+            title='Disco Elysium'
+            description='33.9h past two weeks'
+            href='/'
+          />
+        </ListColumn>
       </section>
     </main>
   );
