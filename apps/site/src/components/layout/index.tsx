@@ -14,17 +14,19 @@ export default function Layout({
 }: LayoutProps) {
   return (
     <main className='py-14'>
-      <div className='grid grid-cols-1 md:grid-cols-[max-content,1fr]'>
+      <div className='grid grid-cols-1 md:grid-cols-12'>
         <nav className='mb-8'>
           <Link
             href={backHref}
-            className='sticky top-[56px] [&>svg]:w-3 [&>svg]:mt-0.5 italic flex items-center gap-1.5 font-medium text-primary w-fit'
+            className='font-serif no-underline sticky top-[56px] [&>svg]:w-3 [&>svg]:mt-0.5 italic flex items-center gap-1.5 text-primary w-fit'
           >
             <PiArrowUUpLeft />
             <span>{backText}</span>
           </Link>
         </nav>
-        <section className='max-w-xl mx-auto'>{children}</section>
+        <section className='max-w-xl mx-auto md:col-start-4 md:col-end-11'>
+          {children}
+        </section>
       </div>
     </main>
   );

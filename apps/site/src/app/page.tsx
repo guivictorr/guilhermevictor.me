@@ -30,7 +30,7 @@ export default function Home() {
           </ExternalLink>
         </p>
       </section>
-      <section className='grid grid-cols-3 mt-14'>
+      <section className='grid grid-cols-1 space-y-8 sm:space-y-0 sm:grid-cols-3 mt-14'>
         <ListColumn title='Crafts'>
           <ListColumn.Item
             title='Animated Tabs'
