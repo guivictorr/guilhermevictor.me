@@ -37,7 +37,7 @@ export const Play = ({ audioUrl }: PlayProps) => {
 
       <button
         aria-label={ariaLabel}
-        className='w-2 sm:w-4 [&>svg]:mt-0.5'
+        className='w-2 sm:w-4'
         type='button'
         onClick={toggleAudio}
       >

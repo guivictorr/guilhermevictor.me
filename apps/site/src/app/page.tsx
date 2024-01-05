@@ -15,7 +15,7 @@ export default async function Home() {
     })) ?? [];
 
   return (
-    <main className='flex flex-col gap-8 max-w-xl mx-auto'>
+    <main className='flex flex-col gap-8 max-w-lg mx-auto'>
       <header className='w-full py-8'>
         <div className='mx-auto border rounded-md text-center w-fit px-2 h-8 grid place-items-center'>
           <abbr title='Work in progress'>wip</abbr>
@@ -42,7 +42,7 @@ export default async function Home() {
           </ExternalLink>
         </p>
       </section>
-      <section className='grid grid-cols-1 space-y-8 sm:space-y-0 sm:grid-cols-3 mt-14'>
+      <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 mt-14'>
         <ListColumn title='Crafts'>
           <ListColumn.Item
             title='Animated Tabs'
