@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { Playfair_Display } from 'next/font/google';
 import '@/styles/globals.css';
 import { Footer } from '@/components/footer';
+import { Analytics } from '@vercel/analytics/react';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -21,6 +22,7 @@ export default async function RootLayout({
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
+        <Analytics />
         <div className='flex flex-col gap-12 justify-between h-screen'>
           <div className='md:max-w-6xl mx-auto px-6 sm:px-8'>{children}</div>
 
