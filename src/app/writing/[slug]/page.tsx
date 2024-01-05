@@ -1,6 +1,4 @@
-import Link from 'next/link';
 import { formatRelative } from 'date-fns';
-import { PiArrowUUpLeft } from 'react-icons/pi';
 import Layout from '@/components/layout';
 
 export default function Article() {
