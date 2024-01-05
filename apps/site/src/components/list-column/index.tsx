@@ -30,7 +30,7 @@ const ListItem = ({ title, description, href }: ListItemProps) => {
 
   return (
     <li>
-      <LinkComponent href='/' className='text-primary'>
+      <LinkComponent href={href} className='text-primary'>
         {title}
       </LinkComponent>
       <p className='text-sm'>{description}</p>

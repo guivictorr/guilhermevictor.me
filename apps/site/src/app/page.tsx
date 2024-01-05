@@ -1,7 +1,19 @@
-import { ListColumn } from '@/components/article';
+import { ListColumn } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
+import { getLatestPlayedGames } from '@/services/steam';
 
-export default function Home() {
+const minutesToHours = (minutes: number) => (minutes / 60).toFixed(2);
+
+export default async function Home() {
+  const games = await getLatestPlayedGames({ count: 3 });
+  const formattedGames =
+    games?.map(game => ({
+      ...game,
+      playtime_2weeks: minutesToHours(game.playtime_2weeks),
+      playtime_forever: minutesToHours(game.playtime_forever),
+      url: `https://store.steampowered.com/app/${game.appid}`,
+    })) ?? [];
+
   return (
     <main className='flex flex-col gap-8 max-w-xl mx-auto'>
       <header className='w-full py-8'>
@@ -48,11 +60,14 @@ export default function Home() {
         </ListColumn>
 
         <ListColumn title='Gaming'>
-          <ListColumn.Item
-            title='Disco Elysium'
-            description='33.9h past two weeks'
-            href='/'
-          />
+          {formattedGames.map(game => (
+            <ListColumn.Item
+              key={game.appid}
+              title={game.name}
+              description={`${game.playtime_2weeks}h past two weeks`}
+              href={game.url}
+            />
+          ))}
         </ListColumn>
       </section>
     </main>

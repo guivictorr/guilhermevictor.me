@@ -21,7 +21,7 @@ export default async function RootLayout({
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
-        <div className='flex flex-col justify-between h-screen'>
+        <div className='flex flex-col gap-12 justify-between h-screen'>
           <div className='md:max-w-6xl mx-auto px-6 sm:px-8'>{children}</div>
 
           <Footer />
