@@ -13,3 +13,7 @@
 a {
   @apply underline underline-offset-2;
 }
+
+.my-prose {
+  @apply prose prose-p:text-secondary prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-em:text-primary prose-strong:text-primary prose-a:text-primary prose-li:marker:text-secondary prose-li:text-secondary prose-code:text-secondary prose-pre:bg-secondary/5;
+}

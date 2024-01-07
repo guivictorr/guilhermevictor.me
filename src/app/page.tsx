@@ -47,7 +47,7 @@ export default async function Home() {
           <ListColumn.Item
             title='Animated Tabs'
             description='Animated Tabs built with framer motion'
-            href='/'
+            href='/writing/post'
           />
         </ListColumn>
 
@@ -55,7 +55,7 @@ export default async function Home() {
           <ListColumn.Item
             title='Accessibility on web'
             description='How to build accessible websites'
-            href='/'
+            href='/writing/post'
           />
         </ListColumn>
 

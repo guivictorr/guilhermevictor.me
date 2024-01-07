@@ -5,6 +5,7 @@ import '@/styles/globals.css';
 import { Footer } from '@/components/footer';
 import { Analytics } from '@vercel/analytics/react';
 import { Grain } from '@/components/grain';
+import { Vignette } from '@/components/vignette';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default async function RootLayout({
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
         <Grain />
+        <Vignette />
         <Analytics />
 
         <div className='flex flex-col gap-12 justify-between h-screen'>
