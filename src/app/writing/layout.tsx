@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { PiArrowUUpLeft } from 'react-icons/pi';
 import { PropsWithChildren } from 'react';
+import { PiArrowUUpLeft } from 'react-icons/pi';
 
 export default function Layout({ children }: PropsWithChildren) {
   return (

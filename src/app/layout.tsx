@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import { PropsWithChildren } from 'react';
 import { GeistSans } from 'geist/font/sans';
 import { Playfair_Display } from 'next/font/google';
-import '@/styles/globals.css';
+
 import { Footer } from '@/components/footer';
 import { Analytics } from '@vercel/analytics/react';
 import { Grain } from '@/components/grain';
 import { Vignette } from '@/components/vignette';
+
+import '@/styles/globals.css';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -16,11 +19,7 @@ export const metadata: Metadata = {
   title: 'Guilherme Victor',
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
