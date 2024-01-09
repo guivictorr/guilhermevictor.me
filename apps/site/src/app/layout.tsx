@@ -19,7 +19,6 @@ export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
   description:
     'My personal space of an empathetic front-end developer building web experiences with passion',
-  imageUrl: 'https://github.com/guivictorr.png',
 });
 
 export default async function RootLayout({ children }: PropsWithChildren) {
