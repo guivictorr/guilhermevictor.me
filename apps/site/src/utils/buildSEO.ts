@@ -33,7 +33,7 @@ export const buildSEO: BuildSEO = ({ title, description, ...rest }) => ({
     card: 'summary_large_image',
     creator: '@oguivictor',
     images: {
-      url: '/',
+      url: `/api/og?title=${title}&description=${description}`,
     },
   },
   ...rest,
