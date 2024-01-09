@@ -22,7 +22,7 @@ export const buildSEO: BuildSEO = ({ title, description, ...rest }) => ({
     url: '/',
     siteName: 'Guilherme Victor',
     images: {
-      url: '/',
+      url: `/api/og?title=${title}&description=${description}`,
     },
     locale: 'en_US',
     type: 'website',
