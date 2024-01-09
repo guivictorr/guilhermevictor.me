@@ -5,25 +5,30 @@ import { Playfair_Display } from 'next/font/google';
 
 import { Footer } from '@/components/footer';
 import { Analytics } from '@vercel/analytics/react';
-import { Grain } from '@/components/grain';
 import { Vignette } from '@/components/vignette';
 
 import '@/styles/globals.css';
+import { buildSEO } from '@/utils/buildSEO';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair-display',
 });
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
-};
+  description:
+    'My personal space of an empathetic front-end developer building web experiences with passion',
+  imageUrl: 'https://github.com/guivictorr.png',
+});
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
-        <Grain />
+        {/* TODO: Maybe there's a better way to do this */}
+        {/* <Grain /> */}
+
         <Vignette />
         <Analytics />
 
