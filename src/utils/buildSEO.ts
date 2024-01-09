@@ -3,17 +3,16 @@ import { Metadata } from 'next';
 type BuildSEOParams = {
   title: string;
   description: string;
-  imageUrl: string;
-};
+} & Metadata;
 
 type BuildSEO = (props: BuildSEOParams) => Metadata;
 
-export const buildSEO: BuildSEO = ({ title, description, imageUrl }) => ({
+export const buildSEO: BuildSEO = ({ title, description, ...rest }) => ({
   metadataBase: new URL('https://guilhermevictor.space'),
   title,
   description,
   generator: 'Next.js',
-  applicationName: 'Next.js',
+  applicationName: 'Guilherme Victor',
   referrer: 'origin-when-cross-origin',
   authors: [{ name: 'Guilherme Victor' }],
   creator: 'Guilherme Victor',
@@ -23,7 +22,7 @@ export const buildSEO: BuildSEO = ({ title, description, imageUrl }) => ({
     url: '/',
     siteName: 'Guilherme Victor',
     images: {
-      url: imageUrl,
+      url: '/',
     },
     locale: 'en_US',
     type: 'website',
@@ -34,7 +33,8 @@ export const buildSEO: BuildSEO = ({ title, description, imageUrl }) => ({
     card: 'summary_large_image',
     creator: '@oguivictor',
     images: {
-      url: imageUrl,
+      url: '/',
     },
   },
+  ...rest,
 });
