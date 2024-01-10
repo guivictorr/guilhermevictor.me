@@ -2,7 +2,7 @@ const steamUserId = process.env.STEAM_USER_ID;
 const steamApiKey = process.env.STEAM_API_KEY;
 const steamRecentlyPlayedGames = `${process.env.STEAM_API_URL}/IPlayerService/GetRecentlyPlayedGames/v0001`;
 
-const ONE_HOUR = 3600;
+const ONE_HOUR = 3600 * 24;
 
 type SteamGame = {
   appid: number;
