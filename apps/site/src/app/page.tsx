@@ -16,12 +16,7 @@ export default async function Home() {
 
   return (
     <main className='flex flex-col gap-8 max-w-lg mx-auto'>
-      <header className='w-full py-8'>
-        <div className='mx-auto border rounded-md text-center w-fit px-2 h-8 grid place-items-center'>
-          <abbr title='Work in progress'>wip</abbr>
-        </div>
-      </header>
-      <section className='mt-12'>
+      <section className='mt-24 sm:mt-44'>
         <p className='leading-4'>Guilherme Victor</p>
         <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
           empathetic frontend developer.
@@ -42,20 +37,21 @@ export default async function Home() {
           </ExternalLink>
         </p>
       </section>
-      <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 mt-14'>
+      <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
         <ListColumn title='Crafts'>
-          <ListColumn.Item
-            title='Animated Tabs'
-            description='Animated Tabs built with framer motion'
-            href='/writing/post'
-          />
+          <p>No content</p>
+          {/* <ListColumn.Item */}
+          {/*   title='Animated Tabs' */}
+          {/*   description='Animated Tabs built with framer motion' */}
+          {/*   href='/writing/post' */}
+          {/* /> */}
         </ListColumn>
 
         <ListColumn title='Writing'>
           <ListColumn.Item
             title='Accessibility on web'
             description='How to build accessible websites'
-            href='/writing/post'
+            href='/writing/accessibility-on-web'
           />
         </ListColumn>
 
