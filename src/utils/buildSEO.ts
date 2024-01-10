@@ -3,11 +3,12 @@ import { Metadata } from 'next';
 type BuildSEOParams = {
   title: string;
   description: string;
+  url?: string;
 } & Metadata;
 
 type BuildSEO = (props: BuildSEOParams) => Metadata;
 
-export const buildSEO: BuildSEO = ({ title, description, ...rest }) => ({
+export const buildSEO: BuildSEO = ({ title, description, url, ...rest }) => ({
   metadataBase: new URL('https://guilhermevictor.space'),
   title,
   description,
@@ -19,7 +20,7 @@ export const buildSEO: BuildSEO = ({ title, description, ...rest }) => ({
   openGraph: {
     title,
     description,
-    url: '/',
+    url,
     siteName: 'Guilherme Victor',
     images: {
       url: `/api/og?title=${title}&description=${description}`,
