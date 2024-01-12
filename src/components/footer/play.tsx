@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { IoMdPause, IoMdPlay } from 'react-icons/io';
+import { Lights } from './lights';
+import { AnimatePresence } from 'framer-motion';
 
 type PlayProps = {
   audioUrl: string;
@@ -33,6 +35,7 @@ export const Play = ({ audioUrl }: PlayProps) => {
 
   return (
     <>
+      <AnimatePresence mode='wait'>{isPlaying && <Lights />}</AnimatePresence>
       <audio ref={audioRef} src={audioUrl} onEnded={handleOnEndAudio} />
 
       <button
