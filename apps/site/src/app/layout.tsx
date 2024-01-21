@@ -9,6 +9,7 @@ import { Vignette } from '@/components/vignette';
 
 import '@/styles/globals.css';
 import { buildSEO } from '@/utils/buildSEO';
+import { Grain } from '@/components/grain';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -25,8 +26,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
-        {/* TODO: Maybe there's a better way to do this */}
-        {/* <Grain /> */}
+        <Grain />
 
         <Vignette />
         <Analytics />
