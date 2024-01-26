@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { IoMdPause, IoMdPlay } from 'react-icons/io';
-import { Lights } from './lights';
 import { AnimatePresence } from 'framer-motion';
+import { IoMdPause, IoMdPlay } from 'react-icons/io';
+import * as Slider from '@radix-ui/react-slider';
+import { Lights } from './lights';
 
 type PlayProps = {
   audioUrl: string;
@@ -24,9 +25,14 @@ export const Play = ({ audioUrl }: PlayProps) => {
     setIsPlaying(false);
   };
 
+  const handleVolumeChange = (volume: number) => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = volume;
+  };
+
   useEffect(() => {
     if (!audioRef.current) return;
-    audioRef.current.volume = 0.1;
+    audioRef.current.volume = 0.5;
 
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
@@ -46,6 +52,20 @@ export const Play = ({ audioUrl }: PlayProps) => {
       >
         {isPlaying ? <IoMdPause /> : <IoMdPlay />}
       </button>
+
+      <Slider.Root
+        min={0}
+        max={0.5}
+        step={0.01}
+        defaultValue={audioRef.current ? [audioRef.current.volume] : [0.5]}
+        onValueChange={value => handleVolumeChange(value[0])}
+        className='relative flex items-center select-none touch-none w-[200px] h-5'
+      >
+        <Slider.Track className='bg-lowContrast relative grow rounded-full h-[3px]'>
+          <Slider.Range className='bg-secondary absolute rounded-full h-full' />
+        </Slider.Track>
+        <Slider.Thumb className='block w-5 h-5 bg-secondary rounded-full cursor-pointer' />
+      </Slider.Root>
     </>
   );
 };
