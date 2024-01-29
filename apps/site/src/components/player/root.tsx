@@ -7,6 +7,7 @@ import {
   createContext,
   useContext,
 } from 'react';
+import { MAX_VOLUME } from './volume';
 
 type PlayerRootProps = {
   audioUrl: string;
@@ -49,6 +50,10 @@ export const PlayerRoot = ({ audioUrl, children }: PlayerRootProps) => {
 
   useEffect(() => {
     if (!audioRef.current) return;
+
+    if (audioRef.current.volume === 1) {
+      audioRef.current.volume = MAX_VOLUME;
+    }
 
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);

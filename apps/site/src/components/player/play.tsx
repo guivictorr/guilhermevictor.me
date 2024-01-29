@@ -12,7 +12,7 @@ export const Play = () => {
   return (
     <button
       aria-label={ariaLabel}
-      className='w-2 sm:w-4 [&>svg]:scale-150'
+      className='w-2 sm:w-4 [&>svg]:w-5 [&>svg]:h-5'
       type='button'
       onClick={togglePlayAndPause}
     >
