@@ -31,9 +31,7 @@ export const getLatestPlayedGames = async ({
 
   const options: RequestInit = {
     method: 'GET',
-    next: {
-      revalidate: ONE_HOUR,
-    },
+    cache: 'no-cache',
   };
 
   const query = new URLSearchParams({
