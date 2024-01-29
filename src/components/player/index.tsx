@@ -3,17 +3,17 @@ import { PlayerRoot } from './root';
 import { LastUpdate } from './last-update';
 import { Lights } from './lights';
 import { Play } from './play';
-import { Volume } from './volume';
+// import { Volume } from './volume';
 
 export const Player = async () => {
   const { track, played_at } = await getLatestPlayedTrack();
   const artists = track.artists.map(artist => artist.name).join(',');
 
   return (
-    <div className='flex items-center gap-4'>
+    <div className='flex items-center gap-8 sm:gap-4'>
       <PlayerRoot audioUrl={track.preview_url}>
         <Play />
-        <Volume />
+        {/* <Volume /> */}
         <Lights />
       </PlayerRoot>
 
