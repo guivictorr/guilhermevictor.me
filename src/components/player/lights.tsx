@@ -42,6 +42,7 @@ export const Lights = () => {
         <>
           {lights.map((light, index) => (
             <motion.div
+              aria-hidden
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
