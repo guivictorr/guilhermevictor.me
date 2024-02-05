@@ -53,6 +53,12 @@ export default async function Home() {
             description='How to build accessible websites'
             href='/writing/accessibility-on-web'
           />
+
+          <ListColumn.Item
+            title='Things I use'
+            description="Everything I'm currently using from apps to hardware."
+            href='/writing/things-i-use'
+          />
         </ListColumn>
 
         <ListColumn title='Gaming'>
