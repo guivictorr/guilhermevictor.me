@@ -15,6 +15,7 @@ Frontend
 - [Next.js](https://nextjs.org)
 - [React Icons](https://react-icons.github.io/react-icons/)
 - [Typescript](typescriptlang.org/)
+- [Radix Primitives](https://www.radix-ui.com/primitives)
 
 ## 🤔 How to contribute
 
