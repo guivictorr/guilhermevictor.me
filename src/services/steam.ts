@@ -2,8 +2,6 @@ const steamUserId = process.env.STEAM_USER_ID;
 const steamApiKey = process.env.STEAM_API_KEY;
 const steamRecentlyPlayedGames = `${process.env.STEAM_API_URL}/IPlayerService/GetRecentlyPlayedGames/v0001`;
 
-const ONE_HOUR = 3600 * 24;
-
 type SteamGame = {
   appid: number;
   name: string;
@@ -11,6 +9,7 @@ type SteamGame = {
   playtime_forever: number;
   img_icon_url: string;
   img_logo_url: string;
+  url: URL;
 };
 
 type RecentlyPlayedGamesResponse = {
@@ -23,6 +22,8 @@ type RecentlyPlayedGamesResponse = {
 type GetLatestPlayedGamesParams = {
   count: number;
 };
+
+const minutesToHours = (minutes: number) => (minutes / 60).toFixed(2);
 
 export const getLatestPlayedGames = async ({
   count,
@@ -47,7 +48,12 @@ export const getLatestPlayedGames = async ({
     const result = (await response.json()) as RecentlyPlayedGamesResponse;
     const { games } = result.response;
 
-    return games;
+    return games.map(game => ({
+      ...game,
+      playtime_2weeks: minutesToHours(game.playtime_2weeks),
+      playtime_forever: minutesToHours(game.playtime_forever),
+      url: `https://store.steampowered.com/app/${game.appid}`,
+    }));
   } else {
     throw new Error('Error trying to fetch recently played games');
   }

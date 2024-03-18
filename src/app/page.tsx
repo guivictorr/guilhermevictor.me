@@ -2,17 +2,8 @@ import { ListColumn } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
 
-const minutesToHours = (minutes: number) => (minutes / 60).toFixed(2);
-
 export default async function Home() {
-  const games = await getLatestPlayedGames({ count: 3 });
-  const formattedGames =
-    games?.map(game => ({
-      ...game,
-      playtime_2weeks: minutesToHours(game.playtime_2weeks),
-      playtime_forever: minutesToHours(game.playtime_forever),
-      url: `https://store.steampowered.com/app/${game.appid}`,
-    })) ?? [];
+  const games = (await getLatestPlayedGames({ count: 3 })) ?? [];
 
   return (
     <main className='flex flex-col gap-8 max-w-lg mx-auto'>
@@ -62,7 +53,7 @@ export default async function Home() {
         </ListColumn>
 
         <ListColumn title='Gaming'>
-          {formattedGames.map(game => (
+          {games.map(game => (
             <ListColumn.Item
               key={game.appid}
               title={game.name}
