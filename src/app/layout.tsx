@@ -8,7 +8,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { Vignette } from '@/components/vignette';
 
 import '@/styles/globals.css';
-import { buildSEO } from '@/utils/buildSEO';
+import { buildSEO } from '@/seo/seo';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -19,6 +19,7 @@ export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
   description:
     'My personal space of an empathetic front-end developer building web experiences with passion',
+  dynamic_og: false,
 });
 
 export default async function RootLayout({ children }: PropsWithChildren) {
