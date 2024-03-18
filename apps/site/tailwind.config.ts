@@ -11,7 +11,7 @@ const config: Config = {
       primary: '#FDDCBD',
       secondary: '#D1BAA2',
       lowContrast: '#FDDCBD55',
-      background: '#140d09',
+      background: '#261911',
     },
     extend: {
       fontFamily: {
