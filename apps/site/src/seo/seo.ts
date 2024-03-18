@@ -4,11 +4,18 @@ type BuildSEOParams = {
   title: string;
   description: string;
   url?: string;
+  dynamic_og?: boolean;
 } & Metadata;
 
 type BuildSEO = (props: BuildSEOParams) => Metadata;
 
-export const buildSEO: BuildSEO = ({ title, description, url, ...rest }) => ({
+export const buildSEO: BuildSEO = ({
+  title,
+  description,
+  url,
+  dynamic_og = true,
+  ...rest
+}) => ({
   metadataBase: new URL('https://guilhermevictor.space'),
   title,
   description,
@@ -23,7 +30,9 @@ export const buildSEO: BuildSEO = ({ title, description, url, ...rest }) => ({
     url,
     siteName: 'Guilherme Victor',
     images: {
-      url: `/api/og?title=${title}&description=${description}`,
+      url: dynamic_og
+        ? `/api/og?title=${title}&description=${description}`
+        : '/default_og.png',
     },
     locale: 'en_US',
     type: 'website',
@@ -34,7 +43,9 @@ export const buildSEO: BuildSEO = ({ title, description, url, ...rest }) => ({
     card: 'summary_large_image',
     creator: '@oguivictor',
     images: {
-      url: `/api/og?title=${title}&description=${description}`,
+      url: dynamic_og
+        ? `/api/og?title=${title}&description=${description}`
+        : '/default_og.png',
     },
   },
   ...rest,
