@@ -30,7 +30,7 @@ export default async function Home() {
       </section>
       <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
         <ListColumn title='Crafts'>
-          <p>No content</p>
+          <li>No content</li>
           {/* <ListColumn.Item */}
           {/*   title='Animated Tabs' */}
           {/*   description='Animated Tabs built with framer motion' */}
