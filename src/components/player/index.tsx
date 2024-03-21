@@ -4,6 +4,7 @@ import { LastUpdate } from './last-update';
 import { Lights } from './lights';
 import { Play } from './play';
 import { Volume } from './volume';
+import { Suspense } from 'react';
 
 export const Player = async () => {
   const { track, played_at } = await getLatestPlayedTrack();
@@ -11,24 +12,26 @@ export const Player = async () => {
 
   return (
     <div className='flex items-center gap-4 w-full'>
-      <PlayerRoot audioUrl={track.preview_url}>
-        <Play />
-        <Lights />
+      <Suspense fallback='Carregando'>
+        <PlayerRoot audioUrl={track.preview_url}>
+          <Play />
+          <Lights />
 
-        <div className='ml-4 sm:ml-0'>
-          <LastUpdate playedAt={played_at} />
-          <p
-            aria-description={`Last played song ${track.name} from ${artists}`}
-            className='line-clamp-1'
-          >
-            {artists} - {track.name}
-          </p>
-        </div>
+          <div className='ml-4 sm:ml-0'>
+            <LastUpdate playedAt={played_at} />
+            <p
+              aria-description={`Last played song ${track.name} from ${artists}`}
+              className='line-clamp-1'
+            >
+              {artists} - {track.name}
+            </p>
+          </div>
 
-        <div className='ml-auto'>
-          <Volume />
-        </div>
-      </PlayerRoot>
+          <div className='ml-auto'>
+            <Volume />
+          </div>
+        </PlayerRoot>
+      </Suspense>
     </div>
   );
 };

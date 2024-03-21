@@ -61,13 +61,11 @@ export const PlayerRoot = ({ audioUrl, children }: PlayerRootProps) => {
   if (audioUrl === null) return null;
 
   return (
-    <>
+    <PlayerContext.Provider
+      value={{ isPlaying, handleVolumeChange, togglePlayAndPause }}
+    >
       <audio ref={audioRef} src={audioUrl} onEnded={handleOnEndAudio} />
-      <PlayerContext.Provider
-        value={{ isPlaying, handleVolumeChange, togglePlayAndPause }}
-      >
-        {children}
-      </PlayerContext.Provider>
-    </>
+      {children}
+    </PlayerContext.Provider>
   );
 };
