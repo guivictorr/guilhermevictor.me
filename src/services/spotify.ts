@@ -16,7 +16,7 @@ type SpotifyArtist = {
   }[];
 };
 
-type SpotifySong = {
+export type SpotifySong = {
   played_at: string;
   track: {
     id: string;

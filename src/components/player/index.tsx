@@ -7,7 +7,7 @@ import { Volume } from './volume';
 import { Suspense } from 'react';
 
 export const Player = async () => {
-  const { track, played_at } = await getLatestPlayedTrack();
+  const { track } = await getLatestPlayedTrack();
   const artists = track.artists.map(artist => artist.name).join(',');
 
   return (
@@ -18,7 +18,6 @@ export const Player = async () => {
           <Lights />
 
           <div className='ml-4 sm:ml-0'>
-            <LastUpdate playedAt={played_at} />
             <p
               aria-description={`Last played song ${track.name} from ${artists}`}
               className='line-clamp-1'
