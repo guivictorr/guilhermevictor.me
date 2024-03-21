@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
 
         <div className='flex flex-col gap-12 justify-between h-screen'>
           <div className='md:max-w-6xl mx-auto px-6 sm:px-8'>{children}</div>
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </body>
     </html>
