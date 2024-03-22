@@ -1,5 +1,18 @@
 import { ExternalLink } from '@/components/external-link';
 import type { MDXComponents } from 'mdx/types';
+import { HTMLAttributes, PropsWithChildren } from 'react';
+import { highlight } from 'sugar-high';
+
+type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
+
+function Code({ children, ...props }: CodeProps) {
+  if (!children) {
+    return null;
+  }
+
+  const codeHTML = highlight(children.toString());
+  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
+}
 
 // This file is required to use MDX in `app` directory.
 export function useMDXComponents(components: MDXComponents): MDXComponents {
@@ -9,6 +22,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     a: ({ children, href }) => (
       <ExternalLink href={href ?? '/'}>{children}</ExternalLink>
     ),
+    code: Code,
     ...components,
   };
 }

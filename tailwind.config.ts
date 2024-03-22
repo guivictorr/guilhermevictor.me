@@ -10,7 +10,7 @@ const config: Config = {
     colors: {
       primary: '#FDDCBD',
       secondary: '#D1BAA2',
-      lowContrast: '#FDDCBD55',
+      lowContrast: '#FDDCBD88',
       background: '#261911',
     },
     extend: {
