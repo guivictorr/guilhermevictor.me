@@ -19,9 +19,7 @@ export const buildSEO: BuildSEO = ({
   metadataBase: new URL('https://guilhermevictor.space'),
   title,
   description,
-  generator: 'Next.js',
   applicationName: 'Guilherme Victor',
-  referrer: 'origin-when-cross-origin',
   authors: [{ name: 'Guilherme Victor' }],
   creator: 'Guilherme Victor',
   openGraph: {
@@ -36,6 +34,17 @@ export const buildSEO: BuildSEO = ({
     },
     locale: 'en_US',
     type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   twitter: {
     title,
