@@ -17,7 +17,7 @@ export default function Layout({ children }: PropsWithChildren) {
         </nav>
       </header>
       <div className='grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-0'>
-        <section className='my-prose w-full mx-auto md:col-start-3 md:col-end-11'>
+        <section className='prose w-full mx-auto md:col-start-3 md:col-end-11'>
           {children}
         </section>
       </div>

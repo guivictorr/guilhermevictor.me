@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --sh-identifier: #fddcbd;
+  --sh-keyword: #d16806;
+  --sh-string: #d16806;
+  --sh-comment: #fddcbd88;
+  --sh-property: #fbb675;
+  --sh-sign: #fddcbdaa;
+  --sh-class: #d16806;
+  --sh-jsxliterals: red;
+  --sh-entity: red;
+}
+
 html {
   color-scheme: dark;
 }
@@ -18,6 +30,26 @@ a {
   @apply underline underline-offset-2;
 }
 
-.my-prose {
-  @apply prose prose-p:text-secondary prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-em:text-primary prose-strong:text-primary prose-a:text-primary prose-ul:list-none prose-li:before:content-['—'] prose-li:before:mr-4 prose-li:before:text-primary prose-li:text-secondary prose-code:text-secondary prose-pre:bg-secondary/5 prose-blockquote:border-l-lowContrast;
+.prose {
+  @apply text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-3xl prose-headings:mt-8 prose-headings:mb-6;
+}
+
+.prose pre {
+  @apply border bg-[#342318]/20 border-lowContrast/10 rounded-md p-4 overflow-x-auto;
+}
+
+.prose strong {
+  @apply text-primary;
+}
+
+.prose ul {
+  @apply list-none p-0 m-0;
+}
+
+.prose li {
+  @apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
+}
+
+.prose blockquote {
+  @apply border-l-lowContrast text-lowContrast;
 }
