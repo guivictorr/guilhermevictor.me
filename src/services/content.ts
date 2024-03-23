@@ -57,3 +57,4 @@ export const getPost = (slug: string) => {
     file => file.slug === slug,
   );
 };
+export type MDXDataProps = NonNullable<ReturnType<typeof getPost>>;
