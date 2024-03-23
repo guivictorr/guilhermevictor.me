@@ -44,14 +44,14 @@ export const FloatingPlayer = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className='flex items-center gap-4 fixed w-[90%] sm:w-auto bottom-6 md:left-6 md:translate-x-0 left-1/2 -translate-x-1/2 p-3 border-lowContrast/10 border bg-background rounded-xl z-20'
+            className='flex items-center gap-4 fixed w-[90%] sm:w-auto sm:min-w-72 bottom-6 md:left-6 md:translate-x-0 left-1/2 -translate-x-1/2 p-3 border-lowContrast/10 border bg-background rounded-xl z-20'
           >
             {hasPreviewUrl && <Play />}
-            <div className='ml-4 sm:ml-0'>
+            <div className='ml-4 sm:ml-0 text-ellipsis overflow-hidden max-w-xs '>
               <LastUpdate playedAt={playedAt} />
               <p
                 aria-description={`Last played song ${track.name} from ${artists}`}
-                className='line-clamp-1 max-w-xs text-sm'
+                className='truncate text-sm'
               >
                 {artists} - {track.name}
               </p>
