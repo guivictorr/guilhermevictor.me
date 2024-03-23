@@ -58,8 +58,6 @@ export const PlayerRoot = ({ audioUrl, children }: PlayerRootProps) => {
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
 
-  if (audioUrl === null) return null;
-
   return (
     <PlayerContext.Provider
       value={{ isPlaying, handleVolumeChange, togglePlayAndPause }}
