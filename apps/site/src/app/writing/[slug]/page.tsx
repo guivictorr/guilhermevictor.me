@@ -47,7 +47,9 @@ export default function PostPage({ params }: PostPageProps) {
             <span>back</span>
           </Link>
         </nav>
-        <h1 className='text-3xl font-serif'>{post.metadata.title}</h1>
+        <h1 className='text-3xl font-serif text-primary'>
+          {post.metadata.title}
+        </h1>
         <time
           className='text-sm text-lowContrast'
           dateTime={post.metadata.publishedAt}
