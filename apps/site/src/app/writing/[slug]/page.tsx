@@ -1,10 +1,9 @@
-import { Metadata } from 'next';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { MDX } from '@/components/mdx';
 import { getPost, getPosts } from '@/services/content';
 
-import { PiArrowUUpLeft } from 'react-icons/pi';
+import { PiArrowBendUpLeftBold } from 'react-icons/pi';
 import { buildSEO } from '@/seo/seo';
 import { format, parseISO } from 'date-fns';
 
@@ -31,21 +30,46 @@ export async function generateMetadata({ params }: PostPageProps) {
 export default function PostPage({ params }: PostPageProps) {
   const { slug } = params;
   const post = getPost(slug);
+  const posts = getPosts();
 
   if (!post) {
-    redirect('/');
+    return notFound();
   }
 
+  const nextItem = posts
+    .filter(
+      ({ metadata }) =>
+        new Date(String(metadata.publishedAt)) >
+        new Date(String(post.metadata.publishedAt)),
+    )
+    .sort(
+      (a, b) =>
+        new Date(String(a.metadata.publishedAt)).getTime() -
+        new Date(String(b.metadata.publishedAt)).getTime(),
+    )[0];
+
+  const previousItem = posts
+    .filter(
+      ({ metadata }) =>
+        new Date(String(metadata.publishedAt)) <
+        new Date(String(post.metadata.publishedAt)),
+    )
+    .sort(
+      (a, b) =>
+        new Date(String(a.metadata.publishedAt)).getTime() -
+        new Date(String(b.metadata.publishedAt)).getTime(),
+    )[0];
+
   return (
-    <main className='grid grid-cols-1 grid-rows-[max-content_1fr] md:grid-cols-12 gap-8 md:gap-0'>
+    <main className='grid grid-cols-1 grid-rows-[max-content_1fr_max-content] md:grid-cols-12 gap-8 md:gap-0'>
       <header className='row-start-1 md:col-start-3 md:col-end-11 md:pt-32 pt-16'>
         <nav className='mb-8'>
           <Link
             href='/'
-            className='font-serif no-underline [&>svg]:w-3 italic flex items-center gap-1.5 text-secondary w-fit'
+            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit'
           >
-            <PiArrowUUpLeft />
-            <span>back</span>
+            <PiArrowBendUpLeftBold />
+            <span>Home</span>
           </Link>
         </nav>
         <h1 className='text-3xl font-serif text-primary'>
@@ -64,6 +88,35 @@ export default function PostPage({ params }: PostPageProps) {
       <section className='prose row-start-2 w-full mx-auto md:col-start-3 md:col-end-11'>
         <MDX source={post.content} />
       </section>
+      <footer className='row-start-3 md:col-start-3 md:col-end-11 '>
+        <hr className='border-lowContrast/10 my-8' />
+
+        <nav className='flex justify-between'>
+          {!!previousItem && (
+            <Link
+              href={String(previousItem.metadata.url)}
+              className='no-underline block'
+            >
+              <span className='text-sm text-lowContrast'>Previous</span>
+              <span className='block text-primary'>
+                {previousItem.metadata.title}
+              </span>
+            </Link>
+          )}
+          <div className='grow' />
+          {!!nextItem && (
+            <Link
+              href={String(nextItem.metadata.url)}
+              className='no-underline block text-end'
+            >
+              <span className='text-sm text-lowContrast'>Next</span>
+              <span className='block text-primary'>
+                {nextItem.metadata.title}
+              </span>
+            </Link>
+          )}
+        </nav>
+      </footer>
     </main>
   );
 }
