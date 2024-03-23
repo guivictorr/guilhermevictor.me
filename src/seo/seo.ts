@@ -17,7 +17,10 @@ export const buildSEO: BuildSEO = ({
   ...rest
 }) => ({
   metadataBase: new URL('https://guilhermevictor.space'),
-  title,
+  title: {
+    default: title,
+    template: '%s | Guilherme Victor',
+  },
   description,
   applicationName: 'Guilherme Victor',
   authors: [{ name: 'Guilherme Victor' }],

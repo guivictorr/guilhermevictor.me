@@ -33,20 +33,15 @@ export default async function Home() {
       <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
         <ListColumn title='Crafts'>
           <li>No content</li>
-          {/* <ListColumn.Item */}
-          {/*   title='Animated Tabs' */}
-          {/*   description='Animated Tabs built with framer motion' */}
-          {/*   href='/writing/post' */}
-          {/* /> */}
         </ListColumn>
 
         <ListColumn title='Writing'>
           {posts.map(post => (
             <ListColumn.Item
               key={post.slug}
-              title={post.title}
-              description={post.description}
-              href={post.url}
+              title={post.metadata.title ?? ''}
+              description={post.metadata.description ?? ''}
+              href={post.metadata.url ?? ''}
             />
           ))}
         </ListColumn>

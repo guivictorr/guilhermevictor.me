@@ -1,27 +1,29 @@
 import fs from 'fs';
 import path from 'path';
-import { BuildSEOParams } from '@/seo/seo';
 
-const parseMetadata = (rawContent: string): BuildSEOParams | null => {
-  const metadataRegex = /buildSEO\(([^)]+)\)/;
-  const match = rawContent.match(metadataRegex);
+type Metadata = {
+  title: string;
+  description: string;
+  publishedAt: string;
+  url: string;
+};
 
-  if (!match) {
-    console.error('No match found');
-    return null;
-  }
+const parseMetadata = (fileContent: string) => {
+  const frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
+  const match = frontmatterRegex.exec(fileContent);
+  const frontMatterBlock = match![1];
+  const content = fileContent.replace(frontmatterRegex, '').trim();
+  const frontMatterLines = frontMatterBlock.trim().split('\n');
+  const metadata: Partial<Metadata> = {};
 
-  try {
-    const seoObject = eval('(' + match[1] + ')');
-    if (typeof seoObject === 'object' && seoObject !== null) {
-      return seoObject as BuildSEOParams;
-    } else {
-      throw new Error('Invalid object format');
-    }
-  } catch (error) {
-    console.error('Error parsing metadata', error);
-    return null;
-  }
+  frontMatterLines.forEach(line => {
+    const [key, ...valueArr] = line.split(': ');
+    let value = valueArr.join(': ').trim();
+    value = value.replace(/^['"](.*)['"]$/, '$1'); // Remove quotes
+    metadata[key.trim() as keyof Metadata] = value;
+  });
+
+  return { metadata, content };
 };
 
 const readMDXFile = (filePath: string) => {
@@ -30,49 +32,28 @@ const readMDXFile = (filePath: string) => {
 };
 
 const getMDXFiles = (dir: string) => {
-  const files: string[] = [];
-
-  const traverseDirectory = (currentDir: string) => {
-    const items = fs.readdirSync(currentDir);
-
-    for (const item of items) {
-      const itemPath = path.join(currentDir, item);
-      const stats = fs.statSync(itemPath);
-
-      if (stats.isDirectory()) {
-        traverseDirectory(itemPath); // Recursively traverse subdirectories
-      } else if (stats.isFile() && item === 'page.mdx') {
-        files.push(itemPath); // Add file path to the list
-      }
-    }
-  };
-
-  traverseDirectory(dir); // Start traversal from the specified directory
-  return files;
+  return fs.readdirSync(dir).filter(file => path.extname(file) === '.mdx');
 };
 
 const getMDXData = (dir: string) => {
   const mdxFiles = getMDXFiles(dir);
   return mdxFiles.map(file => {
-    const metadata = readMDXFile(file);
-
-    const path = file.split('/');
-    const slug = path[path.length - 2];
-
+    const { metadata, content } = readMDXFile(path.join(dir, file));
+    const slug = path.basename(file, path.extname(file));
     return {
-      title: metadata?.title ?? '',
-      description: metadata?.description ?? '',
-      url: metadata?.url ?? '',
+      metadata,
       slug,
-      publishedAt: metadata?.other?.publishedAt,
+      content,
     };
   });
 };
 
 export const getPosts = () => {
-  return getMDXData(path.join(process.cwd(), 'src/app/writing'));
+  return getMDXData(path.join(process.cwd(), 'content'));
 };
 
 export const getPost = (slug: string) => {
-  return getMDXData(path.join(process.cwd(), `src/app/writing/${slug}`))[0];
+  return getMDXData(path.join(process.cwd(), 'content')).find(
+    file => file.slug === slug,
+  );
 };
