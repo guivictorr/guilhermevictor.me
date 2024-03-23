@@ -63,6 +63,7 @@ export const PlayerRoot = ({ audioUrl, children }: PlayerRootProps) => {
       value={{ isPlaying, handleVolumeChange, togglePlayAndPause }}
     >
       <audio ref={audioRef} src={audioUrl} onEnded={handleOnEndAudio} />
+
       {children}
     </PlayerContext.Provider>
   );

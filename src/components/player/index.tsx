@@ -4,6 +4,7 @@ import { PlayerRoot } from './root';
 import { Lights } from './lights';
 import { Play } from './play';
 import { Volume } from './volume';
+import { FloatingPlayer } from './floating-player';
 
 const LastUpdate = dynamic(() => import('./last-update'), {
   ssr: false,
@@ -20,6 +21,13 @@ export const Player = async () => {
       <PlayerRoot audioUrl={track.preview_url}>
         {hasPreviewUrl && <Play />}
         <Lights />
+
+        <FloatingPlayer
+          hasPreviewUrl={hasPreviewUrl}
+          playedAt={played_at}
+          track={track}
+          artists={artists}
+        />
 
         <div className='ml-4 sm:ml-0'>
           <LastUpdate playedAt={played_at} />
