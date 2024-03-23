@@ -17,7 +17,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: Metadata & PostPageProps) {
+export async function generateMetadata({ params }: PostPageProps) {
   const post = getPost(params.slug);
 
   return buildSEO({
