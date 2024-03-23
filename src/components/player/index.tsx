@@ -11,11 +11,12 @@ const LastUpdate = dynamic(() => import('./last-update'), { ssr: false });
 export const Player = async () => {
   const { track, played_at } = await getLatestPlayedTrack();
   const artists = track.artists.map(artist => artist.name).join(',');
+  const hasPreviewUrl = track.preview_url !== null;
 
   return (
     <div className='flex items-center gap-4 w-full'>
       <PlayerRoot audioUrl={track.preview_url}>
-        <Play />
+        {hasPreviewUrl && <Play />}
         <Lights />
 
         <div className='ml-4 sm:ml-0'>
@@ -32,9 +33,11 @@ export const Player = async () => {
           </p>
         </div>
 
-        <div className='ml-auto'>
-          <Volume />
-        </div>
+        {hasPreviewUrl && (
+          <div className='ml-auto'>
+            <Volume />
+          </div>
+        )}
       </PlayerRoot>
     </div>
   );
