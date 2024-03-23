@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-type BuildSEOParams = {
+export type BuildSEOParams = {
   title: string;
   description: string;
   url?: string;

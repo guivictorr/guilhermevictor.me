@@ -1,9 +1,11 @@
 import { ListColumn } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
+import { getPosts } from '@/services/content';
 
 export default async function Home() {
   const games = (await getLatestPlayedGames({ count: 3 })) ?? [];
+  const posts = getPosts();
 
   return (
     <main className='flex flex-col gap-8 max-w-lg mx-auto'>
@@ -39,17 +41,14 @@ export default async function Home() {
         </ListColumn>
 
         <ListColumn title='Writing'>
-          <ListColumn.Item
-            title='Accessibility on web'
-            description='How to build accessible websites'
-            href='/writing/accessibility-on-web'
-          />
-
-          <ListColumn.Item
-            title='Things I use'
-            description="Everything I'm currently using from apps to hardware."
-            href='/writing/things-i-use'
-          />
+          {posts.map(post => (
+            <ListColumn.Item
+              key={post.slug}
+              title={post.title}
+              description={post.description}
+              href={post.url}
+            />
+          ))}
         </ListColumn>
 
         <ListColumn title='Gaming'>
