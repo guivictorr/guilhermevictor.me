@@ -37,7 +37,7 @@ export default function PostPage({ params }: PostPageProps) {
 
   return (
     <main className='grid grid-cols-1 grid-rows-[max-content_1fr] md:grid-cols-12 gap-8 md:gap-0'>
-      <header className='row-start-1 md:col-start-3 md:col-end-11 pt-32'>
+      <header className='row-start-1 md:col-start-3 md:col-end-11 md:pt-32 pt-16'>
         <nav className='mb-8'>
           <Link
             href='/'
