@@ -6,6 +6,7 @@ import { getPost, getPosts } from '@/services/content';
 
 import { PiArrowUUpLeft } from 'react-icons/pi';
 import { buildSEO } from '@/seo/seo';
+import { format, parseISO } from 'date-fns';
 
 type PostPageProps = {
   params: { slug: string };
@@ -50,12 +51,14 @@ export default function PostPage({ params }: PostPageProps) {
         <h1 className='text-3xl font-serif text-primary'>
           {post.metadata.title}
         </h1>
-        <time
-          className='text-sm text-lowContrast'
-          dateTime={post.metadata.publishedAt}
-        >
-          {post.metadata.publishedAt}
-        </time>
+        {post.metadata.publishedAt && (
+          <time
+            className='text-sm text-lowContrast'
+            dateTime={post.metadata.publishedAt}
+          >
+            {format(parseISO(post.metadata.publishedAt), 'MMMM dd, yyyy')}
+          </time>
+        )}
         <hr className='border-lowContrast/10 mt-8' />
       </header>
       <section className='prose row-start-2 w-full mx-auto md:col-start-3 md:col-end-11'>
