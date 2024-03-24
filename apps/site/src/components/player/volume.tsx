@@ -49,7 +49,10 @@ export const Volume = () => {
         <Slider.Track className='bg-lowContrast relative grow rounded-full h-[4px]'>
           <Slider.Range className='group-hover:bg-primary bg-secondary absolute rounded-full h-full' />
         </Slider.Track>
-        <Slider.Thumb className='block w-3 h-3 bg-primary rounded-full cursor-pointer hover:brightness-90 group-active:bg-primary scale-0 group-hover:scale-100 group-active:scale-125 transition focus-visible:ring-0 focus-visible:rounded-full focus-visible:ring-offset-0' />
+        <Slider.Thumb
+          aria-label='Volume'
+          className='block w-3 h-3 bg-primary rounded-full cursor-pointer hover:brightness-90 group-active:bg-primary scale-0 group-hover:scale-100 group-active:scale-125 transition focus-visible:ring-0 focus-visible:rounded-full focus-visible:ring-offset-0'
+        />
       </Slider.Root>
     </div>
   );
