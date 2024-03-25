@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
 import { GeistSans } from 'geist/font/sans';
 import { Playfair_Display } from 'next/font/google';
@@ -26,8 +26,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
       <body className='bg-background text-secondary scroll-smooth'>
-        {/* <Grain /> */}
-
         <Vignette />
         <Analytics />
 
