@@ -48,11 +48,11 @@ export const PostLayout = ({
       <header className='row-start-1 md:col-start-3 md:col-end-11 md:pt-32 pt-16'>
         <nav className='mb-8'>
           <Link
-            href='/'
-            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit'
+            href='/writing'
+            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
           >
             <PiArrowBendUpLeftBold />
-            <span>Home</span>
+            <span>Writing</span>
           </Link>
         </nav>
         <h1 className='text-3xl font-serif text-primary'>
