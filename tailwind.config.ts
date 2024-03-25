@@ -12,6 +12,7 @@ const config: Config = {
       secondary: '#D1BAA2',
       lowContrast: '#FDDCBD88',
       background: '#261911',
+      transparent: '#00000000',
     },
     extend: {
       fontFamily: {
