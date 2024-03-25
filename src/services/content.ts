@@ -1,10 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 
-type Metadata = {
+export type Metadata = {
   title: string;
   description: string;
   publishedAt: string;
+  url: string;
+};
+
+export type MetadataOutput = {
+  title: string;
+  description: string;
+  publishedAt: Date;
   url: string;
 };
 
@@ -14,7 +21,12 @@ const parseMetadata = (fileContent: string) => {
   const frontMatterBlock = match![1];
   const content = fileContent.replace(frontmatterRegex, '').trim();
   const frontMatterLines = frontMatterBlock.trim().split('\n');
-  const metadata: Partial<Metadata> = {};
+  const metadata: Metadata = {
+    title: '',
+    url: '',
+    description: '',
+    publishedAt: '',
+  };
 
   frontMatterLines.forEach(line => {
     const [key, ...valueArr] = line.split(': ');
@@ -41,7 +53,10 @@ const getMDXData = (dir: string) => {
     const { metadata, content } = readMDXFile(path.join(dir, file));
     const slug = path.basename(file, path.extname(file));
     return {
-      metadata,
+      metadata: {
+        ...metadata,
+        publishedAt: new Date(String(metadata.publishedAt)),
+      } as MetadataOutput,
       slug,
       content,
     };
@@ -49,7 +64,12 @@ const getMDXData = (dir: string) => {
 };
 
 export const getPosts = () => {
-  return getMDXData(path.join(process.cwd(), 'content'));
+  return getMDXData(path.join(process.cwd(), 'content')).sort((a, b) => {
+    return (
+      new Date(String(b.metadata.publishedAt)).getTime() -
+      new Date(String(a.metadata.publishedAt)).getTime()
+    );
+  });
 };
 
 export const getPost = (slug: string) => {
