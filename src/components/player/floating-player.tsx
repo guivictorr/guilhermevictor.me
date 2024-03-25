@@ -45,7 +45,7 @@ export const FloatingPlayer = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className='flex justify-end fixed h-28 bottom-6 md:left-6 md:translate-x-0 md:w-auto w-[90%] left-1/2 -translate-x-1/2 z-20 bg-transparent overflow-hidden'
+            className='flex justify-end fixed h-28 bottom-6 md:left-6 md:translate-x-0 md:min-w-xs md:max-w-xs w-[90%] sm:w-full left-1/2 -translate-x-1/2 z-20 bg-transparent overflow-hidden'
           >
             <div className='flex items-center h-fit w-full mt-auto gap-4 p-3 border-lowContrast/10 border bg-background rounded-xl z-30'>
               {hasPreviewUrl && <Play />}
