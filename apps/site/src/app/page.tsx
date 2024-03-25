@@ -9,7 +9,7 @@ export default async function Home() {
 
   return (
     <main className='flex flex-col gap-8 max-w-lg mx-auto'>
-      <section className='mt-24 sm:mt-44'>
+      <section>
         <p className='leading-4'>Guilherme Victor</p>
         <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
           empathetic frontend developer.

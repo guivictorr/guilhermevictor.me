@@ -31,8 +31,8 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <Vignette />
         <Analytics />
 
-        <div className='flex flex-col gap-12 justify-between h-screen'>
-          <div className='md:max-w-6xl mx-auto px-6 sm:px-8'>{children}</div>
+        <div className='flex flex-col gap-12 justify-between items-center h-screen md:pt-32 pt-16'>
+          <div className='md:max-w-6xl px-6 sm:px-8 w-full'>{children}</div>
           <Footer />
         </div>
       </body>
