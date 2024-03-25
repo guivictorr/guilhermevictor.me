@@ -77,7 +77,6 @@ export const getLatestPlayedTrack = async () => {
     const { items } = (await response.json()) as RecentlyPlayedTracksResponse;
     return items[0];
   } else {
-    const { error } = await response.json();
-    throw new Error(error.message);
+    return null;
   }
 };
