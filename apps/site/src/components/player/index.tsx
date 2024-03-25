@@ -12,7 +12,13 @@ const LastUpdate = dynamic(() => import('./last-update'), {
 });
 
 export const Player = async () => {
-  const { track, played_at } = await getLatestPlayedTrack();
+  const result = await getLatestPlayedTrack();
+
+  if (result === null) {
+    return null;
+  }
+  const { track, played_at } = result;
+
   const artists = track.artists.map(artist => artist.name).join(',');
   const hasPreviewUrl = track.preview_url !== null;
 

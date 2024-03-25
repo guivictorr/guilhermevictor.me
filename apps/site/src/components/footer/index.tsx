@@ -5,7 +5,7 @@ export const Footer = () => {
     <footer className='relative flex items-end overflow-hidden h-44 z-50 shrink-0 w-full '>
       <div className='flex items-center w-full justify-between gap-4 h-1/3 border-t border-primary/10 px-4 sm:px-8'>
         <Player />
-        <p>{new Date().getFullYear()}</p>
+        <p className='ml-auto'>{new Date().getFullYear()}</p>
       </div>
     </footer>
   );
