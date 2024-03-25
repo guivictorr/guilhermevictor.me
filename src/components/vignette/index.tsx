@@ -1,5 +1,5 @@
 export const Vignette = () => (
-  <div className='fixed z-40 inset-0 pointer-events-none'>
-    <div className='bg-[radial-gradient(circle,rgba(255,255,255,0)_45%,rgba(24,15,10,0.7)_90%)] lg:bg-[radial-gradient(circle,rgba(255,255,255,0)_10%,rgba(24,15,10,0.7)_90%)] absolute inset-0'></div>
+  <div className='fixed inset-0 pointer-events-none z-40'>
+    <div className='bg-[linear-gradient(180deg,rgba(24,15,10,.7)_0%,rgba(255,255,255,0)_20%,rgba(255,255,255,0)_50%,rgba(255,255,255,0.03125)_80%,rgba(24,15,10,.7)_100%)] w-full h-full' />
   </div>
 );
