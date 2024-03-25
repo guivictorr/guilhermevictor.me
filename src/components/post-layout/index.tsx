@@ -1,5 +1,5 @@
 import { MDXDataProps } from '@/services/content';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PropsWithChildren } from 'react';
@@ -19,33 +19,21 @@ export const PostLayout = ({
     return notFound();
   }
 
-  const nextItem = items
-    .filter(
-      ({ metadata }) =>
-        new Date(String(metadata.publishedAt)) >
-        new Date(String(currentItem.metadata.publishedAt)),
-    )
-    .sort(
-      (a, b) =>
-        new Date(String(a.metadata.publishedAt)).getTime() -
-        new Date(String(b.metadata.publishedAt)).getTime(),
-    )[0];
+  const nextItem = items.filter(
+    ({ metadata }) =>
+      new Date(String(metadata.publishedAt)) >
+      new Date(String(currentItem.metadata.publishedAt)),
+  )[0];
 
-  const previousItem = items
-    .filter(
-      ({ metadata }) =>
-        new Date(String(metadata.publishedAt)) <
-        new Date(String(currentItem.metadata.publishedAt)),
-    )
-    .sort(
-      (a, b) =>
-        new Date(String(a.metadata.publishedAt)).getTime() -
-        new Date(String(b.metadata.publishedAt)).getTime(),
-    )[0];
+  const previousItem = items.filter(
+    ({ metadata }) =>
+      new Date(String(metadata.publishedAt)) <
+      new Date(String(currentItem.metadata.publishedAt)),
+  )[0];
 
   return (
-    <main className='grid grid-cols-1 grid-rows-[max-content_1fr_max-content] md:grid-cols-12 gap-8 md:gap-0'>
-      <header className='row-start-1 md:col-start-3 md:col-end-11 md:pt-32 pt-16'>
+    <main className='max-w-2xl mx-auto'>
+      <header>
         <nav className='mb-8'>
           <Link
             href='/writing'
@@ -61,20 +49,15 @@ export const PostLayout = ({
         {currentItem.metadata.publishedAt && (
           <time
             className='text-sm text-lowContrast'
-            dateTime={currentItem.metadata.publishedAt}
+            dateTime={currentItem.metadata.publishedAt.toString()}
           >
-            {format(
-              parseISO(currentItem.metadata.publishedAt),
-              'MMMM dd, yyyy',
-            )}
+            {format(currentItem.metadata.publishedAt, 'MMMM dd, yyyy')}
           </time>
         )}
         <hr className='border-lowContrast/10 mt-8' />
       </header>
-      <section className='prose row-start-2 w-full mx-auto md:col-start-3 md:col-end-11'>
-        {children}
-      </section>
-      <footer className='row-start-3 md:col-start-3 md:col-end-11 '>
+      <section>{children}</section>
+      <footer>
         <hr className='border-lowContrast/10 my-8' />
 
         <nav className='flex justify-between'>

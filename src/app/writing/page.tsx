@@ -1,22 +1,14 @@
 import Link from 'next/link';
 import { PiArrowBendUpLeftBold } from 'react-icons/pi';
-import { Metadata, getPosts } from '@/services/content';
-import { format, parseISO } from 'date-fns';
+import { MetadataOutput, getPosts } from '@/services/content';
+import { format } from 'date-fns';
 
 export default function WritingHome() {
-  const posts = getPosts()
-    .map(post => post.metadata)
-    .sort((a, b) => {
-      return (
-        new Date(String(b.publishedAt)).getTime() -
-        new Date(String(a.publishedAt)).getTime()
-      );
-    });
+  const posts = getPosts().map(post => post.metadata);
   const groupedPostsByYear = posts.reduce(
     (acc, post) => {
       if (!post.publishedAt) return acc;
       const year = new Date(post.publishedAt).getFullYear();
-      console.log(year);
 
       if (!acc[year]) {
         acc[year] = [];
@@ -26,12 +18,11 @@ export default function WritingHome() {
 
       return acc;
     },
-    {} as Record<string, Partial<Metadata>[]>,
+    {} as Record<string, MetadataOutput[]>,
   );
-  console.log(groupedPostsByYear);
 
   return (
-    <main className='mt-24 sm:mt-32 max-w-lg mx-auto'>
+    <main className='max-w-2xl mx-auto'>
       <nav className='mb-4'>
         <Link
           href='/'
@@ -61,12 +52,15 @@ export default function WritingHome() {
                         href={post.url ?? ''}
                         className='relative flex items-center justify-between py-3 no-underline before:absolute before:h-full before:w-full before:-left-1/2'
                       >
-                        <span className='group-hover/listItem:!text-primary transition'>
+                        <span className='group-hover/listItem:!text-primary transition truncate'>
                           {post.title}
                         </span>
                         {!!post.publishedAt && (
-                          <time className='group-hover/listItem:!text-secondary transition text-sm'>
-                            {format(parseISO(post.publishedAt), 'MMMM dd')}
+                          <time
+                            dateTime={post.publishedAt.toString()}
+                            className='group-hover/listItem:!text-secondary transition text-sm'
+                          >
+                            {format(post.publishedAt, 'MMMM dd')}
                           </time>
                         )}
                       </Link>
