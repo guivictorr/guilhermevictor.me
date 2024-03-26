@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PropsWithChildren, useId } from 'react';
+import { Children, PropsWithChildren, useId } from 'react';
 import { ExternalLink } from '../external-link';
 
 type ArticleProps = PropsWithChildren & {
@@ -8,13 +8,16 @@ type ArticleProps = PropsWithChildren & {
 
 export const ListColumn = ({ title, children }: ArticleProps) => {
   const titleId = useId();
+  const isEmpty = Children.count(children) <= 0;
 
   return (
     <article aria-labelledby={titleId}>
       <p className='text-sm' id={titleId}>
         {title}
       </p>
-      <ul className='mt-3 space-y-6'>{children}</ul>
+      <ul className='mt-3 space-y-6'>
+        {isEmpty ? <li>No content</li> : children}
+      </ul>
     </article>
   );
 };

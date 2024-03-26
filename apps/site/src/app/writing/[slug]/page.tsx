@@ -35,7 +35,12 @@ export default function PostPage({ params }: PostPageProps) {
   }
 
   return (
-    <PostLayout items={posts} currentItem={post}>
+    <PostLayout
+      backLabel='Writing'
+      backLink='/writing'
+      items={posts}
+      currentItem={post}
+    >
       <MDX source={post.content} />
     </PostLayout>
   );
