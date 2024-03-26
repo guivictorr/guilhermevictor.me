@@ -1,11 +1,12 @@
 import { ListColumn } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
-import { getPosts } from '@/services/content';
+import { getCrafts, getPosts } from '@/services/content';
 
 export default async function Home() {
   const games = (await getLatestPlayedGames({ count: 3 })) ?? [];
   const posts = getPosts();
+  const crafts = getCrafts();
 
   return (
     <main className='flex flex-col gap-8 max-w-lg mx-auto'>
@@ -32,7 +33,14 @@ export default async function Home() {
       </section>
       <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
         <ListColumn title='Crafts'>
-          <li>No content</li>
+          {crafts.map(craft => (
+            <ListColumn.Item
+              key={craft.slug}
+              title={craft.metadata.title ?? ''}
+              description={craft.metadata.description ?? ''}
+              href={craft.metadata.url ?? ''}
+            />
+          ))}
         </ListColumn>
 
         <ListColumn title='Writing'>

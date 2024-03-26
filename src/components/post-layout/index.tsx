@@ -8,12 +8,16 @@ import { PiArrowBendUpLeftBold } from 'react-icons/pi';
 type PostLayoutProps = {
   items: MDXDataProps[];
   currentItem: MDXDataProps;
+  backLabel: string;
+  backLink: string;
 } & PropsWithChildren;
 
 export const PostLayout = ({
   children,
   currentItem,
   items,
+  backLabel,
+  backLink,
 }: PostLayoutProps) => {
   if (!currentItem) {
     return notFound();
@@ -36,11 +40,11 @@ export const PostLayout = ({
       <header>
         <nav className='mb-8'>
           <Link
-            href='/writing'
+            href={backLink}
             className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
           >
             <PiArrowBendUpLeftBold />
-            <span>Writing</span>
+            <span>{backLabel}</span>
           </Link>
         </nav>
         <h1 className='text-3xl font-serif text-primary'>
@@ -54,7 +58,7 @@ export const PostLayout = ({
             {format(currentItem.metadata.publishedAt, 'MMMM dd, yyyy')}
           </time>
         )}
-        <hr className='border-lowContrast/10 mt-8' />
+        <hr className='border-lowContrast/10 my-8' />
       </header>
       <section>{children}</section>
       <footer>

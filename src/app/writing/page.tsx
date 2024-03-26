@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { PiArrowBendUpLeftBold } from 'react-icons/pi';
-import { MetadataOutput, getPosts } from '@/services/content';
 import { format } from 'date-fns';
+import { redirect } from 'next/navigation';
+import { MetadataOutput, getPosts } from '@/services/content';
 
 export default function WritingHome() {
   const posts = getPosts().map(post => post.metadata);
@@ -20,6 +21,10 @@ export default function WritingHome() {
     },
     {} as Record<string, MetadataOutput[]>,
   );
+
+  if (posts.length <= 0) {
+    redirect('/not-found');
+  }
 
   return (
     <main className='max-w-2xl mx-auto'>

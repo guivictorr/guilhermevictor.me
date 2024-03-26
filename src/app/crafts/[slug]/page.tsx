@@ -1,22 +1,22 @@
 import { notFound } from 'next/navigation';
 import { MDX } from '@/components/mdx';
-import { getPost, getPosts } from '@/services/content';
+import { getCraft, getCrafts } from '@/services/content';
 
 import { buildSEO } from '@/seo/seo';
 import { PostLayout } from '@/components/post-layout';
 
-type PostPageProps = {
+type CraftPageProps = {
   params: { slug: string };
 };
 
 export async function generateStaticParams() {
-  return getPosts().map(({ slug }) => ({
+  return getCrafts().map(({ slug }) => ({
     params: { slug },
   }));
 }
 
-export async function generateMetadata({ params }: PostPageProps) {
-  const post = getPost(params.slug);
+export async function generateMetadata({ params }: CraftPageProps) {
+  const post = getCraft(params.slug);
 
   return buildSEO({
     title: post?.metadata.title ?? '',
@@ -25,23 +25,23 @@ export async function generateMetadata({ params }: PostPageProps) {
   });
 }
 
-export default function PostPage({ params }: PostPageProps) {
+export default function CraftPage({ params }: CraftPageProps) {
   const { slug } = params;
-  const post = getPost(slug);
-  const posts = getPosts();
+  const craft = getCraft(slug);
+  const crafts = getCrafts();
 
-  if (!post) {
+  if (!craft) {
     return notFound();
   }
 
   return (
     <PostLayout
-      backLabel='Writing'
-      backLink='/writing'
-      items={posts}
-      currentItem={post}
+      backLink='/crafts'
+      backLabel='Crafts'
+      items={crafts}
+      currentItem={craft}
     >
-      <MDX source={post.content} />
+      <MDX source={craft.content} />
     </PostLayout>
   );
 }
