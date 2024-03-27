@@ -2,6 +2,8 @@ import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote/rsc';
 import { PropsWithChildren, HTMLAttributes } from 'react';
 import { highlight } from 'sugar-high';
 import { ExternalLink } from '../external-link';
+import { ExclusionTabs } from '../crafts/exclusion-tabs';
+import { CraftPreview } from '../craft-preview.tsx';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {
@@ -18,6 +20,8 @@ const components: MDXRemoteProps['components'] = {
   a: ({ children, href }) => (
     <ExternalLink href={href ?? '/'}>{children}</ExternalLink>
   ),
+  ExclusionTabs: ExclusionTabs,
+  CraftPreview: CraftPreview,
 };
 
 export const MDX = (props: MDXRemoteProps) => {
