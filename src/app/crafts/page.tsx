@@ -27,18 +27,20 @@ export default function CraftsPage() {
   }
 
   return (
-    <main className='max-w-2xl mx-auto'>
-      <nav className='mb-4'>
-        <Link
-          href='/'
-          className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
-        >
-          <PiArrowBendUpLeftBold />
-          <span>Home</span>
-        </Link>
-      </nav>
-      <h1 className='font-serif text-xl'>Crafts</h1>
-      <section className='mt-8'>
+    <div className='max-w-2xl mx-auto'>
+      <header>
+        <nav className='mb-4'>
+          <Link
+            href='/'
+            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
+          >
+            <PiArrowBendUpLeftBold />
+            <span>Home</span>
+          </Link>
+        </nav>
+        <h1 className='font-serif text-xl'>Crafts</h1>
+      </header>
+      <main className='mt-8'>
         <ul className='group divide-y divide-lowContrast/10 border-y border-t-lowContrast/10 border-b-lowContrast/10'>
           {Object.entries(groupedCraftsByYear)
             .reverse()
@@ -75,7 +77,7 @@ export default function CraftsPage() {
               </li>
             ))}
         </ul>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

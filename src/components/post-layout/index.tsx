@@ -36,7 +36,7 @@ export const PostLayout = ({
   )[0];
 
   return (
-    <main className='max-w-2xl mx-auto'>
+    <div className='max-w-2xl mx-auto'>
       <header>
         <nav className='mb-8'>
           <Link
@@ -60,7 +60,7 @@ export const PostLayout = ({
         )}
         <hr className='border-lowContrast/10 my-8' />
       </header>
-      <section>{children}</section>
+      <main>{children}</main>
       <footer>
         <hr className='border-lowContrast/10 my-8' />
 
@@ -90,6 +90,6 @@ export const PostLayout = ({
           )}
         </nav>
       </footer>
-    </main>
+    </div>
   );
 };
