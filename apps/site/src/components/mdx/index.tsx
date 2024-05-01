@@ -3,7 +3,7 @@ import { PropsWithChildren, HTMLAttributes } from 'react';
 import { highlight } from 'sugar-high';
 import { ExternalLink } from '../external-link';
 import { ExclusionTabs } from '../crafts/exclusion-tabs';
-import { CraftPreview } from '../craft-preview.tsx';
+import { CraftPreview } from '../craft-preview';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {
