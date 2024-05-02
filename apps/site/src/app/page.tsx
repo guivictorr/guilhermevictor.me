@@ -9,7 +9,7 @@ export default async function Home() {
   const crafts = getCrafts();
 
   return (
-    <main className='flex flex-col gap-8 max-w-lg mx-auto'>
+    <main className='flex flex-col gap-8 max-w-xl mx-auto'>
       <section>
         <p className='leading-4'>Guilherme Victor</p>
         <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
@@ -18,7 +18,7 @@ export default async function Home() {
           learning golang. <br />
           neovim user.
         </h1>
-        <p>
+        <p className='max-w-sm'>
           You can find me on{' '}
           <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>{' '}
           or{' '}
@@ -31,7 +31,7 @@ export default async function Home() {
           </ExternalLink>
         </p>
       </section>
-      <section className='grid grid-cols-1 gap-2 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
+      <section className='grid grid-cols-1 gap-8 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
         <ListColumn title='Crafts'>
           {crafts.map(craft => (
             <ListColumn.Item
