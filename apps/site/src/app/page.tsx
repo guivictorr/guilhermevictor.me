@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { ListColumn } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
@@ -9,29 +10,38 @@ export default async function Home() {
   const crafts = getCrafts();
 
   return (
-    <main className='flex flex-col gap-8 max-w-xl mx-auto'>
-      <section>
-        <p className='leading-4'>Guilherme Victor</p>
-        <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
-          empathetic frontend developer.
-          <br />
-          learning golang. <br />
-          neovim user.
-        </h1>
-        <p className='max-w-sm'>
-          You can find me on{' '}
-          <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>{' '}
-          or{' '}
-          <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
-            Linkedin
-          </ExternalLink>{' '}
-          and see my code on{' '}
-          <ExternalLink href='https://github.com/guivictorr'>
-            Github
-          </ExternalLink>
-        </p>
+    <main className='flex flex-col sm:justify-center max-w-xl gap-4 mx-auto divide-y divide-lowContrast/10 h-full'>
+      <section className='flex flex-col sm:flex-row items-start gap-4 sm:divide-x divide-lowContrast/10'>
+        <Image
+          src='/me.png'
+          className='rounded-sm grayscale-[0.3] brightness-[0.9] hidden sm:block'
+          alt=''
+          width={160}
+          height={160}
+        />
+        <div className='sm:pl-4'>
+          <p className='leading-4'>Guilherme Victor</p>
+          <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
+            empathetic frontend developer.
+            <br />
+            learning golang. <br />
+            neovim user.
+          </h1>
+          <p className='max-w-sm'>
+            You can find me on{' '}
+            <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>{' '}
+            or{' '}
+            <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
+              Linkedin
+            </ExternalLink>{' '}
+            and see my code on{' '}
+            <ExternalLink href='https://github.com/guivictorr'>
+              Github
+            </ExternalLink>
+          </p>
+        </div>
       </section>
-      <section className='grid grid-cols-1 gap-8 space-y-8 sm:space-y-0 sm:grid-cols-3 sm:mt-14'>
+      <section className='grid grid-cols-1 gap-x-8 space-y-8 sm:space-y-0 sm:grid-cols-3 pt-4'>
         <ListColumn title='Crafts'>
           {crafts.map(craft => (
             <ListColumn.Item
