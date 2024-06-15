@@ -10,6 +10,7 @@
 This project was developed with the following technologies:
 
 Frontend
+
 - [Tailwind](https://tailwindcss.com/)
 - [ReactJS](https://pt-br.reactjs.org)
 - [Next.js](https://nextjs.org)
@@ -29,4 +30,3 @@ Once your pull request has been merged, you can delete your branch.
 ## 📝 License
 
 This project is under the MIT license. See the [LICENSE](https://github.com/guivictorr/guilhermevictor.space/blob/main/LICENSE) file for more details.
- 

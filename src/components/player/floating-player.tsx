@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { SpotifySong } from '@/services/spotify';
 import { Play } from './play';
-import { useElementOnScreen } from '@/seo/hooks/useElementOnScreen';
+import { useElementOnScreen } from '@/hooks/useElementOnScreen';
 import { Lights } from './lights';
 
 const LastUpdate = dynamic(() => import('./last-update'), {
