@@ -48,12 +48,14 @@ export const getLatestPlayedGames = async ({
     const result = (await response.json()) as RecentlyPlayedGamesResponse;
     const { games } = result.response;
 
-    return games.map(game => ({
-      ...game,
-      playtime_2weeks: minutesToHours(game.playtime_2weeks),
-      playtime_forever: minutesToHours(game.playtime_forever),
-      url: `https://store.steampowered.com/app/${game.appid}`,
-    }));
+    return (
+      games?.map(game => ({
+        ...game,
+        playtime_2weeks: minutesToHours(game.playtime_2weeks),
+        playtime_forever: minutesToHours(game.playtime_forever),
+        url: `https://store.steampowered.com/app/${game.appid}`,
+      })) ?? []
+    );
   } else {
     throw new Error('Error trying to fetch recently played games');
   }
