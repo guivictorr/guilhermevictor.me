@@ -31,7 +31,7 @@ a {
 }
 
 .prose {
-  @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-3xl prose-headings:mt-8 prose-headings:mb-6;
+  @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
 }
 
 .prose pre {
