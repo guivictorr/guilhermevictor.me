@@ -1,6 +1,6 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
-import { usePlayer } from './root';
+import { usePlayer } from './player-provider';
 const lights = [
   {
     color: 'violet',

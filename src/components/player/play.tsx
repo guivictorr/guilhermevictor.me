@@ -1,13 +1,13 @@
 'use client';
 import { IoIosPause, IoIosPlay } from 'react-icons/io';
-import { usePlayer } from './root';
+import { usePlayer } from './player-provider';
 
 export const Play = () => {
   const { togglePlayAndPause, isPlaying } = usePlayer();
 
   const ariaLabel = isPlaying
-    ? 'Pause currently playing song'
-    : 'Listen the latest played song';
+    ? 'Press to pause currently playing song'
+    : 'Press to listen the latest played song';
 
   return (
     <button
