@@ -1,8 +1,8 @@
 ---
 title: Accessibility on web
-description: An introduction to accessibility on web
 url: /writing/accessibility-on-web
 publishedAt: 2024-01-09
+updatedAt: 2024-07-24
 ---
 
 # Introduction
@@ -28,9 +28,9 @@ The [WCAG](https://www.w3.org/TR/WCAG21/) is a guide created by [WAI](https://ww
 The structure from the guide is divided in four nested layers
 
 - **Principles**: At the top are four principles that constitute the base of web accessibility on Web: _Perceivable, Operable, Understandable and Robust_.
-	- **Guidelines**: Below the principles are the guidelines. The thirteen guidelines provide the basic objectives must have to achieve the content more accessible to the users with disabilities.
-		- **Success Criteria**: For each guideline, are given success criteria, in order to meet the needs of multiple groups and situations, are defined three levels of compliance: A (the lowest), AA and AAA (the highest)
-			- **Techniques**: The techniques are informative and have two categories: those that are _sufficient_ to for meeting the success criteria and those that are _advisory_
+  - **Guidelines**: Below the principles are the guidelines. The thirteen guidelines provide the basic objectives must have to achieve the content more accessible to the users with disabilities.
+    - **Success Criteria**: For each guideline, are given success criteria, in order to meet the needs of multiple groups and situations, are defined three levels of compliance: A (the lowest), AA and AAA (the highest)
+      - **Techniques**: The techniques are informative and have two categories: those that are _sufficient_ to for meeting the success criteria and those that are _advisory_
 
 Now we're going through some of the principles and highlighting some important guidelines for these principles in a **VERY** short way. The recommendation is to read the official [WCAG](https://www.w3.org/TR/WCAG21/) guide.
 
@@ -40,20 +40,21 @@ But before, to clarify the success criteria, your site doesn't need to follow al
 
 - Provide text alternatives for any non-text content
 - Provide alternatives for time-based media.
-	- Subtitles
-	- Closed Captions
-	- Sign Language
+  - Subtitles
+  - Closed Captions
+  - Sign Language
 - Create content that can be presented from different ways (for example a simplified layout)
 - To facilitate the hearing and visualization of content to the users
-	- Not use just colors to transmit information and use the correct contrast of colors
+  - Not use just colors to transmit information and use the correct contrast of colors
 
 ## Operable
 
 - Make all functionality available from a keyboard.
 - Provide users enough time to read and use content.
-	- If you have a component that changes based on time, give funcionalities to pause, stop or extend the time.
+  - If you have a component that changes based on time, give funcionalities to pause, stop or extend the time.
 - Do not design content in a way that is known to cause seizures or physical reactions.
-	- Avoid creating websites with excessive animations and blinking stuff on the screen if you need, provide an option to reduce the animations using `prefers-reduced-motion`
+  - Avoid creating websites with excessive animations and blinking stuff on the screen if you need, provide an option to reduce the animations using `prefers-reduced-motion`
+
 ## Understandable
 
 - Made the text content readable and understandable

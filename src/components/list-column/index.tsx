@@ -11,14 +11,14 @@ export const ListColumn = ({ title, children }: ArticleProps) => {
   const isEmpty = Children.count(children) <= 0;
 
   return (
-    <article aria-labelledby={titleId}>
-      <p className='text-sm' id={titleId}>
+    <section aria-labelledby={titleId}>
+      <p aria-hidden className='text-sm' id={titleId}>
         {title}
       </p>
-      <ul className='mt-3 space-y-6'>
+      <ul className='mt-3 space-y-2'>
         {isEmpty ? <li>No content</li> : children}
       </ul>
-    </article>
+    </section>
   );
 };
 
@@ -28,7 +28,7 @@ type ListItemProps = {
   href: string;
 };
 
-const ListItem = ({ title, description, href }: ListItemProps) => {
+export const ListItem = ({ title, href }: ListItemProps) => {
   const LinkComponent = href.includes('https://') ? ExternalLink : Link;
 
   return (
@@ -36,9 +36,6 @@ const ListItem = ({ title, description, href }: ListItemProps) => {
       <LinkComponent href={href} className='text-primary'>
         {title}
       </LinkComponent>
-      <p className='text-sm'>{description}</p>
     </li>
   );
 };
-
-ListColumn.Item = ListItem;

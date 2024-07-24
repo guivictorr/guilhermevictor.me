@@ -1,10 +1,9 @@
 ---
 title: Things I use
-description: List of things that i'm using on my setup
 url: /writing/things-i-use
 publishedAt: 2024-01-15
+updatedAt: 2024-07-24
 ---
-
 
 # On my desk
 

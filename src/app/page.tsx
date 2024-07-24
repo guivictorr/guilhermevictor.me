@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { ListColumn } from '@/components/list-column';
+import { ListColumn, ListItem } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
 import { getCrafts, getPosts } from '@/services/content';
@@ -11,7 +11,10 @@ export default async function Home() {
 
   return (
     <main className='flex flex-col sm:justify-center max-w-xl gap-4 mx-auto divide-y divide-lowContrast/10 h-full'>
-      <section className='flex flex-col sm:flex-row items-start gap-4 sm:divide-x divide-lowContrast/10'>
+      <section
+        aria-label='Information about Guilherme Victor'
+        className='flex flex-col sm:flex-row items-start gap-4 sm:divide-x divide-lowContrast/10'
+      >
         <Image
           src='/me.png'
           className='rounded-sm grayscale-[0.3] brightness-[0.9] hidden sm:block'
@@ -44,29 +47,29 @@ export default async function Home() {
       <section className='grid grid-cols-1 gap-x-8 space-y-8 sm:space-y-0 sm:grid-cols-3 pt-4'>
         <ListColumn title='Crafts'>
           {crafts.map(craft => (
-            <ListColumn.Item
+            <ListItem
               key={craft.slug}
-              title={craft.metadata.title ?? ''}
-              description={craft.metadata.description ?? ''}
-              href={craft.metadata.url ?? ''}
+              title={craft.metadata.title}
+              description={craft.metadata.description}
+              href={craft.metadata.url}
             />
           ))}
         </ListColumn>
 
         <ListColumn title='Writing'>
           {posts.map(post => (
-            <ListColumn.Item
+            <ListItem
               key={post.slug}
-              title={post.metadata.title ?? ''}
-              description={post.metadata.description ?? ''}
-              href={post.metadata.url ?? ''}
+              title={post.metadata.title}
+              description={post.metadata.description}
+              href={post.metadata.url}
             />
           ))}
         </ListColumn>
 
         <ListColumn title='Gaming'>
           {games.map(game => (
-            <ListColumn.Item
+            <ListItem
               key={game.appid}
               title={game.name}
               description={`${game.playtime_2weeks}h past two weeks`}
