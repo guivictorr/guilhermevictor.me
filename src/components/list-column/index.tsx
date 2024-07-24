@@ -24,7 +24,6 @@ export const ListColumn = ({ title, children }: ArticleProps) => {
 
 type ListItemProps = {
   title: string;
-  description: string;
   href: string;
 };
 
