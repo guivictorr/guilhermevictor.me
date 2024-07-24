@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { ListColumn, ListItem } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
@@ -15,14 +14,7 @@ export default async function Home() {
         aria-label='Information about Guilherme Victor'
         className='flex flex-col sm:flex-row items-start gap-4 sm:divide-x divide-lowContrast/10'
       >
-        <Image
-          src='/me.png'
-          className='rounded-sm grayscale-[0.3] brightness-[0.9] hidden sm:block'
-          alt=''
-          width={160}
-          height={160}
-        />
-        <div className='sm:pl-4'>
+        <div>
           <p className='leading-4'>Guilherme Victor</p>
           <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
             empathetic frontend developer.
@@ -50,7 +42,6 @@ export default async function Home() {
             <ListItem
               key={craft.slug}
               title={craft.metadata.title}
-              description={craft.metadata.description}
               href={craft.metadata.url}
             />
           ))}
@@ -61,7 +52,6 @@ export default async function Home() {
             <ListItem
               key={post.slug}
               title={post.metadata.title}
-              description={post.metadata.description}
               href={post.metadata.url}
             />
           ))}
@@ -69,12 +59,7 @@ export default async function Home() {
 
         <ListColumn title='Gaming'>
           {games.map(game => (
-            <ListItem
-              key={game.appid}
-              title={game.name}
-              description={`${game.playtime_2weeks}h past two weeks`}
-              href={game.url}
-            />
+            <ListItem key={game.appid} title={game.name} href={game.url} />
           ))}
         </ListColumn>
       </section>
