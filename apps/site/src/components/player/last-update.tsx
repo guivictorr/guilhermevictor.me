@@ -1,5 +1,3 @@
-'use client';
-
 import { formatRelative } from 'date-fns';
 
 type LastUpdateProps = {
