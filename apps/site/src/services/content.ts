@@ -45,7 +45,9 @@ const readMDXFile = (filePath: string) => {
 
 const getMDXFiles = (dir: string) => {
   try {
-    return fs.readdirSync(dir).filter(file => path.extname(file) === '.mdx');
+    return fs
+      .readdirSync(dir)
+      .filter(file => ['.md', '.mdx'].includes(path.extname(file)));
   } catch (error) {
     return [];
   }
