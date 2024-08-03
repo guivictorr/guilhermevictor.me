@@ -61,7 +61,7 @@ export const PostLayout = ({
         <hr className='border-lowContrast/10 my-8' />
       </header>
       <main>{children}</main>
-      <footer>
+      <footer className='md:pb-32 pb-16'>
         <hr className='border-lowContrast/10 my-8' />
 
         <nav className='flex justify-between'>

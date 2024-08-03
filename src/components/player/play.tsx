@@ -1,22 +1,31 @@
 'use client';
-import { IoIosPause, IoIosPlay } from 'react-icons/io';
+import { FaCirclePause, FaCirclePlay } from 'react-icons/fa6';
 import { usePlayer } from './player-provider';
+import { PropsWithChildren } from 'react';
 
-export const Play = () => {
+export const Play = ({
+  children,
+  hasPreviewUrl,
+}: PropsWithChildren & { hasPreviewUrl: boolean }) => {
   const { togglePlayAndPause, isPlaying } = usePlayer();
 
   const ariaLabel = isPlaying
     ? 'Press to pause currently playing song'
     : 'Press to listen the latest played song';
 
+  if (!hasPreviewUrl) {
+    return children;
+  }
+
   return (
     <button
       aria-label={ariaLabel}
-      className='w-2 sm:w-4 [&>svg]:w-5 [&>svg]:h-5'
+      className='flex items-center gap-2 p-1 [&>svg]:w-3 text-lowContrast'
       type='button'
       onClick={togglePlayAndPause}
     >
-      {isPlaying ? <IoIosPause /> : <IoIosPlay />}
+      {isPlaying ? <FaCirclePause /> : <FaCirclePlay />}
+      {children}
     </button>
   );
 };

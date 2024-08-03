@@ -2,6 +2,7 @@ import { ListColumn, ListItem } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getLatestPlayedGames } from '@/services/steam';
 import { getCrafts, getPosts } from '@/services/content';
+import { Footer } from '@/components/footer';
 
 export default async function Home() {
   const games = (await getLatestPlayedGames({ count: 3 })) ?? [];
@@ -9,10 +10,10 @@ export default async function Home() {
   const crafts = getCrafts();
 
   return (
-    <main className='flex flex-col sm:justify-center max-w-xl gap-4 mx-auto divide-y divide-lowContrast/10 h-full'>
+    <main className='flex flex-col justify-center gap-4 max-w-xl mx-auto  h-full'>
       <section
         aria-label='Information about Guilherme Victor'
-        className='flex flex-col sm:flex-row items-start gap-4 sm:divide-x divide-lowContrast/10'
+        className='flex flex-col sm:flex-row items-start pb-4 border-b border-lowContrast/10'
       >
         <div>
           <p className='leading-4'>Guilherme Victor</p>
@@ -36,7 +37,7 @@ export default async function Home() {
           </p>
         </div>
       </section>
-      <section className='grid grid-cols-1 gap-x-8 space-y-8 sm:space-y-0 sm:grid-cols-3 pt-4'>
+      <section className='grid grid-cols-1 gap-x-8 space-y-8 sm:space-y-0 sm:grid-cols-3'>
         <ListColumn title='Crafts'>
           {crafts.map(craft => (
             <ListItem
@@ -63,6 +64,7 @@ export default async function Home() {
           ))}
         </ListColumn>
       </section>
+      <Footer />
     </main>
   );
 }
