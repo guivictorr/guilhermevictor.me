@@ -46,7 +46,7 @@ export default function CraftsPage() {
             .reverse()
             .map(([year, crafts]) => (
               <li key={year} className='relative'>
-                <span className='absolute top-3 left-0 text-sm text-lowContrast'>
+                <span className='absolute top-[14px] left-0 text-sm text-lowContrast'>
                   {year}
                 </span>
                 <ul className='divide-y divide-lowContrast/10'>
