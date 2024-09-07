@@ -25,7 +25,11 @@ export default async function Home() {
           </h1>
           <p className='max-w-sm'>
             You can find me on{' '}
-            <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>{' '}
+            <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>
+            ,{' '}
+            <ExternalLink href='https://bsky.app/profile/guilhermevictor.me'>
+              Bluesky
+            </ExternalLink>{' '}
             or{' '}
             <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
               Linkedin
