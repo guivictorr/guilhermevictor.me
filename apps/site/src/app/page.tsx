@@ -17,11 +17,9 @@ export default async function Home() {
       >
         <div>
           <p className='leading-4'>Guilherme Victor</p>
-          <h1 className='text-3xl sm:text-2xl text-primary font-serif'>
-            empathetic frontend developer.
-            <br />
-            learning golang. <br />
-            neovim user.
+          <h1 className='flex flex-col text-3xl sm:text-2xl text-primary font-serif'>
+            <span>software developer</span>
+            <span>neovim user</span>
           </h1>
           <p className='max-w-sm'>
             You can find me on{' '}
