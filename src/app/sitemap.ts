@@ -11,7 +11,7 @@ export default async function sitemap() {
     ...writing,
     ...crafting,
   ].map(route => ({
-    url: `https://guilhermevictor.space${route}`,
+    url: `https://guilhermevictor.me${route}`,
     lastModified: new Date().toISOString().split('T')[0],
   }));
 
