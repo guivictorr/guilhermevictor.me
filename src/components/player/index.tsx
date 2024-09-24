@@ -1,37 +1,27 @@
-import dynamic from 'next/dynamic';
-import { getLatestPlayedTrack } from '@/services/spotify';
-import { PlayerRoot } from './player-provider';
-import { Play } from './play';
+import { getLatestPlayedTrack } from '@/services/lastfm';
+import { ExternalLink } from '../external-link';
 
 export const Player = async () => {
-  const result = await getLatestPlayedTrack();
+  const track = await getLatestPlayedTrack();
 
-  if (result === null) {
-    return null;
-  }
-  const { track, played_at } = result;
-
-  const artists = track.artists.map(artist => artist.name).join(',');
-  const hasPreviewUrl = track.preview_url !== null;
-  const formattedPlayedAt = new Date(played_at).toLocaleString('en', {
+  const formattedPlayedAt = new Date(track.date).toLocaleString('en', {
     day: 'numeric',
     month: 'long',
   });
 
   return (
     <section
-      aria-label={`${formattedPlayedAt} Guilherme was listening to ${track.name} by ${artists}`}
+      aria-label={`${formattedPlayedAt} Guilherme was listening to ${track.song} by ${track.artist}`}
     >
-      <PlayerRoot audioUrl={track.preview_url}>
-        <Play hasPreviewUrl={hasPreviewUrl}>
-          <p
-            aria-hidden
-            className='line-clamp-1 max-w-xs text-sm text-lowContrast'
-          >
-            {artists} - {track.name}
-          </p>
-        </Play>
-      </PlayerRoot>
+      <p aria-hidden className='line-clamp-1 max-w-xs text-sm text-secondary'>
+        {track.artist} - {track.song}
+      </p>
+      <p className='text-xs text-lowContrast'>
+        <span className='inline-block mr-1'>latest played song on</span>
+        <ExternalLink href='https://www.last.fm/user/oguivictor'>
+          last.fm
+        </ExternalLink>
+      </p>
     </section>
   );
 };
