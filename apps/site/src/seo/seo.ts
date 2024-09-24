@@ -16,7 +16,7 @@ export const buildSEO: BuildSEO = ({
   dynamic_og = true,
   ...rest
 }) => ({
-  metadataBase: new URL('https://guilhermevictor.space'),
+  metadataBase: new URL('https://guilhermevictor.me'),
   title: {
     default: title,
     template: '%s | Guilherme Victor',

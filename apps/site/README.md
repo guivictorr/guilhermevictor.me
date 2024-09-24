@@ -1,9 +1,9 @@
 <h1 align='center'>
-  <a href="https://guilhermevictor.space">guilhermevictor.space</a>
+  <a href="https://guilhermevictor.me">guilhermevictor.me</a>
 </h1>
 <p align='center'>My personal website where I plan to write articles and experiment new things.</p>
 
-![image](https://github.com/guivictorr/guilhermevictor.space/assets/55333929/ca3697c7-e84b-4e1d-8843-632296f72642)
+![image](https://github.com/guivictorr/guilhermevictor.me/assets/55333929/ca3697c7-e84b-4e1d-8843-632296f72642)
 
 ## 🛠 Technologies
 
@@ -29,4 +29,4 @@ Once your pull request has been merged, you can delete your branch.
 
 ## 📝 License
 
-This project is under the MIT license. See the [LICENSE](https://github.com/guivictorr/guilhermevictor.space/blob/main/LICENSE) file for more details.
+This project is under the MIT license. See the [LICENSE](https://github.com/guivictorr/guilhermevictor.me/blob/main/LICENSE) file for more details.
