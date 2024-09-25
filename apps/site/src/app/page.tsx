@@ -2,7 +2,7 @@ import { ListColumn, ListItem } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
 import { getCrafts, getPosts } from '@/services/content';
 import { Footer } from '@/components/footer';
-import bookmarksJson from '@/services/bookmarks.json';
+import bookmarksJson from '@/app/bookmarks/bookmarks.json';
 import Link from 'next/link';
 
 export default async function Home() {
@@ -61,7 +61,7 @@ export default async function Home() {
         </ListColumn>
 
         <ListColumn title='Bookmarks'>
-          {bookmarksJson.slice(0, 3).map(bookmark => (
+          {bookmarksJson.data.slice(0, 3).map(bookmark => (
             <ListItem
               key={bookmark.id}
               title={bookmark.title}
