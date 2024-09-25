@@ -22,19 +22,6 @@
     "savedAt": "2024-09-25T17:31:30.000Z"
   },
   {
-    "id": "eaa1fe7d-9e38-4537-a601-32f8c27019e1",
-    "title": "Component Composition is great btw | TkDodo's blog",
-    "slug": "component-composition-is-great-btw-tk-dodo-s-blog-19224ff20bb",
-    "createdAt": "2024-09-24T17:05:53.000Z",
-    "updatedAt": "2024-09-25T17:31:07.000Z",
-    "description": "Component composition is one of the best parts of React, and I think we should take more time to break our components into manageable parts before littering one component with conditional renderings.",
-    "originalArticleUrl": "https://tkdodo.eu/blog/component-composition-is-great-btw",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-09-25T17:31:06.000Z"
-  },
-  {
     "id": "f7ec392c-86d0-43a8-8cb7-c0286b3c5a50",
     "title": "How to fetch data in React [2024]",
     "slug": "how-to-fetch-data-in-react-2024-1922a3c0b82",
@@ -44,58 +31,6 @@
     "originalArticleUrl": "https://www.robinwieruch.de/react-fetching-data/",
     "labels": [],
     "savedAt": "2024-09-25T17:30:32.000Z"
-  },
-  {
-    "id": "12d2c506-7b47-11ef-9c81-87d092d1d1c0",
-    "title": "Android: 11M infectados / Falha no ChatGPT / Cloudflare: cobrança por scraping",
-    "slug": "android-11-m-infectados-falha-no-chat-gpt-cloudflare-cobranca-po-192297f5e0d",
-    "createdAt": "2024-09-25T14:04:26.000Z",
-    "updatedAt": "2024-09-25T17:30:02.000Z",
-    "description": "Curiosidade para o dia 25 de setembro: em 1974, era introduzido ao público o MCM/70, considerado o primeiro microcomputador portátil. E após as notícias de hoje: programa especial para quem almeja um cargo de Tech Lead (ou já é líder de equipe) e como um aluno no meu curso de programação tem aplicado o que aprende no mundo real.",
-    "originalArticleUrl": "https://omnivore.app/no_url?q=4a813ca7-ff5b-4b16-8a12-dae10b04d44d",
-    "labels": [
-      "Newsletter"
-    ],
-    "savedAt": "2024-09-25T14:04:26.000Z"
-  },
-  {
-    "id": "6259b32d-020a-46bd-88ab-923e0199282b",
-    "title": "The styled-components Happy Path: my personal suite of “best practices” • Josh W. Comeau",
-    "slug": "the-styled-components-happy-path-my-personal-suite-of-best-pract-1922756363a",
-    "createdAt": "2024-09-25T04:00:15.000Z",
-    "updatedAt": "2024-09-25T10:09:03.000Z",
-    "description": "styled-components is a wonderfully powerful styling library for React, and over the years I've learned a lot about how to use it effectively. This article shares my personal “best practices”.",
-    "originalArticleUrl": "https://www.joshwcomeau.com/css/styled-components/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-09-24T20:13:22.000Z"
-  },
-  {
-    "id": "39aaed14-0114-4c86-ab92-2a72e7195108",
-    "title": "How I Built My Blog • Josh W. Comeau",
-    "slug": "how-i-built-my-blog-josh-w-comeau-1922530f8d6",
-    "createdAt": "2024-09-24T18:00:19.000Z",
-    "updatedAt": "2024-09-24T19:19:02.000Z",
-    "description": "I recently launched a brand new version of this blog, and in this post, I share how it’s built! We’ll examine the tech stack and see how all of the pieces fit together, as well as dig into some of the details to see how they work.",
-    "originalArticleUrl": "https://www.joshwcomeau.com/blog/how-i-built-my-blog-v2/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-09-24T18:02:41.000Z"
-  },
-  {
-    "id": "72b55c81-ef46-4e58-b9b4-5194765d0ffb",
-    "title": "Coding with voice dictation using Talon Voice • Josh W. Comeau",
-    "slug": "coding-with-voice-dictation-using-talon-voice-josh-w-comeau-192269b1c74",
-    "createdAt": "2024-09-25T00:35:53.000Z",
-    "updatedAt": "2024-09-25T10:08:56.000Z",
-    "description": "Earlier this year, I lost the ability to use a keyboard and mouse for extended periods. Fortunately, this wasn't as catastrophic as it sounds! This article chronicles my experience using adaptive tools like dictation and eye-tracking as my primary mechanisms for writing code.",
-    "originalArticleUrl": "https://www.joshwcomeau.com/blog/hands-free-coding/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-09-24T16:23:53.000Z"
   },
   {
     "id": "1cd055fd-3074-44d0-baf3-bc499e742d04",
@@ -217,70 +152,5 @@
     "originalArticleUrl": "https://open.nytimes.com/enhancing-the-new-york-times-web-performance-with-react-18-d6f91a7c5af8?gi=e757a0a195ad",
     "labels": [],
     "savedAt": "2024-09-24T14:39:21.000Z"
-  },
-  {
-    "id": "13da4e8a-8cba-46da-b852-db27f0c7a7d7",
-    "title": "How I Built my Blog using MDX, Next.js, and React • Josh W. Comeau",
-    "slug": "how-i-built-my-blog-using-mdx-next-js-and-react-josh-w-comeau-1922530e229",
-    "createdAt": "2024-09-24T18:00:14.000Z",
-    "updatedAt": "2024-09-24T18:00:14.000Z",
-    "description": "An in-depth look at the technical stack behind this very blog! We'll see how I use Next's API routes to implement my hit and like counters, how I use MDX to add interaction and customization, and how I organize my codebase, among others.",
-    "originalArticleUrl": "https://www.joshwcomeau.com/blog/how-i-built-my-blog/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-09-23T22:04:01.000Z"
-  },
-  {
-    "id": "d6592a87-d13b-409f-b640-5286151eb9b4",
-    "title": "Interface Segregation Principle in React | Alex Kondov - Software Engineer",
-    "slug": "interface-segregation-principle-in-react-alex-kondov-software-en-1922530d812",
-    "createdAt": "2024-09-24T18:00:11.000Z",
-    "updatedAt": "2024-09-24T18:00:11.000Z",
-    "description": "The SOLID principles were the first software design concepts I ever studied and to this day they remain the most influential piece of knowledge in my career. If…",
-    "originalArticleUrl": "https://alexkondov.com/interface-segregation-principle-in-react/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-08-27T00:00:00.000Z"
-  },
-  {
-    "id": "af180129-b36f-495d-af23-5d10a4f66a0d",
-    "title": "Do not trust on yourself, trust on checklists | Noghartt's garden",
-    "slug": "do-not-trust-on-yourself-trust-on-checklists-noghartt-s-garden-1922530fe26",
-    "createdAt": "2024-09-24T18:00:20.000Z",
-    "updatedAt": "2024-09-24T18:00:20.000Z",
-    "description": "Recently, I saw a specific project from Lukeberry called “Como Debugar Frontend”, in English, it would be called “How to Debug Frontend”.",
-    "originalArticleUrl": "https://noghartt.dev/blog/do-not-trust-on-yourself-trust-on-checklists/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-07-25T01:24:19.000Z"
-  },
-  {
-    "id": "e518f393-75bd-4631-a520-c5e9bde00d17",
-    "title": "The Two Reacts — overreacted",
-    "slug": "the-two-reacts-overreacted-19225311721",
-    "createdAt": "2024-09-24T18:00:27.000Z",
-    "updatedAt": "2024-09-24T18:05:00.000Z",
-    "description": "UI = f(data)(state)",
-    "originalArticleUrl": "https://overreacted.io/the-two-reacts/",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2024-01-04T00:00:00.000Z"
-  },
-  {
-    "id": "1ca3d94e-1288-49a7-964b-5b08e3060174",
-    "title": "2023 in Review",
-    "slug": "2023-in-review-1922530fb1a",
-    "createdAt": "2024-09-24T18:00:20.000Z",
-    "updatedAt": "2024-09-24T18:00:20.000Z",
-    "description": "A review of what happened in the life of Kent C. Dodds in 2023",
-    "originalArticleUrl": "https://kentcdodds.com/blog/2023-in-review",
-    "labels": [
-      "RSS"
-    ],
-    "savedAt": "2023-12-03T00:00:00.000Z"
   }
 ]

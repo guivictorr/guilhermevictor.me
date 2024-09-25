@@ -20,7 +20,7 @@ type Bookmark = {
 async function fetchBookmarks(): Promise<any> {
   const query = `
     query {
-      search(first: 1000, query: "", includeContent: false, format: "JSON") {
+      search(first: 1000, query: "no:subscription", includeContent: false, format: "JSON") {
         ... on SearchSuccess {
           edges {
             node {
@@ -67,17 +67,23 @@ function mapBookmarksData(data: any): Bookmark[] {
     );
   }
 
-  return data.search.edges.map((edge: any) => ({
-    id: edge.node.id,
-    title: edge.node.title,
-    slug: edge.node.slug,
-    createdAt: edge.node.createdAt,
-    updatedAt: edge.node.updatedAt,
-    description: edge.node.description,
-    originalArticleUrl: edge.node.originalArticleUrl,
-    labels: edge.node.labels.map((label: any) => label.name),
-    savedAt: edge.node.savedAt,
-  }));
+  return data.search.edges
+    .map((edge: any) => ({
+      id: edge.node.id,
+      title: edge.node.title,
+      slug: edge.node.slug,
+      createdAt: edge.node.createdAt,
+      updatedAt: edge.node.updatedAt,
+      description: edge.node.description,
+      originalArticleUrl: edge.node.originalArticleUrl,
+      labels: edge.node.labels.map((label: any) => label.name),
+      savedAt: edge.node.savedAt,
+    }))
+    .sort(
+      (a: any, b: any) =>
+        Math.floor(Number(b.savedAt) / 1000) -
+        Math.floor(Number(a.savedAt) / 1000),
+    );
 }
 
 // IIFE to fetch, map, and save the bookmarks data to a JSON file
