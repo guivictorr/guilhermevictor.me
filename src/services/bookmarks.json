@@ -1,0 +1,286 @@
+[
+  {
+    "id": "d803a71a-aa1a-4161-ab59-fb479133e6f2",
+    "title": "Trabalhei por 5 anos programando cartões de crédito - Tire suas dúvidas · rBressanS · TabNews",
+    "slug": "trabalhei-por-5-anos-programando-cartoes-de-credito-tire-suas-du-1922a4f9ed2",
+    "createdAt": "2024-09-25T17:51:54.000Z",
+    "updatedAt": "2024-09-25T19:56:28.000Z",
+    "description": "Então pessoal, a ideia desse post é compartilhar um pouco de conhecimento sobre a tecnologia existente em um cartão de crédito, e tirar algumas dúvidas de vocês sobre quais camadas de seg...",
+    "originalArticleUrl": "https://www.tabnews.com.br/rBressanS/trabalhei-por-5-anos-programando-cartoes-de-credito-tire-suas-duvidas",
+    "labels": [],
+    "savedAt": "2024-09-25T17:51:54.000Z"
+  },
+  {
+    "id": "a01f3978-4561-4b57-9dc9-7521be4b7e16",
+    "title": "The unspoken rules of React hooks - macwright.com",
+    "slug": "the-unspoken-rules-of-react-hooks-macwright-com-1922a3cf3f8",
+    "createdAt": "2024-09-25T17:31:30.000Z",
+    "updatedAt": "2024-09-25T17:31:30.000Z",
+    "description": "Updated to include links to documentation that does exist on the react.dev site. I do think that it’s hard to discover and this concept is underemphasized relative to how important it is for working with React hooks, but as the team correctly points out, there are some docs for it.",
+    "originalArticleUrl": "https://macwright.com/2024/09/19/the-extra-rules-of-hooks",
+    "labels": [],
+    "savedAt": "2024-09-25T17:31:30.000Z"
+  },
+  {
+    "id": "eaa1fe7d-9e38-4537-a601-32f8c27019e1",
+    "title": "Component Composition is great btw | TkDodo's blog",
+    "slug": "component-composition-is-great-btw-tk-dodo-s-blog-19224ff20bb",
+    "createdAt": "2024-09-24T17:05:53.000Z",
+    "updatedAt": "2024-09-25T17:31:07.000Z",
+    "description": "Component composition is one of the best parts of React, and I think we should take more time to break our components into manageable parts before littering one component with conditional renderings.",
+    "originalArticleUrl": "https://tkdodo.eu/blog/component-composition-is-great-btw",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-09-25T17:31:06.000Z"
+  },
+  {
+    "id": "f7ec392c-86d0-43a8-8cb7-c0286b3c5a50",
+    "title": "How to fetch data in React [2024]",
+    "slug": "how-to-fetch-data-in-react-2024-1922a3c0b82",
+    "createdAt": "2024-09-25T17:30:32.000Z",
+    "updatedAt": "2024-09-25T17:30:32.000Z",
+    "description": "There are different ways to fetch data in React from a remote API. In this guide we want to explore all the options available for data fetching in React ...",
+    "originalArticleUrl": "https://www.robinwieruch.de/react-fetching-data/",
+    "labels": [],
+    "savedAt": "2024-09-25T17:30:32.000Z"
+  },
+  {
+    "id": "12d2c506-7b47-11ef-9c81-87d092d1d1c0",
+    "title": "Android: 11M infectados / Falha no ChatGPT / Cloudflare: cobrança por scraping",
+    "slug": "android-11-m-infectados-falha-no-chat-gpt-cloudflare-cobranca-po-192297f5e0d",
+    "createdAt": "2024-09-25T14:04:26.000Z",
+    "updatedAt": "2024-09-25T17:30:02.000Z",
+    "description": "Curiosidade para o dia 25 de setembro: em 1974, era introduzido ao público o MCM/70, considerado o primeiro microcomputador portátil. E após as notícias de hoje: programa especial para quem almeja um cargo de Tech Lead (ou já é líder de equipe) e como um aluno no meu curso de programação tem aplicado o que aprende no mundo real.",
+    "originalArticleUrl": "https://omnivore.app/no_url?q=4a813ca7-ff5b-4b16-8a12-dae10b04d44d",
+    "labels": [
+      "Newsletter"
+    ],
+    "savedAt": "2024-09-25T14:04:26.000Z"
+  },
+  {
+    "id": "6259b32d-020a-46bd-88ab-923e0199282b",
+    "title": "The styled-components Happy Path: my personal suite of “best practices” • Josh W. Comeau",
+    "slug": "the-styled-components-happy-path-my-personal-suite-of-best-pract-1922756363a",
+    "createdAt": "2024-09-25T04:00:15.000Z",
+    "updatedAt": "2024-09-25T10:09:03.000Z",
+    "description": "styled-components is a wonderfully powerful styling library for React, and over the years I've learned a lot about how to use it effectively. This article shares my personal “best practices”.",
+    "originalArticleUrl": "https://www.joshwcomeau.com/css/styled-components/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-09-24T20:13:22.000Z"
+  },
+  {
+    "id": "39aaed14-0114-4c86-ab92-2a72e7195108",
+    "title": "How I Built My Blog • Josh W. Comeau",
+    "slug": "how-i-built-my-blog-josh-w-comeau-1922530f8d6",
+    "createdAt": "2024-09-24T18:00:19.000Z",
+    "updatedAt": "2024-09-24T19:19:02.000Z",
+    "description": "I recently launched a brand new version of this blog, and in this post, I share how it’s built! We’ll examine the tech stack and see how all of the pieces fit together, as well as dig into some of the details to see how they work.",
+    "originalArticleUrl": "https://www.joshwcomeau.com/blog/how-i-built-my-blog-v2/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-09-24T18:02:41.000Z"
+  },
+  {
+    "id": "72b55c81-ef46-4e58-b9b4-5194765d0ffb",
+    "title": "Coding with voice dictation using Talon Voice • Josh W. Comeau",
+    "slug": "coding-with-voice-dictation-using-talon-voice-josh-w-comeau-192269b1c74",
+    "createdAt": "2024-09-25T00:35:53.000Z",
+    "updatedAt": "2024-09-25T10:08:56.000Z",
+    "description": "Earlier this year, I lost the ability to use a keyboard and mouse for extended periods. Fortunately, this wasn't as catastrophic as it sounds! This article chronicles my experience using adaptive tools like dictation and eye-tracking as my primary mechanisms for writing code.",
+    "originalArticleUrl": "https://www.joshwcomeau.com/blog/hands-free-coding/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-09-24T16:23:53.000Z"
+  },
+  {
+    "id": "1cd055fd-3074-44d0-baf3-bc499e742d04",
+    "title": "Como eu consegui emprego 1 dia após sair da empresa anterior usando técnicas de venda 🧳 · bernardosimonassi · TabNews",
+    "slug": "https-www-tabnews-com-br-bernardosimonassi-como-eu-consegui-empr-192249d5991",
+    "createdAt": "2024-09-24T15:19:04.000Z",
+    "updatedAt": "2024-09-24T16:10:01.000Z",
+    "description": "Baseado nessa publicação aqui e nos vídeos do Deschamps sobre vagas de emprego, ontem postei uma thread no twitter que bombou, então vim trazer aqui pra vocês. Só deixando claro que antes...",
+    "originalArticleUrl": "https://www.tabnews.com.br/bernardosimonassi/como-eu-consegui-emprego-1-dia-apos-sair-da-empresa-anterior-usando-tecnicas-de-venda",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:51.000Z"
+  },
+  {
+    "id": "65a17994-f3a2-46e8-be94-be54c6cf5761",
+    "title": "Felipe Fialho on LinkedIn: Bora falar de performance em aplicações web? Tenho atuado bastante nesse… | 29 comments",
+    "slug": "https-www-linkedin-com-feed-update-urn-li-activity-7218947191292-192249ed109",
+    "createdAt": "2024-09-24T15:20:40.000Z",
+    "updatedAt": "2024-09-24T15:22:50.000Z",
+    "description": "Bora falar de performance em aplicações web?\n\nTenho atuado bastante nesse tema e é possível conseguir resultados expressivos, esses são alguns dos principais… | 29 comments on LinkedIn",
+    "originalArticleUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7218947191292252160/",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:47.000Z"
+  },
+  {
+    "id": "b9162b40-5cb7-49c0-8efe-396434cb2ffc",
+    "title": "Perfect nested border radius in CSS - 30 seconds of code",
+    "slug": "https-www-30-secondsofcode-org-css-s-nested-border-radius-192249eb91f",
+    "createdAt": "2024-09-24T15:20:34.000Z",
+    "updatedAt": "2024-09-24T15:23:00.000Z",
+    "description": "Nesting elements with rounded borders can look very wrong if not done correctly. Here's a quick tip on how to do it right.",
+    "originalArticleUrl": "https://www.30secondsofcode.org/css/s/nested-border-radius/",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:36.000Z"
+  },
+  {
+    "id": "145fe88c-37fd-4411-8228-134febfd7f73",
+    "title": "How to Learn Complex Skills Quickly",
+    "slug": "https-www-iamtk-co-notes-how-to-learn-complex-skills-quickly-192249e9be2",
+    "createdAt": "2024-09-24T15:20:27.000Z",
+    "updatedAt": "2024-09-24T15:22:51.000Z",
+    "description": "Notes: How to Learn Complex Skills Quickly",
+    "originalArticleUrl": "https://www.iamtk.co/notes/how-to-learn-complex-skills-quickly",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:30.000Z"
+  },
+  {
+    "id": "85ddb721-f91e-43ea-ac28-f0799ff2f4d5",
+    "title": "How I reduced the costs of my project by 75%",
+    "slug": "https-luiznasciment-0-com-how-i-reduced-costs-75-192249e7e6d",
+    "createdAt": "2024-09-24T15:20:19.000Z",
+    "updatedAt": "2024-09-24T15:23:00.000Z",
+    "description": "Discover the strategies and tools that saved our project and increased our profit",
+    "originalArticleUrl": "https://luiznasciment0.com/how-i-reduced-costs-75",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:23.000Z"
+  },
+  {
+    "id": "814ed9db-7979-4563-bf0d-54256c4c27eb",
+    "title": "Lincoli Xavier on X: ✨ Roadmap pra aprender  testes de unidade no Frontend ✨",
+    "slug": "https-twitter-com-lincolixavier-status-1662182616542396416-192249e5e71",
+    "createdAt": "2024-09-24T15:20:11.000Z",
+    "updatedAt": "2024-09-24T16:13:10.000Z",
+    "description": "✨ Roadmap pra aprender  testes de unidade no Frontend ✨",
+    "originalArticleUrl": "https://twitter.com/lincolixavier/status/1662182616542396416",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:11.000Z"
+  },
+  {
+    "id": "ad30f2d4-8ceb-405d-a664-cfdef112e5c6",
+    "title": "danielreis.(php/rs) on X: 🧵Vaga na Gringa4Noobs 🧵Essas foram as coisas que me fizeram conseguir minha vaga de desenvolvedor na gringa, lembrando que isso é a MINHA JORNADA e minhas experiências. Belê?Vem com o primo 👇",
+    "slug": "https-twitter-com-danielhe-4-rt-status-1663613377548259328-192249e3f42",
+    "createdAt": "2024-09-24T15:20:03.000Z",
+    "updatedAt": "2024-09-24T15:22:51.000Z",
+    "description": "🧵Vaga na Gringa4Noobs 🧵Essas foram as coisas que me fizeram conseguir minha vaga de desenvolvedor na gringa, lembrando que isso é a MINHA JORNADA e minhas experiências. Belê?Vem com o primo 👇",
+    "originalArticleUrl": "https://twitter.com/danielhe4rt/status/1663613377548259328",
+    "labels": [],
+    "savedAt": "2024-09-24T15:20:04.000Z"
+  },
+  {
+    "id": "dcfa223a-6439-4e2f-8aa1-827d7820365e",
+    "title": "Como melhorar performance em aplicações web 📈 | Felipe Fialho - Front-end Developer",
+    "slug": "https-felipefialho-com-blog-como-melhorar-performance-em-aplicac-192248620c8",
+    "createdAt": "2024-09-24T14:53:42.000Z",
+    "updatedAt": "2024-09-24T15:15:11.000Z",
+    "description": "Nesse artigo bora ver algumas técnicas pra melhorar o tempo de carregamento focando em métricas de performance.",
+    "originalArticleUrl": "https://felipefialho.com/blog/como-melhorar-performance-em-aplicacoes-web/",
+    "labels": [],
+    "savedAt": "2024-09-24T14:53:52.000Z"
+  },
+  {
+    "id": "8883d2c7-6c70-4c1d-a95e-1cd72a245eb0",
+    "title": "Use useId() Instead Of Hand-Making IDs",
+    "slug": "https-reacttraining-com-blog-use-useid-instead-of-hand-making-id-1922485e4a9",
+    "createdAt": "2024-09-24T14:53:27.000Z",
+    "updatedAt": "2024-09-24T15:15:11.000Z",
+    "description": "React Corporate Workshops, Training, and Consulting",
+    "originalArticleUrl": "https://reacttraining.com/blog/use-useid-instead-of-hand-making-ids",
+    "labels": [],
+    "savedAt": "2024-09-24T14:53:30.000Z"
+  },
+  {
+    "id": "ee4a39e5-3adb-4085-a48e-ec3436c9010e",
+    "title": "How to Optimize Next.js App Performance With Lazy Loading",
+    "slug": "https-www-freecodecamp-org-news-next-js-performance-optimization-1922485b404",
+    "createdAt": "2024-09-24T14:53:15.000Z",
+    "updatedAt": "2024-09-24T15:15:11.000Z",
+    "description": "People don't like using slow applications. And the initial load time matters a lot for web applications and websites. \nAn application that takes more than 3 seconds to load is considered slow and may cause users to leave the application or website.\nN...",
+    "originalArticleUrl": "https://www.freecodecamp.org/news/next-js-performance-optimization/",
+    "labels": [],
+    "savedAt": "2024-09-24T14:53:24.000Z"
+  },
+  {
+    "id": "7cb22aea-e31e-494d-a99c-d6d795c4d03a",
+    "title": "Enhancing The New York Times Web Performance with React 18 | by Ilya Gurevich | NYT Open | NYT Open",
+    "slug": "https-open-nytimes-com-enhancing-the-new-york-times-web-performa-1922478caab",
+    "createdAt": "2024-09-24T14:39:22.000Z",
+    "updatedAt": "2024-09-24T15:24:03.000Z",
+    "description": "How upgrading to React 18 energized The New York Times website – and how we tackled some of the challenges we faced along the way.",
+    "originalArticleUrl": "https://open.nytimes.com/enhancing-the-new-york-times-web-performance-with-react-18-d6f91a7c5af8?gi=e757a0a195ad",
+    "labels": [],
+    "savedAt": "2024-09-24T14:39:21.000Z"
+  },
+  {
+    "id": "13da4e8a-8cba-46da-b852-db27f0c7a7d7",
+    "title": "How I Built my Blog using MDX, Next.js, and React • Josh W. Comeau",
+    "slug": "how-i-built-my-blog-using-mdx-next-js-and-react-josh-w-comeau-1922530e229",
+    "createdAt": "2024-09-24T18:00:14.000Z",
+    "updatedAt": "2024-09-24T18:00:14.000Z",
+    "description": "An in-depth look at the technical stack behind this very blog! We'll see how I use Next's API routes to implement my hit and like counters, how I use MDX to add interaction and customization, and how I organize my codebase, among others.",
+    "originalArticleUrl": "https://www.joshwcomeau.com/blog/how-i-built-my-blog/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-09-23T22:04:01.000Z"
+  },
+  {
+    "id": "d6592a87-d13b-409f-b640-5286151eb9b4",
+    "title": "Interface Segregation Principle in React | Alex Kondov - Software Engineer",
+    "slug": "interface-segregation-principle-in-react-alex-kondov-software-en-1922530d812",
+    "createdAt": "2024-09-24T18:00:11.000Z",
+    "updatedAt": "2024-09-24T18:00:11.000Z",
+    "description": "The SOLID principles were the first software design concepts I ever studied and to this day they remain the most influential piece of knowledge in my career. If…",
+    "originalArticleUrl": "https://alexkondov.com/interface-segregation-principle-in-react/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-08-27T00:00:00.000Z"
+  },
+  {
+    "id": "af180129-b36f-495d-af23-5d10a4f66a0d",
+    "title": "Do not trust on yourself, trust on checklists | Noghartt's garden",
+    "slug": "do-not-trust-on-yourself-trust-on-checklists-noghartt-s-garden-1922530fe26",
+    "createdAt": "2024-09-24T18:00:20.000Z",
+    "updatedAt": "2024-09-24T18:00:20.000Z",
+    "description": "Recently, I saw a specific project from Lukeberry called “Como Debugar Frontend”, in English, it would be called “How to Debug Frontend”.",
+    "originalArticleUrl": "https://noghartt.dev/blog/do-not-trust-on-yourself-trust-on-checklists/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-07-25T01:24:19.000Z"
+  },
+  {
+    "id": "e518f393-75bd-4631-a520-c5e9bde00d17",
+    "title": "The Two Reacts — overreacted",
+    "slug": "the-two-reacts-overreacted-19225311721",
+    "createdAt": "2024-09-24T18:00:27.000Z",
+    "updatedAt": "2024-09-24T18:05:00.000Z",
+    "description": "UI = f(data)(state)",
+    "originalArticleUrl": "https://overreacted.io/the-two-reacts/",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2024-01-04T00:00:00.000Z"
+  },
+  {
+    "id": "1ca3d94e-1288-49a7-964b-5b08e3060174",
+    "title": "2023 in Review",
+    "slug": "2023-in-review-1922530fb1a",
+    "createdAt": "2024-09-24T18:00:20.000Z",
+    "updatedAt": "2024-09-24T18:00:20.000Z",
+    "description": "A review of what happened in the life of Kent C. Dodds in 2023",
+    "originalArticleUrl": "https://kentcdodds.com/blog/2023-in-review",
+    "labels": [
+      "RSS"
+    ],
+    "savedAt": "2023-12-03T00:00:00.000Z"
+  }
+]
