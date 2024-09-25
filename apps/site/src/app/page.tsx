@@ -1,11 +1,11 @@
 import { ListColumn, ListItem } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
-import { getLatestPlayedGames } from '@/services/steam';
 import { getCrafts, getPosts } from '@/services/content';
 import { Footer } from '@/components/footer';
+import bookmarksJson from '@/services/bookmarks.json';
+import Link from 'next/link';
 
 export default async function Home() {
-  const games = (await getLatestPlayedGames({ count: 3 })) ?? [];
   const posts = getPosts();
   const crafts = getCrafts();
 
@@ -60,10 +60,17 @@ export default async function Home() {
           ))}
         </ListColumn>
 
-        <ListColumn title='Gaming'>
-          {games.map(game => (
-            <ListItem key={game.appid} title={game.name} href={game.url} />
+        <ListColumn title='Bookmarks'>
+          {bookmarksJson.slice(0, 3).map(bookmark => (
+            <ListItem
+              key={bookmark.id}
+              title={bookmark.title}
+              href={bookmark.originalArticleUrl}
+            />
           ))}
+          <Link className='block pt-4' href='/bookmarks'>
+            See More
+          </Link>
         </ListColumn>
       </section>
       <Footer />
