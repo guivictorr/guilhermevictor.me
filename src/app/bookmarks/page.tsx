@@ -1,4 +1,5 @@
-import bookmarksJson from '@/services/bookmarks.json';
+import { format } from 'date-fns';
+import bookmarksJson from './bookmarks.json';
 import Link from 'next/link';
 import { PiArrowBendUpLeftBold } from 'react-icons/pi';
 
@@ -16,13 +17,23 @@ export default function Bookmarks() {
           </Link>
         </nav>
         <h1 className='text-3xl font-serif text-primary'>Bookmarks</h1>
+
+        <time
+          className='text-sm text-lowContrast'
+          dateTime={bookmarksJson.lastUpdate}
+        >
+          Last Update:{' '}
+          {format(new Date(bookmarksJson.lastUpdate), 'MMMM dd, yyyy')}
+        </time>
         <hr className='border-lowContrast/10 my-8' />
       </header>
 
       <ul className='space-y-4'>
-        {bookmarksJson.map(bookmark => (
-          <li className='line-clamp-1' key={bookmark.id}>
-            <Link href={bookmark.originalArticleUrl}>{bookmark.title}</Link>
+        {bookmarksJson.data.map(bookmark => (
+          <li key={bookmark.id}>
+            <Link className='line-clamp-1' href={bookmark.originalArticleUrl}>
+              {bookmark.title}
+            </Link>
           </li>
         ))}
       </ul>

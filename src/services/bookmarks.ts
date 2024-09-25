@@ -1,7 +1,9 @@
+import fs from 'fs';
+import path from 'path';
+import { cwd } from 'process';
+
 const OMNIVORE_API_URL = 'https://api-prod.omnivore.app/api/graphql';
 const OMNIVORE_API_KEY = process.env.OMNIVORE_API_KEY;
-
-import fs from 'fs';
 
 // Type definition for Bookmark
 type Bookmark = {
@@ -94,8 +96,12 @@ function mapBookmarksData(data: any): Bookmark[] {
 
     // Write the bookmarks to a JSON file
     fs.writeFileSync(
-      'bookmarks.json',
-      JSON.stringify(bookmarks, null, 2),
+      path.join(process.cwd(), 'src', 'app', 'bookmarks', 'bookmarks.json'),
+      JSON.stringify(
+        { lastUpdate: new Date().toISOString(), data: bookmarks },
+        null,
+        2,
+      ),
       'utf-8',
     );
     console.log('Bookmarks data saved to bookmarks.json');

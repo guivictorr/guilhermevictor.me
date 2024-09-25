@@ -31,7 +31,7 @@ export const ListItem = ({ title, href }: ListItemProps) => {
   const LinkComponent = href.includes('https://') ? ExternalLink : Link;
 
   return (
-    <li className='line-clamp-2 text-balance'>
+    <li className='line-clamp-1 text-balance'>
       <LinkComponent href={href} className='text-primary'>
         {title}
       </LinkComponent>

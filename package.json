@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint:fix": "eslint ./src --fix"
+    "lint:fix": "eslint ./src --fix",
+    "generate:bookmarks": "npx tsx --env-file=./.env.local ./src/services/bookmarks.ts"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.0.7",
