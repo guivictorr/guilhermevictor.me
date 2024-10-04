@@ -10,7 +10,7 @@ export type LastFMSong = {
 };
 
 export async function getLatestPlayedTrack(): Promise<LastFMSong> {
-  const response = await fetch(LASTFM_API_URL);
+  const response = await fetch(LASTFM_API_URL, { next: { revalidate: 60 } });
   const json = await response.json();
   const firstTrack = json.recenttracks.track[0];
 

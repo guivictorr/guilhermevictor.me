@@ -1,6 +1,19 @@
 {
-  "lastUpdate": "2024-09-27T17:26:24.029Z",
+  "lastUpdate": "2024-10-04T22:09:06.880Z",
   "data": [
+    {
+      "id": "53ef805c-8aa5-4fb9-a82b-f9c6f4f9f396",
+      "title": "How to control a React component with the URL",
+      "slug": "https-react-statuscode-com-link-160596-7-a-1-f-506-d-5-e-192502cf98d",
+      "createdAt": "2024-10-03T02:19:51.000Z",
+      "updatedAt": "2024-10-03T02:22:03.000Z",
+      "description": "It's a common feature request. Surprisingly, it also leads to one of the most common causes of bugs in React applications.",
+      "originalArticleUrl": "https://buildui.com/posts/how-to-control-a-react-component-with-the-url",
+      "labels": [
+        "later"
+      ],
+      "savedAt": "2024-10-03T02:19:51.000Z"
+    },
     {
       "id": "c14f2b59-34a1-4fbe-86bc-78fbb1ecc70f",
       "title": "🏆 Melhor Guia do SEO para dev - Usando código para aumentar sua visualizaçāo organica · daniellimae · TabNews",
@@ -34,7 +47,7 @@
       "title": "The unspoken rules of React hooks - macwright.com",
       "slug": "the-unspoken-rules-of-react-hooks-macwright-com-1922a3cf3f8",
       "createdAt": "2024-09-25T17:31:30.000Z",
-      "updatedAt": "2024-09-27T16:01:02.000Z",
+      "updatedAt": "2024-10-01T12:30:03.000Z",
       "description": "Updated to include links to documentation that does exist on the react.dev site. I do think that it’s hard to discover and this concept is underemphasized relative to how important it is for working with React hooks, but as the team correctly points out, there are some docs for it.",
       "originalArticleUrl": "https://macwright.com/2024/09/19/the-extra-rules-of-hooks",
       "labels": [
