@@ -1,16 +1,119 @@
 {
-  "lastUpdate": "2024-10-04T22:09:06.880Z",
+  "lastUpdate": "2024-10-29T18:24:50.710Z",
   "data": [
+    {
+      "id": "3dc76466-996a-435e-8979-8566704c5df4",
+      "title": "GitHub - grafana/k6: A modern load testing tool, using Go and JavaScript - https://k6.io",
+      "slug": "https-github-com-grafana-k-6-192c459d026",
+      "createdAt": "2024-10-25T15:44:33.000Z",
+      "updatedAt": "2024-10-25T15:44:44.000Z",
+      "description": "A modern load testing tool, using Go and JavaScript - https://k6.io - grafana/k6",
+      "originalArticleUrl": "https://github.com/grafana/k6",
+      "labels": [],
+      "savedAt": "2024-10-25T15:44:33.000Z"
+    },
+    {
+      "id": "8333d2c6-8a6a-48c0-8b58-4b8f93c3a114",
+      "title": "Mastering Mutations in React Query | TkDodo's blog",
+      "slug": "mastering-mutations-in-react-query-tk-dodo-s-blog-1927423520d",
+      "createdAt": "2024-10-10T01:55:25.000Z",
+      "updatedAt": "2024-10-10T22:29:35.000Z",
+      "description": "Learn all about the concept of performing side effects on the server with React Query.",
+      "originalArticleUrl": "https://tkdodo.eu/blog/mastering-mutations-in-react-query",
+      "labels": [
+        "frontend/react"
+      ],
+      "savedAt": "2024-10-10T01:55:25.000Z"
+    },
+    {
+      "id": "6b17e1a5-22ea-44b2-bb73-13f31e2776a0",
+      "title": "Colocation",
+      "slug": "colocation-1926fe54f42",
+      "createdAt": "2024-10-09T06:09:12.000Z",
+      "updatedAt": "2024-10-09T06:11:02.000Z",
+      "description": "Maintainability through colocation",
+      "originalArticleUrl": "https://kentcdodds.com/blog/colocation",
+      "labels": [
+        "later",
+        "pattern",
+        "architecture"
+      ],
+      "savedAt": "2024-10-09T06:09:12.000Z"
+    },
+    {
+      "id": "902276ab-f501-42cb-9e30-a713608f1b54",
+      "title": "Effective React Query Keys | TkDodo's blog",
+      "slug": "effective-react-query-keys-tk-dodo-s-blog-1926fe3ee65",
+      "createdAt": "2024-10-09T06:07:42.000Z",
+      "updatedAt": "2024-10-10T22:30:03.000Z",
+      "description": "Learn how to structure React Query Keys effectively as your App grows",
+      "originalArticleUrl": "https://tkdodo.eu/blog/effective-react-query-keys",
+      "labels": [
+        "frontend/react"
+      ],
+      "savedAt": "2024-10-09T06:07:42.000Z"
+    },
+    {
+      "id": "e6c922e6-c74f-4ab1-b58b-ae4c0ad7fb9a",
+      "title": "React Query and TypeScript | TkDodo's blog",
+      "slug": "react-query-and-type-script-tk-dodo-s-blog-1926fe1f882",
+      "createdAt": "2024-10-09T06:05:34.000Z",
+      "updatedAt": "2024-10-09T06:05:37.000Z",
+      "description": "Combine two of the most powerful tools for React Apps to produce great user experience, developer experience and type safety.",
+      "originalArticleUrl": "https://tkdodo.eu/blog/react-query-and-type-script",
+      "labels": [
+        "frontend/react"
+      ],
+      "savedAt": "2024-10-09T06:05:34.000Z"
+    },
+    {
+      "id": "4495bf7e-aba9-493e-91b7-3a7cb19beec5",
+      "title": "Status Checks in React Query | TkDodo's blog",
+      "slug": "status-checks-in-react-query-tk-dodo-s-blog-1926ec3c243",
+      "createdAt": "2024-10-09T00:52:56.000Z",
+      "updatedAt": "2024-10-09T05:51:23.000Z",
+      "description": "How the wrong status check order can negatively impact user experience",
+      "originalArticleUrl": "https://tkdodo.eu/blog/status-checks-in-react-query",
+      "labels": [
+        "frontend/react"
+      ],
+      "savedAt": "2024-10-09T00:52:56.000Z"
+    },
+    {
+      "id": "48f7e608-37c6-4116-a4bc-dc53d19c03c3",
+      "title": "React Query Data Transformations | TkDodo's blog",
+      "slug": "react-query-data-transformations-tk-dodo-s-blog-1926eb0dd69",
+      "createdAt": "2024-10-09T00:32:18.000Z",
+      "updatedAt": "2024-10-09T00:40:43.000Z",
+      "description": "Learn the possibilities to perform the quite common and important task of transforming your data with react-query",
+      "originalArticleUrl": "https://tkdodo.eu/blog/react-query-data-transformations",
+      "labels": [
+        "frontend/react"
+      ],
+      "savedAt": "2024-10-09T00:32:18.000Z"
+    },
+    {
+      "id": "f2aebbc2-aab1-4ea0-9d27-8ae711a9d9c4",
+      "title": "COMO EU CONSEGUI UMA VPS DE FORMA GRATUITA E VITALICIA? [UTILIDADE PÚBLICA] · MatheusDesu · TabNews",
+      "slug": "como-eu-consegui-uma-vps-de-forma-gratuita-e-vitalicia-utilidade-19264826a28",
+      "createdAt": "2024-10-07T01:05:21.000Z",
+      "updatedAt": "2024-10-07T01:05:21.000Z",
+      "description": "Há algum tempo atras eu e alguns amigos estavamos tentando achar alguma maneira de jogarmos minecraft com mod juntos(Sim, minecraft) mas todos os serviços de hospedagem ou tinham um preço...",
+      "originalArticleUrl": "https://www.tabnews.com.br/MatheusDesu/como-eu-consegui-uma-vps-de-forma-gratuita-e-vitalicia-utilidade-publica",
+      "labels": [],
+      "savedAt": "2024-10-07T01:05:21.000Z"
+    },
     {
       "id": "53ef805c-8aa5-4fb9-a82b-f9c6f4f9f396",
       "title": "How to control a React component with the URL",
       "slug": "https-react-statuscode-com-link-160596-7-a-1-f-506-d-5-e-192502cf98d",
       "createdAt": "2024-10-03T02:19:51.000Z",
-      "updatedAt": "2024-10-03T02:22:03.000Z",
+      "updatedAt": "2024-10-10T22:30:25.000Z",
       "description": "It's a common feature request. Surprisingly, it also leads to one of the most common causes of bugs in React applications.",
       "originalArticleUrl": "https://buildui.com/posts/how-to-control-a-react-component-with-the-url",
       "labels": [
-        "later"
+        "later",
+        "frontend/react"
       ],
       "savedAt": "2024-10-03T02:19:51.000Z"
     },
@@ -33,11 +136,10 @@
       "title": "Practical React Query | TkDodo's blog",
       "slug": "practical-react-query-tk-dodo-s-blog-1922eada862",
       "createdAt": "2024-09-26T14:13:06.000Z",
-      "updatedAt": "2024-09-27T17:22:13.000Z",
+      "updatedAt": "2024-10-09T00:31:27.000Z",
       "description": "Let me share with you the experiences I have made lately with React Query. Fetching data in React has never been this delightful...",
       "originalArticleUrl": "https://tkdodo.eu/blog/practical-react-query",
       "labels": [
-        "later",
         "frontend/react"
       ],
       "savedAt": "2024-09-26T14:13:06.000Z"
@@ -159,7 +261,7 @@
       "title": "Como melhorar performance em aplicações web 📈 | Felipe Fialho - Front-end Developer",
       "slug": "https-felipefialho-com-blog-como-melhorar-performance-em-aplicac-192248620c8",
       "createdAt": "2024-09-24T14:53:42.000Z",
-      "updatedAt": "2024-09-27T17:22:13.000Z",
+      "updatedAt": "2024-10-12T23:14:00.000Z",
       "description": "Nesse artigo bora ver algumas técnicas pra melhorar o tempo de carregamento focando em métricas de performance.",
       "originalArticleUrl": "https://felipefialho.com/blog/como-melhorar-performance-em-aplicacoes-web/",
       "labels": [
@@ -201,7 +303,7 @@
       "title": "Enhancing The New York Times Web Performance with React 18 | by Ilya Gurevich | NYT Open | NYT Open",
       "slug": "https-open-nytimes-com-enhancing-the-new-york-times-web-performa-1922478caab",
       "createdAt": "2024-09-24T14:39:22.000Z",
-      "updatedAt": "2024-09-27T17:22:13.000Z",
+      "updatedAt": "2024-10-12T23:13:02.000Z",
       "description": "How upgrading to React 18 energized The New York Times website – and how we tackled some of the challenges we faced along the way.",
       "originalArticleUrl": "https://open.nytimes.com/enhancing-the-new-york-times-web-performance-with-react-18-d6f91a7c5af8?gi=e757a0a195ad",
       "labels": [
