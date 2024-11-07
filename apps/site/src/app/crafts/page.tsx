@@ -3,6 +3,15 @@ import { PiArrowBendUpLeftBold } from 'react-icons/pi';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 import { MetadataOutput, getCrafts } from '@/services/content';
+import { buildSEO } from '@/seo/seo';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = buildSEO({
+  title: 'Crafts',
+  description:
+    'Frontend experiments from the software developer Guilherme Victor',
+  dynamic_og: true,
+});
 
 export default function CraftsPage() {
   const crafts = getCrafts().map(post => post.metadata);

@@ -3,6 +3,14 @@ import { PiArrowBendUpLeftBold } from 'react-icons/pi';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 import { MetadataOutput, getPosts } from '@/services/content';
+import { Metadata } from 'next';
+import { buildSEO } from '@/seo/seo';
+
+export const metadata: Metadata = buildSEO({
+  title: 'Writing',
+  description: 'Blog posts from the software developer Guilherme Victor',
+  dynamic_og: true,
+});
 
 export default function WritingHome() {
   const posts = getPosts().map(post => post.metadata);
