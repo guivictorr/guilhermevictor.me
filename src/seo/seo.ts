@@ -1,3 +1,4 @@
+import { baseUrl } from '@/constants';
 import { Metadata } from 'next';
 
 export type BuildSEOParams = {
@@ -16,10 +17,10 @@ export const buildSEO: BuildSEO = ({
   dynamic_og = true,
   ...rest
 }) => ({
-  metadataBase: new URL('https://guilhermevictor.me'),
+  metadataBase: new URL(baseUrl),
   title: {
     default: title,
-    template: '%s | Guilherme Victor',
+    template: 'Guilherme Victor | %s',
   },
   description,
   applicationName: 'Guilherme Victor',
