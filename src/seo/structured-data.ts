@@ -42,4 +42,33 @@ export const structuredData = {
     },
     url: `${baseUrl}${data.metadata.url}`,
   })),
+  breadcrumb: {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Crafts',
+        item: `${baseUrl}/crafts`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Writing',
+        item: `${baseUrl}/writing`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: 'Bookmarks',
+        item: `${baseUrl}/bookmarks`,
+      },
+    ],
+  },
 };
