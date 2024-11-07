@@ -10,6 +10,7 @@ import { Vignette } from '@/components/vignette';
 import '@/styles/globals.css';
 import { buildSEO } from '@/seo/seo';
 import { Noise } from '@/components/noise';
+import { structuredData } from '@/seo/structured-data';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -18,14 +19,22 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
-  description:
-    'My personal space of an empathetic front-end developer building web experiences with passion',
+  description: 'My place to experiment and write about web development',
   dynamic_og: false,
 });
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en' className={`${playfair.variable} ${GeistSans.variable}`}>
+      <head>
+        <script
+          key='structured-data'
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
       <body className='bg-background text-secondary scroll-smooth'>
         <Noise />
         <Vignette />
