@@ -15,9 +15,7 @@ export const ListColumn = ({ title, children }: ArticleProps) => {
       <p aria-hidden className='text-sm' id={titleId}>
         {title}
       </p>
-      <ul className='mt-3 space-y-2'>
-        {isEmpty ? <li>No content</li> : children}
-      </ul>
+      <ul className='mt-3'>{isEmpty ? <li>No content</li> : children}</ul>
     </section>
   );
 };
@@ -31,8 +29,8 @@ export const ListItem = ({ title, href }: ListItemProps) => {
   const LinkComponent = href.includes('https://') ? ExternalLink : Link;
 
   return (
-    <li className='line-clamp-1 text-balance'>
-      <LinkComponent href={href} className='text-primary'>
+    <li className='line-clamp-1'>
+      <LinkComponent href={href} className='text-primary mt-3 block'>
         {title}
       </LinkComponent>
     </li>
