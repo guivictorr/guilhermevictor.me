@@ -11,7 +11,7 @@ type CraftPageProps = {
 
 export async function generateStaticParams() {
   return getCrafts().map(({ slug }) => ({
-    params: { slug },
+    slug,
   }));
 }
 

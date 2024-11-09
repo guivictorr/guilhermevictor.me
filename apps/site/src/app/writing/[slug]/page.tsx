@@ -11,7 +11,7 @@ type PostPageProps = {
 
 export async function generateStaticParams() {
   return getPosts().map(({ slug }) => ({
-    params: { slug },
+    slug,
   }));
 }
 

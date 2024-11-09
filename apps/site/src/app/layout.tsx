@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair-display',
 });
-
+export const dynamic = 'force-static';
 export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
   description: 'My place to experiment and write about web development',
