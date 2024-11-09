@@ -3,7 +3,6 @@ import { PropsWithChildren } from 'react';
 import { GeistSans } from 'geist/font/sans';
 import { Playfair_Display } from 'next/font/google';
 
-import { Footer } from '@/components/footer';
 import { Analytics } from '@vercel/analytics/react';
 import { Vignette } from '@/components/vignette';
 
