@@ -68,9 +68,11 @@ export default async function Home() {
               href={bookmark.originalArticleUrl}
             />
           ))}
-          <Link className='block pt-4' href='/bookmarks'>
-            See More
-          </Link>
+          <li>
+            <Link className='block pt-4' href='/bookmarks'>
+              More Bookmarks
+            </Link>
+          </li>
         </ListColumn>
       </section>
       <Footer />
