@@ -3,6 +3,7 @@ title: Things I use
 url: /writing/things-i-use
 publishedAt: 2024-01-15
 updatedAt: 2024-07-24
+description: List of things that I use on my setup
 ---
 
 # On my desk
