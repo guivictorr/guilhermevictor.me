@@ -13,6 +13,7 @@ export type MetadataOutput = {
   description: string;
   publishedAt: Date;
   url: string;
+  keywords: string[];
 };
 
 const parseMetadata = (fileContent: string) => {
