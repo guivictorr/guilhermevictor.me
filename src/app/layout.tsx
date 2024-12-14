@@ -9,8 +9,6 @@ import { Vignette } from '@/components/vignette';
 import '@/styles/globals.css';
 import { buildSEO } from '@/seo/seo';
 import { Noise } from '@/components/noise';
-import { structuredData } from '@/seo/structured-data';
-import Script from 'next/script';
 import { Scripts } from './scripts';
 
 const playfair = Playfair_Display({
