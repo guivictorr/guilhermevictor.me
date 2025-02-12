@@ -14,11 +14,11 @@ export default async function Home() {
     <main className='flex flex-col justify-center gap-4 max-w-xl mx-auto  h-full'>
       <section
         aria-label='Information about Guilherme Victor'
-        className='flex flex-col sm:flex-row items-start pb-4 border-b border-lowContrast/10'
+        className='flex flex-col sm:flex-row items-start pb-4 border-b border-secondary/10'
       >
         <div>
-          <p className='leading-none'>Guilherme Victor</p>
-          <h1 className='flex flex-col text-2xl sm:text-3xl text-primary font-serif italic'>
+          <p className='leading-tight'>Guilherme Victor</p>
+          <h1 className='flex mb-2 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
             software developer
           </h1>
           <p className='max-w-sm'>

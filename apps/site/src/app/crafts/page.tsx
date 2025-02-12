@@ -50,23 +50,23 @@ export default function CraftsPage() {
         <h1 className='font-serif text-xl'>Crafts</h1>
       </header>
       <main className='mt-8'>
-        <ul className='group divide-y divide-lowContrast/10 border-y border-t-lowContrast/10 border-b-lowContrast/10'>
+        <ul className='group divide-y divide-secondary/10 border-y border-t-secondary/10 border-b-secondary/10'>
           {Object.entries(groupedCraftsByYear)
             .reverse()
             .map(([year, crafts]) => (
               <li key={year} className='relative'>
-                <span className='absolute top-[14px] left-0 text-sm text-lowContrast'>
+                <span className='absolute top-[14px] left-0 text-sm text-secondary'>
                   {year}
                 </span>
-                <ul className='divide-y divide-lowContrast/10'>
+                <ul className='divide-y divide-secondary/10'>
                   {crafts.map(post => (
                     <li
                       key={post.title}
-                      className='group/listItem ml-[25%] group-hover:text-lowContrast'
+                      className='group/listItem ml-[25%] group-hover:text-secondary'
                     >
                       <Link
                         href={post.url ?? ''}
-                        className='relative flex items-center justify-between py-3 after:invisible before:absolute before:h-full before:w-full before:-left-1/2'
+                        className='relative w-full flex items-center justify-between py-3 after:invisible before:absolute before:h-full before:w-full before:-left-1/2'
                       >
                         <span className='group-hover/listItem:!text-primary transition truncate'>
                           {post.title}
