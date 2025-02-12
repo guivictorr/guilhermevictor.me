@@ -9,22 +9,14 @@ keywords:
 
 # On my desk
 
-- Macbook Air M1 13" 8GB 256GB
+- [Macbook Air M1 13" 8GB 256GB](https://amzn.to/4hvP5d9)
 - Keychron K2 Wireless Mechanical Keyboard
-- Monitor Gamer Husky Avalanche 27" 144hz (I don't recommend)
-- Monitor Arm Support ELG F80N
-- Mouse Logitech M170
-- Some random office chair
+- [Monitor Arm Support ELG F89N](https://amzn.to/3Qgq1L5)
+- [Airpods Pro 2](https://amzn.to/3CCYj8d)
 
 # Apps
 
 - Code Editor: [neovim](https://github.com/guivictorr/dotfiles)
-- Calendar: Apple Calendar
+- Terminal: Kitty
 - Notes: Obsidian
-- Mail: Gmail
-- To-Do: Apple Reminders
-- Cloud File Storage: Google Cloud
-- Photo Management: Google Photos
-- Browser: Arc Browser by The Browser Company
-- Music: Spotify
-- Password Management: Bitwarden
+- Browser: Chrome
