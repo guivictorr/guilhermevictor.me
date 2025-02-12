@@ -6,8 +6,8 @@ import { Playfair_Display } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { Vignette } from '@/components/vignette';
 
-import '@/styles/globals.css';
-import { buildSEO } from '@/seo/seo';
+import '@/globals.css';
+import { buildSEO } from '@/app/seo';
 import { Scripts } from './scripts';
 
 const playfair = Playfair_Display({
@@ -28,6 +28,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
       </head>
       <body className='bg-background text-secondary scroll-smooth'>
         <Analytics />
+        <Vignette />
 
         <div className='flex flex-col justify-between items-center h-screen md:py-32 py-16'>
           <div className='md:max-w-6xl px-6 sm:px-8 w-full flex-1'>

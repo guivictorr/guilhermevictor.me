@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { MDX } from '@/components/mdx';
 import { getPost, getPosts } from '@/services/content';
 
-import { buildSEO } from '@/seo/seo';
+import { buildSEO } from '@/app/seo';
 import { PostLayout } from '@/components/post-layout';
 
 type PostPageProps = {

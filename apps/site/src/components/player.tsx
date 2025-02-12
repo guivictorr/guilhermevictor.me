@@ -1,5 +1,5 @@
 import { getLatestPlayedTrack } from '@/services/lastfm';
-import { ExternalLink } from '../external-link';
+import { ExternalLink } from './external-link';
 
 export const Player = async () => {
   const track = await getLatestPlayedTrack();
