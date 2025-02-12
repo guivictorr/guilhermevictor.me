@@ -18,7 +18,7 @@ export default async function Home() {
       >
         <div>
           <p className='leading-tight'>Guilherme Victor</p>
-          <h1 className='flex mb-2 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
+          <h1 className='flex mb-2 mt-1 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
             software developer
           </h1>
           <p className='max-w-sm'>

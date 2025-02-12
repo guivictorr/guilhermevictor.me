@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Children, PropsWithChildren, useId } from 'react';
-import { ExternalLink } from '../external-link';
+import { ExternalLink } from './external-link';
 
 type ArticleProps = PropsWithChildren & {
   title: string;

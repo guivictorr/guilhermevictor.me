@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PropsWithChildren } from 'react';
-import { Icon } from '../icon';
+import { Icon } from './icon';
 
 type PostLayoutProps = {
   items: MDXDataProps[];

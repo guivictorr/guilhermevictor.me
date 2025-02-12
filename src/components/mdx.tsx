@@ -1,9 +1,9 @@
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote/rsc';
 import { PropsWithChildren, HTMLAttributes } from 'react';
 import { highlight } from 'sugar-high';
-import { ExternalLink } from '../external-link';
-import { ExclusionTabs } from '../crafts/exclusion-tabs';
-import { CraftPreview } from '../craft-preview';
+import { ExternalLink } from './external-link';
+import { ExclusionTabs } from './exclusion-tabs';
+import { CraftPreview } from './craft-preview';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {

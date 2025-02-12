@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 import { MetadataOutput, getPosts } from '@/services/content';
 import { Metadata } from 'next';
-import { buildSEO } from '@/seo/seo';
+import { buildSEO } from '@/app/seo';
 import { Icon } from '@/components/icon';
 
 export const metadata: Metadata = buildSEO({

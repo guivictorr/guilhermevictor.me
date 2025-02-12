@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 import { MetadataOutput, getCrafts } from '@/services/content';
-import { buildSEO } from '@/seo/seo';
+import { buildSEO } from '@/app/seo';
 import { Metadata } from 'next';
 import { Icon } from '@/components/icon';
 

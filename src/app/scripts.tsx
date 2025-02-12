@@ -1,5 +1,5 @@
 import Script from 'next/script';
-import { structuredData } from '@/seo/structured-data';
+import { structuredData } from '@/app/structured-data';
 
 export function Scripts() {
   return (
