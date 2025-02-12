@@ -31,6 +31,19 @@
 			--color-transparent: 0 0 0;
 		}
 	}
+}
+
+@layer utilities {
+  .vignette {
+    background: linear-gradient(
+      180deg, 
+      rgb(var(--color-background)) 0%, 
+      rgba(255, 255, 255, 0) 20%, 
+      rgba(255, 255, 255, 0) 50%, 
+      rgba(255, 255, 255, 0) 80%, 
+      rgb(var(--color-background)) 100%
+    );
+  }
 
 
 	* {
