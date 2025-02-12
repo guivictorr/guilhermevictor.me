@@ -27,7 +27,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <Scripts />
       </head>
       <body className='bg-background text-secondary scroll-smooth'>
-        <Vignette />
         <Analytics />
 
         <div className='flex flex-col justify-between items-center h-screen md:py-32 py-16'>

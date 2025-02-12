@@ -3,53 +3,69 @@
 @tailwind utilities;
 
 :root {
-  --sh-identifier: #fddcbd;
-  --sh-keyword: #d16806;
-  --sh-string: #d16806;
-  --sh-comment: #fddcbd88;
-  --sh-property: #fbb675;
-  --sh-sign: #fddcbdaa;
-  --sh-class: #d16806;
-  --sh-jsxliterals: red;
-  --sh-entity: red;
+	--sh-identifier: rgb(var(--color-primary));
+	--sh-sign: rgb(var(--color-primary));
+	--sh-keyword: 255 0 0;
+	--sh-string: 255 0 0;
+	--sh-comment: 255 0 0;
+	--sh-property: 255 0 0;
+	--sh-class: 255 0 0;
+	--sh-jsxliterals: 255 0 0;
+	--sh-entity: 255 0 0;
 }
 
-html {
-  color-scheme: dark;
-}
+@layer base {
+	@media (prefers-color-scheme: light) {
+		:root {
+			--color-primary: 125 87 61; /* Lighter beige */
+			--color-secondary: 125 87 61; /* Softer neutral tone */
+			--color-low-contrast: 125 87 61; /* Very light beige for low contrast */
+			--color-background: 251 241 199; /* Light warm background */
+			--color-transparent: 251 241 199; /* Fully white for transparency */
+		}
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--color-primary: 253 220 189;
+			--color-secondary: 209 186 162;
+			--color-low-contrast: 253 220 189;
+			--color-background: 38 25 17;
+			--color-transparent: 0 0 0;
+		}
+	}
 
-* {
-  @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background;
-}
 
-::selection {
-  @apply text-background bg-secondary;
-}
-
-a {
-  @apply underline underline-offset-2;
+	* {
+		@apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background;
+	}
+	a {
+		@apply underline underline-offset-2;
+	}
+	::selection {
+		@apply text-background bg-secondary;
+	}
 }
 
 .prose {
-  @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
+	@apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
 }
 
 .prose pre {
-  @apply border bg-[#342318]/20 border-lowContrast/10 rounded-md p-4 overflow-x-auto;
+	@apply border bg-background/20 border-lowContrast/10 rounded-md p-4 overflow-x-auto;
 }
 
 .prose strong {
-  @apply text-primary;
+	@apply text-primary;
 }
 
 .prose ul {
-  @apply list-none p-0 m-0;
+	@apply list-none p-0 m-0;
 }
 
 .prose li {
-  @apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
+	@apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
 }
 
 .prose blockquote {
-  @apply border-l-lowContrast border-l-[2px] text-lowContrast font-serif;
+	@apply border-l-lowContrast border-l-[2px] text-lowContrast font-serif;
 }

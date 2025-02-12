@@ -34,7 +34,7 @@ export default async function Home() {
             </ExternalLink>{' '}
             and see my code on{' '}
             <ExternalLink href='https://github.com/guivictorr'>
-              Github
+              Github.
             </ExternalLink>
           </p>
           <a
