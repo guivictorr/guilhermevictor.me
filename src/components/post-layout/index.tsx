@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PropsWithChildren } from 'react';
-import { PiArrowBendUpLeftBold } from 'react-icons/pi';
+import { Icon } from '../icon';
 
 type PostLayoutProps = {
   items: MDXDataProps[];
@@ -41,9 +41,9 @@ export const PostLayout = ({
         <nav className='mb-8'>
           <Link
             href={backLink}
-            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
+            className='after:invisible flex items-center gap-1 text-secondary w-fit font-serif italic'
           >
-            <PiArrowBendUpLeftBold />
+            <Icon icon='back' />
             <span>{backLabel}</span>
           </Link>
         </nav>
@@ -68,7 +68,7 @@ export const PostLayout = ({
           {!!previousItem && (
             <Link
               href={String(previousItem.metadata.url)}
-              className='no-underline block'
+              className='after:invisible block'
             >
               <span className='text-sm text-lowContrast'>Previous</span>
               <span className='block text-primary'>
@@ -80,7 +80,7 @@ export const PostLayout = ({
           {!!nextItem && (
             <Link
               href={String(nextItem.metadata.url)}
-              className='no-underline block text-end'
+              className='after:invisible block text-end'
             >
               <span className='text-sm text-lowContrast'>Next</span>
               <span className='block text-primary'>

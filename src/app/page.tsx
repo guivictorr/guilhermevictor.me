@@ -4,7 +4,7 @@ import { getCrafts, getPosts } from '@/services/content';
 import { Footer } from '@/components/footer';
 import bookmarksJson from '@/app/bookmarks/bookmarks.json';
 import Link from 'next/link';
-import { PiDownloadSimple } from 'react-icons/pi';
+import { Icon } from '@/components/icon';
 
 export default async function Home() {
   const posts = getPosts();
@@ -42,8 +42,8 @@ export default async function Home() {
             download='Guilherme_Victor_CV.pdf'
             className='flex items-center gap-1 mt-2'
           >
+            <Icon icon='download' />
             Download my CV
-            <PiDownloadSimple />
           </a>
         </div>
       </section>
