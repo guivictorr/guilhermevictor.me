@@ -14,7 +14,6 @@ Frontend
 - [Tailwind](https://tailwindcss.com/)
 - [ReactJS](https://pt-br.reactjs.org)
 - [Next.js](https://nextjs.org)
-- [React Icons](https://react-icons.github.io/react-icons/)
 - [Typescript](typescriptlang.org/)
 - [Radix Primitives](https://www.radix-ui.com/primitives)
 

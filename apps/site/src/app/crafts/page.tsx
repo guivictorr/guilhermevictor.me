@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { PiArrowBendUpLeftBold } from 'react-icons/pi';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 import { MetadataOutput, getCrafts } from '@/services/content';
 import { buildSEO } from '@/seo/seo';
 import { Metadata } from 'next';
+import { Icon } from '@/components/icon';
 
 export const metadata: Metadata = buildSEO({
   title: 'Crafts',
@@ -41,9 +41,9 @@ export default function CraftsPage() {
         <nav className='mb-4'>
           <Link
             href='/'
-            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
+            className='after:invisible [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
           >
-            <PiArrowBendUpLeftBold />
+            <Icon icon='back' />
             <span>Home</span>
           </Link>
         </nav>
@@ -66,7 +66,7 @@ export default function CraftsPage() {
                     >
                       <Link
                         href={post.url ?? ''}
-                        className='relative flex items-center justify-between py-3 no-underline before:absolute before:h-full before:w-full before:-left-1/2'
+                        className='relative flex items-center justify-between py-3 after:invisible before:absolute before:h-full before:w-full before:-left-1/2'
                       >
                         <span className='group-hover/listItem:!text-primary transition truncate'>
                           {post.title}
