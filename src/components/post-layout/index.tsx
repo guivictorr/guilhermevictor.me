@@ -52,17 +52,17 @@ export const PostLayout = ({
         </h1>
         {currentItem.metadata.publishedAt && (
           <time
-            className='text-sm text-lowContrast'
+            className='text-sm text-secondary'
             dateTime={currentItem.metadata.publishedAt.toString()}
           >
             {format(currentItem.metadata.publishedAt, 'MMMM dd, yyyy')}
           </time>
         )}
-        <hr className='border-lowContrast/10 my-8' />
+        <hr className='border-secondary/10 my-8' />
       </header>
       <main>{children}</main>
       <footer className='md:pb-32 pb-16'>
-        <hr className='border-lowContrast/10 my-8' />
+        <hr className='border-secondary/10 my-8' />
 
         <nav className='flex justify-between'>
           {!!previousItem && (
@@ -70,7 +70,7 @@ export const PostLayout = ({
               href={String(previousItem.metadata.url)}
               className='after:invisible block'
             >
-              <span className='text-sm text-lowContrast'>Previous</span>
+              <span className='text-sm text-secondary'>Previous</span>
               <span className='block text-primary'>
                 {previousItem.metadata.title}
               </span>
@@ -82,7 +82,7 @@ export const PostLayout = ({
               href={String(nextItem.metadata.url)}
               className='after:invisible block text-end'
             >
-              <span className='text-sm text-lowContrast'>Next</span>
+              <span className='text-sm text-secondary'>Next</span>
               <span className='block text-primary'>
                 {nextItem.metadata.title}
               </span>

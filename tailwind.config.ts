@@ -10,7 +10,6 @@ const config: Config = {
     colors: {
       primary: 'rgb(var(--color-primary))',
       secondary: 'rgb(var(--color-secondary))',
-      lowContrast: 'rgb(var(--color-low-contrast))',
       background: 'rgb(var(--color-background))',
       transparent: 'rgb(var(--color-transparent))',
     },

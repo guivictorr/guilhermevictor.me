@@ -19,13 +19,13 @@ export default function Bookmarks() {
         <h1 className='text-3xl font-serif text-primary'>Bookmarks</h1>
 
         <time
-          className='text-sm text-lowContrast'
+          className='text-sm text-secondary'
           dateTime={bookmarksJson.lastUpdate}
         >
           Last Update:{' '}
           {format(new Date(bookmarksJson.lastUpdate), 'MMMM dd, yyyy')}
         </time>
-        <hr className='border-lowContrast/10 my-8' />
+        <hr className='border-secondary/10 my-8' />
       </header>
 
       <ul className='space-y-4'>

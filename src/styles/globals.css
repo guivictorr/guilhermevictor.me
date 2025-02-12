@@ -18,8 +18,7 @@
 	@media (prefers-color-scheme: light) {
 		:root {
 			--color-primary: 125 87 61; /* Lighter beige */
-			--color-secondary: 125 87 61; /* Softer neutral tone */
-			--color-low-contrast: 125 87 61; /* Very light beige for low contrast */
+			--color-secondary: 130 110 54; /* Softer neutral tone */
 			--color-background: 251 241 199; /* Light warm background */
 			--color-transparent: 251 241 199; /* Fully white for transparency */
 		}
@@ -28,7 +27,6 @@
 		:root {
 			--color-primary: 253 220 189;
 			--color-secondary: 209 186 162;
-			--color-low-contrast: 253 220 189;
 			--color-background: 38 25 17;
 			--color-transparent: 0 0 0;
 		}
@@ -39,7 +37,7 @@
 		@apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background;
 	}
 	a {
-		@apply relative w-max no-underline after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-primary;
+		@apply relative w-max no-underline text-primary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-primary;
 	}
 	::selection {
 		@apply text-background bg-secondary;
@@ -55,7 +53,7 @@
 }
 
 .prose pre {
-	@apply border bg-background/20 border-lowContrast/10 rounded-md p-4 overflow-x-auto;
+	@apply border bg-background/20 border-secondary/10 rounded-md p-4 overflow-x-auto;
 }
 
 .prose strong {
@@ -71,5 +69,5 @@
 }
 
 .prose blockquote {
-	@apply border-l-lowContrast border-l-[2px] text-lowContrast font-serif;
+	@apply border-l-secondary border-l-[2px] text-secondary font-serif;
 }

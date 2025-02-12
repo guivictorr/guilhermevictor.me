@@ -16,7 +16,7 @@ export const Player = async () => {
       <p aria-hidden className='line-clamp-1 max-w-xs text-sm text-secondary'>
         {track.artist} - {track.song}
       </p>
-      <p className='text-xs text-lowContrast'>
+      <p className='text-xs text-secondary'>
         <span className='inline-block mr-1'>latest played song on</span>
         <ExternalLink href='https://www.last.fm/user/oguivictor'>
           last.fm
