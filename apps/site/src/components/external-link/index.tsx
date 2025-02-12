@@ -12,7 +12,7 @@ export const ExternalLink = ({
 }: ExternalLinkProps) => {
   return (
     <a
-      className={`text-primary underline underline-offset-2 focus:text-primary transition-colors duration-300 ${className}`}
+      className={`text-primary focus:text-primary ${className}`}
       href={href}
       target='_blank'
     >
