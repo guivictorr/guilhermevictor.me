@@ -4,6 +4,7 @@ import { getCrafts, getPosts } from '@/services/content';
 import { Footer } from '@/components/footer';
 import bookmarksJson from '@/app/bookmarks/bookmarks.json';
 import Link from 'next/link';
+import { PiDownloadSimple } from 'react-icons/pi';
 
 export default async function Home() {
   const posts = getPosts();
@@ -16,10 +17,9 @@ export default async function Home() {
         className='flex flex-col sm:flex-row items-start pb-4 border-b border-lowContrast/10'
       >
         <div>
-          <p className='leading-4'>Guilherme Victor</p>
-          <h1 className='flex flex-col text-3xl sm:text-2xl text-primary font-serif'>
-            <span>software developer</span>
-            <span>neovim user</span>
+          <p className='leading-none'>Guilherme Victor</p>
+          <h1 className='flex flex-col text-2xl sm:text-3xl text-primary font-serif italic'>
+            software developer
           </h1>
           <p className='max-w-sm'>
             You can find me on{' '}
@@ -37,6 +37,14 @@ export default async function Home() {
               Github
             </ExternalLink>
           </p>
+          <a
+            href='/cv.pdf'
+            download='Guilherme_Victor_CV.pdf'
+            className='flex items-center gap-1 mt-2'
+          >
+            Download my CV
+            <PiDownloadSimple />
+          </a>
         </div>
       </section>
       <section className='grid grid-cols-1 gap-x-8 space-y-8 sm:space-y-0 sm:grid-cols-3'>
