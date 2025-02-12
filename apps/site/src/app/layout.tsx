@@ -8,7 +8,6 @@ import { Vignette } from '@/components/vignette';
 
 import '@/styles/globals.css';
 import { buildSEO } from '@/seo/seo';
-import { Noise } from '@/components/noise';
 import { Scripts } from './scripts';
 
 const playfair = Playfair_Display({
@@ -28,7 +27,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <Scripts />
       </head>
       <body className='bg-background text-secondary scroll-smooth'>
-        <Noise />
         <Vignette />
         <Analytics />
 
