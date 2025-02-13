@@ -20,9 +20,7 @@
       "updatedAt": "2024-10-10T22:29:35.000Z",
       "description": "Learn all about the concept of performing side effects on the server with React Query.",
       "originalArticleUrl": "https://tkdodo.eu/blog/mastering-mutations-in-react-query",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-10-10T01:55:25.000Z"
     },
     {
@@ -33,11 +31,7 @@
       "updatedAt": "2024-10-09T06:11:02.000Z",
       "description": "Maintainability through colocation",
       "originalArticleUrl": "https://kentcdodds.com/blog/colocation",
-      "labels": [
-        "later",
-        "pattern",
-        "architecture"
-      ],
+      "labels": ["later", "pattern", "architecture"],
       "savedAt": "2024-10-09T06:09:12.000Z"
     },
     {
@@ -48,9 +42,7 @@
       "updatedAt": "2024-10-10T22:30:03.000Z",
       "description": "Learn how to structure React Query Keys effectively as your App grows",
       "originalArticleUrl": "https://tkdodo.eu/blog/effective-react-query-keys",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-10-09T06:07:42.000Z"
     },
     {
@@ -61,9 +53,7 @@
       "updatedAt": "2024-10-09T06:05:37.000Z",
       "description": "Combine two of the most powerful tools for React Apps to produce great user experience, developer experience and type safety.",
       "originalArticleUrl": "https://tkdodo.eu/blog/react-query-and-type-script",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-10-09T06:05:34.000Z"
     },
     {
@@ -74,9 +64,7 @@
       "updatedAt": "2024-10-09T05:51:23.000Z",
       "description": "How the wrong status check order can negatively impact user experience",
       "originalArticleUrl": "https://tkdodo.eu/blog/status-checks-in-react-query",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-10-09T00:52:56.000Z"
     },
     {
@@ -87,9 +75,7 @@
       "updatedAt": "2024-10-09T00:40:43.000Z",
       "description": "Learn the possibilities to perform the quite common and important task of transforming your data with react-query",
       "originalArticleUrl": "https://tkdodo.eu/blog/react-query-data-transformations",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-10-09T00:32:18.000Z"
     },
     {
@@ -111,10 +97,7 @@
       "updatedAt": "2024-10-10T22:30:25.000Z",
       "description": "It's a common feature request. Surprisingly, it also leads to one of the most common causes of bugs in React applications.",
       "originalArticleUrl": "https://buildui.com/posts/how-to-control-a-react-component-with-the-url",
-      "labels": [
-        "later",
-        "frontend/react"
-      ],
+      "labels": ["later", "frontend/react"],
       "savedAt": "2024-10-03T02:19:51.000Z"
     },
     {
@@ -125,10 +108,7 @@
       "updatedAt": "2024-09-27T17:22:13.000Z",
       "description": "SEO, ou Search Engine Optimization, é um grupo de técnicas e práticas que você pode tomar como estratégia para alavancar a forma que usuários te encontram e encontram sua empresa/produto...",
       "originalArticleUrl": "https://www.tabnews.com.br/daniellimae/melhor-guia-do-seo-para-dev-usando-codigo-para-aumentar-sua-visualizacao-organica",
-      "labels": [
-        "later",
-        "frontend/seo"
-      ],
+      "labels": ["later", "frontend/seo"],
       "savedAt": "2024-09-27T15:12:52.000Z"
     },
     {
@@ -139,9 +119,7 @@
       "updatedAt": "2024-10-09T00:31:27.000Z",
       "description": "Let me share with you the experiences I have made lately with React Query. Fetching data in React has never been this delightful...",
       "originalArticleUrl": "https://tkdodo.eu/blog/practical-react-query",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-09-26T14:13:06.000Z"
     },
     {
@@ -152,9 +130,7 @@
       "updatedAt": "2024-10-01T12:30:03.000Z",
       "description": "Updated to include links to documentation that does exist on the react.dev site. I do think that it’s hard to discover and this concept is underemphasized relative to how important it is for working with React hooks, but as the team correctly points out, there are some docs for it.",
       "originalArticleUrl": "https://macwright.com/2024/09/19/the-extra-rules-of-hooks",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-09-25T17:31:30.000Z"
     },
     {
@@ -165,10 +141,7 @@
       "updatedAt": "2024-09-27T17:22:13.000Z",
       "description": "There are different ways to fetch data in React from a remote API. In this guide we want to explore all the options available for data fetching in React ...",
       "originalArticleUrl": "https://www.robinwieruch.de/react-fetching-data/",
-      "labels": [
-        "later",
-        "frontend/react"
-      ],
+      "labels": ["later", "frontend/react"],
       "savedAt": "2024-09-25T17:30:32.000Z"
     },
     {
@@ -190,9 +163,7 @@
       "updatedAt": "2024-09-27T15:06:10.000Z",
       "description": "Bora falar de performance em aplicações web?\n\nTenho atuado bastante nesse tema e é possível conseguir resultados expressivos, esses são alguns dos principais… | 29 comments on LinkedIn",
       "originalArticleUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7218947191292252160/",
-      "labels": [
-        "frontend/performance"
-      ],
+      "labels": ["frontend/performance"],
       "savedAt": "2024-09-24T15:20:47.000Z"
     },
     {
@@ -203,9 +174,7 @@
       "updatedAt": "2024-09-27T15:06:40.000Z",
       "description": "Nesting elements with rounded borders can look very wrong if not done correctly. Here's a quick tip on how to do it right.",
       "originalArticleUrl": "https://www.30secondsofcode.org/css/s/nested-border-radius/",
-      "labels": [
-        "frontend/css"
-      ],
+      "labels": ["frontend/css"],
       "savedAt": "2024-09-24T15:20:36.000Z"
     },
     {
@@ -227,9 +196,7 @@
       "updatedAt": "2024-09-27T15:06:53.000Z",
       "description": "Discover the strategies and tools that saved our project and increased our profit",
       "originalArticleUrl": "https://luiznasciment0.com/how-i-reduced-costs-75",
-      "labels": [
-        "backend/firebase"
-      ],
+      "labels": ["backend/firebase"],
       "savedAt": "2024-09-24T15:20:23.000Z"
     },
     {
@@ -240,9 +207,7 @@
       "updatedAt": "2024-09-27T15:07:09.000Z",
       "description": "✨ Roadmap pra aprender  testes de unidade no Frontend ✨",
       "originalArticleUrl": "https://twitter.com/lincolixavier/status/1662182616542396416",
-      "labels": [
-        "frontend/tests"
-      ],
+      "labels": ["frontend/tests"],
       "savedAt": "2024-09-24T15:20:11.000Z"
     },
     {
@@ -264,10 +229,7 @@
       "updatedAt": "2024-10-12T23:14:00.000Z",
       "description": "Nesse artigo bora ver algumas técnicas pra melhorar o tempo de carregamento focando em métricas de performance.",
       "originalArticleUrl": "https://felipefialho.com/blog/como-melhorar-performance-em-aplicacoes-web/",
-      "labels": [
-        "later",
-        "frontend/performance"
-      ],
+      "labels": ["later", "frontend/performance"],
       "savedAt": "2024-09-24T14:53:52.000Z"
     },
     {
@@ -278,9 +240,7 @@
       "updatedAt": "2024-09-27T16:07:59.000Z",
       "description": "React Corporate Workshops, Training, and Consulting",
       "originalArticleUrl": "https://reacttraining.com/blog/use-useid-instead-of-hand-making-ids",
-      "labels": [
-        "frontend/react"
-      ],
+      "labels": ["frontend/react"],
       "savedAt": "2024-09-24T14:53:30.000Z"
     },
     {
@@ -291,11 +251,7 @@
       "updatedAt": "2024-09-27T17:22:13.000Z",
       "description": "People don't like using slow applications. And the initial load time matters a lot for web applications and websites. \nAn application that takes more than 3 seconds to load is considered slow and may cause users to leave the application or website.\nN...",
       "originalArticleUrl": "https://www.freecodecamp.org/news/next-js-performance-optimization/",
-      "labels": [
-        "later",
-        "frontend/performance",
-        "frontend/react"
-      ],
+      "labels": ["later", "frontend/performance", "frontend/react"],
       "savedAt": "2024-09-24T14:53:24.000Z"
     },
     {
@@ -306,11 +262,7 @@
       "updatedAt": "2024-10-12T23:13:02.000Z",
       "description": "How upgrading to React 18 energized The New York Times website – and how we tackled some of the challenges we faced along the way.",
       "originalArticleUrl": "https://open.nytimes.com/enhancing-the-new-york-times-web-performance-with-react-18-d6f91a7c5af8?gi=e757a0a195ad",
-      "labels": [
-        "later",
-        "frontend/performance",
-        "frontend/react"
-      ],
+      "labels": ["later", "frontend/performance", "frontend/react"],
       "savedAt": "2024-09-24T14:39:21.000Z"
     }
   ]

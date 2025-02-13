@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint:fix": "eslint ./src --fix"
+    "lint:eslint:check": "eslint ./src",
+    "lint:prettier:check": "prettier ./src --check",
+    "lint:prettier:fix": "prettier ./src --write"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.0.7",

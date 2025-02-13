@@ -3,85 +3,84 @@
 @tailwind utilities;
 
 :root {
-	--sh-identifier: rgb(var(--color-secondary));
-	--sh-sign: rgb(var(--color-secondary));
-	--sh-string: rgb(var(--color-primary));
-	--sh-keyword: 255 0 0;
-	--sh-comment: 255 0 0;
-	--sh-property: 255 0 0;
-	--sh-class: 255 0 0;
-	--sh-jsxliterals: 255 0 0;
-	--sh-entity: 255 0 0;
+  --sh-identifier: rgb(var(--color-secondary));
+  --sh-sign: rgb(var(--color-secondary));
+  --sh-string: rgb(var(--color-primary));
+  --sh-keyword: 255 0 0;
+  --sh-comment: 255 0 0;
+  --sh-property: 255 0 0;
+  --sh-class: 255 0 0;
+  --sh-jsxliterals: 255 0 0;
+  --sh-entity: 255 0 0;
 }
 
 @layer base {
-	@media (prefers-color-scheme: light) {
-		:root {
-			--color-primary: 125 87 61; /* Lighter beige */
-			--color-secondary: 130 110 54; /* Softer neutral tone */
-			--color-background: 251 241 199; /* Light warm background */
-			--color-transparent: 251 241 199; /* Fully white for transparency */
-		}
-	}
-	@media (prefers-color-scheme: dark) {
-		:root {
-			--color-primary: 253 220 189;
-			--color-secondary: 209 186 162;
-			--color-background: 38 25 17;
-			--color-transparent: 0 0 0;
-		}
-	}
+  @media (prefers-color-scheme: light) {
+    :root {
+      --color-primary: 125 87 61; /* Lighter beige */
+      --color-secondary: 130 110 54; /* Softer neutral tone */
+      --color-background: 251 241 199; /* Light warm background */
+      --color-transparent: 251 241 199; /* Fully white for transparency */
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-primary: 253 220 189;
+      --color-secondary: 209 186 162;
+      --color-background: 38 25 17;
+      --color-transparent: 0 0 0;
+    }
+  }
 }
 
 * {
-	@apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/20 transition-colors duration-700;
+  @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/20 transition-colors duration-700;
 }
 
 a {
-	@apply relative underline text-primary;
+  @apply relative underline text-primary;
 }
 ::selection {
-	@apply text-background bg-secondary;
+  @apply text-background bg-secondary;
 }
 
 .prose {
-	@apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
+  @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
 }
 
 .prose a {
-	@apply no-underline
+  @apply no-underline;
 }
 
 .prose pre {
-	@apply border bg-background/20 border-secondary/10 rounded-md p-4 overflow-x-auto;
+  @apply border bg-background/20 border-secondary/10 rounded-md p-4 overflow-x-auto;
 }
 
 .prose strong {
-	@apply text-primary;
+  @apply text-primary;
 }
 
 .prose ul {
-	@apply list-none p-0 m-0;
+  @apply list-none p-0 m-0;
 }
 
 .prose li {
-	@apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
+  @apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
 }
 
 .prose blockquote {
-	@apply border-l-secondary border-l-[2px] text-secondary font-serif;
+  @apply border-l-secondary border-l-[2px] text-secondary font-serif;
 }
 
-
 @layer utilities {
-	.vignette {
-		background: linear-gradient(
-			180deg, 
-			rgb(var(--color-background)) 0%, 
-			rgba(255, 255, 255, 0) 15%, 
-			rgba(255, 255, 255, 0) 50%, 
-			rgba(255, 255, 255, 0) 80%, 
-			rgb(var(--color-background)) 100%
-			);
-	}
+  .vignette {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--color-background)) 0%,
+      rgba(255, 255, 255, 0) 15%,
+      rgba(255, 255, 255, 0) 50%,
+      rgba(255, 255, 255, 0) 80%,
+      rgb(var(--color-background)) 100%
+    );
+  }
 }
