@@ -1,11 +1,25 @@
-import { DownloadIcon, LucideProps, MoveLeftIcon } from 'lucide-react';
+import {
+  ArrowUpRightIcon,
+  DownloadIcon,
+  LucideProps,
+  MoveLeftIcon,
+} from 'lucide-react';
 import { ComponentType } from 'react';
 
-type IconNames = 'download' | 'back';
+type IconNames = 'download' | 'back' | 'external';
+//| 'linkedin'
+//| 'github'
+//| 'twitter'
+//| 'bluesky';
 
 const icons: Record<IconNames, ComponentType<LucideProps>> = {
   download: DownloadIcon,
   back: MoveLeftIcon,
+  external: ArrowUpRightIcon,
+  //linkedin: <p>Linkedin</p>,
+  //github: <p>Github</p>,
+  //twitter: <p>Twitter</p>,
+  //bluesky: <p>TODO: add bluesky icon</p>,
 };
 
 type IconProps = {
