@@ -51,7 +51,7 @@ export default function Links() {
               <Link
                 href={link.href}
                 target='_blank'
-                className='after:invisible flex items-center justify-between size-full py-4'
+                className='no-underline flex items-center justify-between size-full py-4'
               >
                 <p>{link.label}</p>
                 <Icon icon='external' />

@@ -41,7 +41,7 @@ export const PostLayout = ({
         <nav className='mb-8'>
           <Link
             href={backLink}
-            className='after:invisible flex items-center gap-1 text-secondary w-fit font-serif italic'
+            className='no-underline flex items-center gap-1 text-secondary w-fit font-serif italic'
           >
             <Icon icon='back' />
             <span>{backLabel}</span>
@@ -68,7 +68,7 @@ export const PostLayout = ({
           {!!previousItem && (
             <Link
               href={String(previousItem.metadata.url)}
-              className='after:invisible block'
+              className='no-underline block'
             >
               <span className='text-sm text-secondary'>Previous</span>
               <span className='block text-primary'>
@@ -80,7 +80,7 @@ export const PostLayout = ({
           {!!nextItem && (
             <Link
               href={String(nextItem.metadata.url)}
-              className='after:invisible block text-end'
+              className='no-underline block text-end'
             >
               <span className='text-sm text-secondary'>Next</span>
               <span className='block text-primary'>

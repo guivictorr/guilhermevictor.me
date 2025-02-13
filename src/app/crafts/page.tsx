@@ -41,7 +41,7 @@ export default function CraftsPage() {
         <nav className='mb-4'>
           <Link
             href='/'
-            className='after:invisible [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
+            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
           >
             <Icon icon='back' />
             <span>Home</span>
@@ -66,7 +66,7 @@ export default function CraftsPage() {
                     >
                       <Link
                         href={post.url ?? ''}
-                        className='relative w-full flex items-center justify-between py-3 after:invisible before:absolute before:h-full before:w-full before:-left-1/2'
+                        className='relative w-full flex items-center justify-between py-3 no-underline before:absolute before:h-full before:w-full before:-left-1/2'
                       >
                         <span className='group-hover/listItem:!text-primary transition truncate'>
                           {post.title}
