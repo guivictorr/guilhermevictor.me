@@ -10,7 +10,7 @@ export default function Bookmarks() {
         <nav className='mb-8'>
           <Link
             href='/'
-            className='after:invisible [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
+            className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
           >
             <Icon icon='back' />
             <span>Back</span>
@@ -31,7 +31,10 @@ export default function Bookmarks() {
       <ul className='space-y-4'>
         {bookmarksJson.data.map(bookmark => (
           <li key={bookmark.id}>
-            <Link className='line-clamp-1' href={bookmark.originalArticleUrl}>
+            <Link
+              className='line-clamp-1 max-w-xl'
+              href={bookmark.originalArticleUrl}
+            >
               {bookmark.title}
             </Link>
           </li>

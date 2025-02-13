@@ -6,7 +6,7 @@ export default function NotFound() {
     <main className='h-full'>
       <Link
         href='/'
-        className='after:invisible [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
+        className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
       >
         <Icon icon='back' />
         <span>Home</span>
