@@ -26,7 +26,10 @@ export const structuredData = {
     '@type': 'BlogPosting',
     headline: data.metadata.title,
     description: data.metadata.description,
-    image: `${baseUrl}/api/og?${new URLSearchParams({ title: data.metadata.title, description: data.metadata.description }).toString()}`,
+    image: `${baseUrl}/api/og?${new URLSearchParams({
+      title: data.metadata.title,
+      description: data.metadata.description,
+    }).toString()}`,
     datePublished: data.metadata.publishedAt,
     dateModified: new Date().toISOString(),
     keywords: data.metadata.keywords,
