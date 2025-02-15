@@ -11,6 +11,7 @@ import '@/globals.css';
 import { buildSEO } from '@/app/seo';
 import { Scripts } from './scripts';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import { Noise } from '@/components/noise';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -37,6 +38,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
           <Analytics />
           <Vignette />
           <ThemeSwitcher />
+          <Noise />
 
           <div className='flex flex-col justify-between items-center h-screen md:py-32 py-28'>
             <div className='md:max-w-6xl px-6 sm:px-8 w-full flex-1'>
