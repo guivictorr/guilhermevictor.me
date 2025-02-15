@@ -15,21 +15,18 @@
 }
 
 @layer base {
-  @media (prefers-color-scheme: light) {
-    :root {
-      --color-primary: 125 87 61; /* Lighter beige */
-      --color-secondary: 130 110 54; /* Softer neutral tone */
-      --color-background: 251 241 199; /* Light warm background */
-      --color-transparent: 251 241 199; /* Fully white for transparency */
-    }
+  :root {
+    --color-primary: 125 87 61; /* Lighter beige */
+    --color-secondary: 130 110 54; /* Softer neutral tone */
+    --color-background: 251 241 199; /* Light warm background */
+    --color-transparent: 251 241 199; /* Fully white for transparency */
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --color-primary: 253 220 189;
-      --color-secondary: 209 186 162;
-      --color-background: 38 25 17;
-      --color-transparent: 0 0 0;
-    }
+
+  [data-theme='dark'] {
+    --color-primary: 253 220 189;
+    --color-secondary: 209 186 162;
+    --color-background: 38 25 17;
+    --color-transparent: 0 0 0;
   }
 }
 
@@ -46,10 +43,6 @@ a {
 
 .prose {
   @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
-}
-
-.prose a {
-  @apply no-underline;
 }
 
 .prose pre {
