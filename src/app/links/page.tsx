@@ -23,13 +23,13 @@ const links = [
 export default function Links() {
   return (
     <div className='max-w-2xl mt-8 mx-auto space-y-8'>
-      <header className='flex flex-col text-center md:flex-row md:text-left gap-8 items-center justify-between'>
-        <div>
-          <p className='text-primary'>Guilherme Victor</p>
-          <p className='font-serif italic'>software developer</p>
-        </div>
+      <header>
+        <nav className='flex flex-col text-center md:flex-row md:text-left gap-8 items-center justify-between'>
+          <Link href='/' className='no-underline'>
+            <p className='text-primary'>Guilherme Victor</p>
+            <p className='font-serif italic'>software developer</p>
+          </Link>
 
-        <nav>
           <ul className='font-serif italic flex items-center gap-4'>
             <li>
               <Link href='/writing'>/writing</Link>
