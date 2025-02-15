@@ -2,6 +2,7 @@ import Script from 'next/script';
 import { structuredData } from '@/app/structured-data';
 
 export function Scripts() {
+  if (process.env.NODE_ENV === 'development') return null;
   return (
     <>
       <Script
