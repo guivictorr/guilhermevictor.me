@@ -14,7 +14,7 @@ export function ThemeSwitcher() {
         themes.map(t => (
           <li key={t} className='relative'>
             <button
-              data-selected={t === theme}
+              aria-label={`Theme ${t}`}
               className='capitalize'
               onClick={() => setTheme(t)}
             >
