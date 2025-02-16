@@ -20,6 +20,7 @@
     --color-secondary: 130 110 54; /* Softer neutral tone */
     --color-background: 251 241 199; /* Light warm background */
     --color-transparent: 251 241 199; /* Fully white for transparency */
+    --noise-opacity: 40%;
   }
 
   [data-theme='dark'] {
@@ -27,6 +28,7 @@
     --color-secondary: 209 186 162;
     --color-background: 38 25 17;
     --color-transparent: 0 0 0;
+    --noise-opacity: 15%;
   }
 }
 

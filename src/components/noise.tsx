@@ -5,7 +5,7 @@ export function Noise() {
     <svg
       width='100%'
       height='100%'
-      className='pointer-events-none fixed inset-0 z-30 opacity-15'
+      className='pointer-events-none fixed inset-0 z-30 opacity-[var(--noise-opacity)]'
     >
       <filter id='noise'>
         <feTurbulence
