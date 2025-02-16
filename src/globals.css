@@ -17,7 +17,7 @@
 @layer base {
   :root {
     --color-primary: 125 87 61; /* Lighter beige */
-    --color-secondary: 130 110 54; /* Softer neutral tone */
+    --color-secondary: 100 75 20;
     --color-background: 251 241 199; /* Light warm background */
     --color-transparent: 251 241 199; /* Fully white for transparency */
     --noise-opacity: 40%;
