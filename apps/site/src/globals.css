@@ -20,7 +20,7 @@
     --color-secondary: 100 75 20;
     --color-background: 251 241 199; /* Light warm background */
     --color-transparent: 251 241 199; /* Fully white for transparency */
-    --noise-opacity: 40%;
+    --noise-opacity: 30%;
   }
 
   [data-theme='dark'] {
