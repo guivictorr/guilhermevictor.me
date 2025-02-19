@@ -3,7 +3,7 @@
 </h1>
 <p align='center'>My personal website where I plan to write articles and experiment new things.</p>
 
-![image](https://github.com/guivictorr/guilhermevictor.me/assets/55333929/ca3697c7-e84b-4e1d-8843-632296f72642)
+<img width="1438" alt="Screenshot 2025-02-19 at 18 44 18" src="https://github.com/user-attachments/assets/2e4d9d5a-3af3-43b2-ae61-ee8790cb4f1e" />
 
 ## 🛠 Technologies
 
