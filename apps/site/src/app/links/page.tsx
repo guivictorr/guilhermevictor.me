@@ -37,9 +37,6 @@ export default function Links() {
             <li>
               <Link href='/crafts'>/crafts</Link>
             </li>
-            <li>
-              <Link href='/bookmarks'>/bookmarks</Link>
-            </li>
           </ul>
         </nav>
       </header>
