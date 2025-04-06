@@ -11,8 +11,6 @@
     "lint:prettier:fix": "prettier ./src --write"
   },
   "dependencies": {
-    "@radix-ui/react-popover": "1.0.7",
-    "@radix-ui/react-slider": "1.1.2",
     "@types/mdx": "2.0.10",
     "@vercel/analytics": "1.1.1",
     "date-fns": "2.30.0",
