@@ -45,7 +45,7 @@ export default async function Home() {
           </a>
         </div>
       </section>
-      <section>
+      <section aria-label='Main navigation'>
         <nav>
           <ul className='flex flex-col gap-2'>
             {links.map(link => (
