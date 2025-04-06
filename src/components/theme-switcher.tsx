@@ -31,7 +31,15 @@ export function ThemeSwitcher() {
               id={`${id}_${t}`}
               value={t}
               className='sr-only'
-              onChange={() => setTheme(t)}
+              onChange={() => {
+                if (!document.startViewTransition) {
+                  setTheme(t);
+                  return;
+                }
+                document.startViewTransition(() => {
+                  setTheme(t);
+                });
+              }}
               checked={t === theme}
             />
           </span>

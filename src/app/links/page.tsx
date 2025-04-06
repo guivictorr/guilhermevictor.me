@@ -59,7 +59,7 @@ export default function Links() {
       </main>
       <footer>
         <Link
-          href='/cv.pdf'
+          href='/cv_en.pdf'
           download='Guilherme_Victor_CV.pdf'
           target='_blank'
           className='font-serif flex items-center justify-center ml-auto italic h-14 bg-primary text-background px-12'
