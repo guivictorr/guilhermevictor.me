@@ -37,12 +37,7 @@ export default async function CraftPage(props: CraftPageProps) {
   }
 
   return (
-    <PostLayout
-      backLink='/crafts'
-      backLabel='Crafts'
-      items={crafts}
-      currentItem={craft}
-    >
+    <PostLayout items={crafts} currentItem={craft}>
       <MDX source={craft.content} />
     </PostLayout>
   );

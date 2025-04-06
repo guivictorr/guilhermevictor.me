@@ -4,8 +4,8 @@ import { Icon } from '@/components/icon';
 import Link from 'next/link';
 
 const links = [
-  { label: 'Crafts', href: '/crafts' },
   { label: 'Writing', href: '/writing' },
+  { label: 'Crafts', href: '/crafts' },
 ];
 
 export default async function Home() {

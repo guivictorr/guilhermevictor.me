@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
-import { MetadataOutput, getPosts } from '@/services/content';
+import { getPosts } from '@/services/content';
 import { Metadata } from 'next';
 import { buildSEO } from '@/app/seo';
 
@@ -14,20 +14,8 @@ export const metadata: Metadata = buildSEO({
 export default function WritingHome() {
   const posts = getPosts().map(post => post.metadata);
 
-  const groupedPostsByYear = posts.reduce(
-    (acc, post) => {
-      if (!post.publishedAt) return acc;
-      const year = new Date(post.publishedAt).getFullYear();
-
-      if (!acc[year]) {
-        acc[year] = [];
-      }
-
-      acc[year].push(post);
-
-      return acc;
-    },
-    {} as Record<string, MetadataOutput[]>,
+  const groupedPostsByYear = Object.groupBy(posts, post =>
+    new Date(post.publishedAt).getFullYear().toString(),
   );
 
   if (posts.length <= 0) {
@@ -37,7 +25,7 @@ export default function WritingHome() {
   return (
     <div>
       <h1 className='font-serif text-xl my-4'>Writting</h1>
-      <ul className='group divide-y divide-secondary/10 border-y border-t-secondary/10 border-b-secondary/10'>
+      <ul className='divide-y divide-secondary/10 border-y border-t-secondary/10 border-b-secondary/10'>
         {Object.entries(groupedPostsByYear)
           .reverse()
           .map(([year, posts]) => (
@@ -46,7 +34,7 @@ export default function WritingHome() {
                 {year}
               </span>
               <ul className='divide-y divide-secondary/10 group'>
-                {posts.map(post => (
+                {posts?.map(post => (
                   <li key={post.title} className='ml-[25%]'>
                     <Link
                       href={post.url ?? ''}

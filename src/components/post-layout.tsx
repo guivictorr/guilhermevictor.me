@@ -2,22 +2,17 @@ import { MDXDataProps } from '@/services/content';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PropsWithChildren } from 'react';
-import { Icon } from './icon';
+import { Fragment, PropsWithChildren } from 'react';
 
 type PostLayoutProps = {
   items: MDXDataProps[];
   currentItem: MDXDataProps;
-  backLabel: string;
-  backLink: string;
 } & PropsWithChildren;
 
 export const PostLayout = ({
   children,
   currentItem,
   items,
-  backLabel,
-  backLink,
 }: PostLayoutProps) => {
   if (!currentItem) {
     return notFound();
@@ -36,17 +31,8 @@ export const PostLayout = ({
   )[0];
 
   return (
-    <div className='max-w-2xl mx-auto'>
-      <header>
-        <nav className='mb-8'>
-          <Link
-            href={backLink}
-            className='no-underline flex items-center gap-1 text-secondary w-fit font-serif italic'
-          >
-            <Icon icon='back' />
-            <span>{backLabel}</span>
-          </Link>
-        </nav>
+    <Fragment>
+      <header className='mt-6'>
         <h1 className='text-3xl font-serif text-primary'>
           {currentItem.metadata.title}
         </h1>
@@ -58,9 +44,9 @@ export const PostLayout = ({
             {format(currentItem.metadata.publishedAt, 'MMMM dd, yyyy')}
           </time>
         )}
-        <hr className='border-secondary/10 my-8' />
       </header>
-      <main>{children}</main>
+      <hr className='border-secondary/10 my-8' />
+      <section>{children}</section>
       <footer className='md:pb-32 pb-16'>
         <hr className='border-secondary/10 my-8' />
 
@@ -90,6 +76,6 @@ export const PostLayout = ({
           )}
         </nav>
       </footer>
-    </div>
+    </Fragment>
   );
 };

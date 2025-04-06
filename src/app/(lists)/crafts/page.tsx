@@ -14,20 +14,9 @@ export const metadata: Metadata = buildSEO({
 
 export default function CraftsPage() {
   const crafts = getCrafts().map(post => post.metadata);
-  const groupedCraftsByYear = crafts.reduce(
-    (acc, post) => {
-      if (!post.publishedAt) return acc;
-      const year = new Date(post.publishedAt).getFullYear();
 
-      if (!acc[year]) {
-        acc[year] = [];
-      }
-
-      acc[year].push(post);
-
-      return acc;
-    },
-    {} as Record<string, MetadataOutput[]>,
+  const groupedCraftsByYear = Object.groupBy(crafts, post =>
+    new Date(post.publishedAt).getFullYear().toString(),
   );
 
   if (crafts.length <= 0) {
@@ -37,7 +26,7 @@ export default function CraftsPage() {
   return (
     <div>
       <h1 className='font-serif text-xl my-4'>Crafts</h1>
-      <ul className='group divide-y divide-secondary/10 border-y border-t-secondary/10 border-b-secondary/10'>
+      <ul className='divide-y divide-secondary/10 border-y border-t-secondary/10 border-b-secondary/10'>
         {Object.entries(groupedCraftsByYear)
           .reverse()
           .map(([year, crafts]) => (
@@ -46,7 +35,7 @@ export default function CraftsPage() {
                 {year}
               </span>
               <ul className='divide-y divide-secondary/10 group'>
-                {crafts.map(post => (
+                {crafts?.map(post => (
                   <li key={post.title} className='group/listItem ml-[25%]'>
                     <Link
                       href={post.url ?? ''}

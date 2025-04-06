@@ -37,12 +37,7 @@ export default async function PostPage(props: PostPageProps) {
   }
 
   return (
-    <PostLayout
-      backLabel='Writing'
-      backLink='/writing'
-      items={posts}
-      currentItem={post}
-    >
+    <PostLayout items={posts} currentItem={post}>
       <MDX source={post.content} />
     </PostLayout>
   );
