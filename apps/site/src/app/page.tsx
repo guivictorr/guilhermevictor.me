@@ -37,7 +37,7 @@ export default async function Home() {
             </ExternalLink>
           </p>
           <a
-            href='/cv.pdf'
+            href='/cv_en.pdf'
             download='Guilherme_Victor_CV.pdf'
             className='flex items-center gap-1 mt-2'
           >

@@ -79,3 +79,23 @@ a {
     );
   }
 }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 1.2s;
+  opacity: 1 !important;
+}
+
+::view-transition-new(root) {
+  clip-path: circle(0% at top right);
+  animation-name: reveal-new;
+}
+
+@keyframes reveal-new {
+  from {
+    clip-path: circle(0% at top right);
+  }
+  to {
+    clip-path: circle(200% at top right);
+  }
+}
