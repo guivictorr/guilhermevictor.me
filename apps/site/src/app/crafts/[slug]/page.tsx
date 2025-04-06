@@ -6,7 +6,7 @@ import { buildSEO } from '@/app/seo';
 import { PostLayout } from '@/components/post-layout';
 
 type CraftPageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
@@ -15,7 +15,8 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: CraftPageProps) {
+export async function generateMetadata(props: CraftPageProps) {
+  const params = await props.params;
   const post = getCraft(params.slug);
 
   return buildSEO({
@@ -25,7 +26,8 @@ export async function generateMetadata({ params }: CraftPageProps) {
   });
 }
 
-export default function CraftPage({ params }: CraftPageProps) {
+export default async function CraftPage(props: CraftPageProps) {
+  const params = await props.params;
   const { slug } = params;
   const craft = getCraft(slug);
   const crafts = getCrafts();
