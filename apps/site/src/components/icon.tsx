@@ -26,5 +26,5 @@ type IconProps = {
 
 export function Icon({ icon }: IconProps) {
   const Icon = icons[icon];
-  return <Icon className='size-4 mb-px' />;
+  return <Icon className='size-4 mb-px' aria-hidden />;
 }
