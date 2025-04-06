@@ -4,16 +4,12 @@ import { ExternalLink } from './external-link';
 export const Player = async () => {
   const track = await getLatestPlayedTrack();
 
-  const formattedPlayedAt = new Date(track.date).toLocaleString('en', {
-    day: 'numeric',
-    month: 'long',
-  });
-
   return (
     <section
-      aria-label={`${formattedPlayedAt} Guilherme was listening to ${track.song} by ${track.artist}`}
+      aria-label={`The last song Guilherme played was ${track.song} by ${track.artist}`}
     >
-      <p aria-hidden className='line-clamp-1 max-w-xs text-sm text-secondary'>
+      {' '}
+      <p className='line-clamp-1 max-w-xs text-sm text-secondary'>
         {track.artist} - {track.song}
       </p>
       <p className='text-xs text-secondary'>
