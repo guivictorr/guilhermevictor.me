@@ -1,17 +1,13 @@
 import {
   ArrowUpRightIcon,
   DownloadIcon,
-  LucideProps,
   MonitorCogIcon,
   MoonIcon,
   MoveLeftIcon,
   SunIcon,
 } from 'lucide-react';
-import { ComponentType } from 'react';
 
-type IconNames = 'download' | 'back' | 'external' | 'system' | 'dark' | 'light';
-
-const icons: Record<IconNames, ComponentType<LucideProps>> = {
+const icons = {
   download: DownloadIcon,
   back: MoveLeftIcon,
   external: ArrowUpRightIcon,
@@ -19,6 +15,7 @@ const icons: Record<IconNames, ComponentType<LucideProps>> = {
   dark: MoonIcon,
   light: SunIcon,
 };
+type IconNames = keyof typeof icons;
 
 type IconProps = {
   icon: IconNames;
