@@ -1,5 +1,6 @@
 import {
   ArrowUpRightIcon,
+  ChevronRightIcon,
   DownloadIcon,
   MonitorCogIcon,
   MoonIcon,
@@ -14,6 +15,7 @@ const icons = {
   system: MonitorCogIcon,
   dark: MoonIcon,
   light: SunIcon,
+  'chevron-right': ChevronRightIcon,
 };
 type IconNames = keyof typeof icons;
 
