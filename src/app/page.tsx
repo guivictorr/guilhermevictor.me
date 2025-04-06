@@ -1,17 +1,15 @@
-import { ListColumn, ListItem } from '@/components/list-column';
 import { ExternalLink } from '@/components/external-link';
-import { getCrafts, getPosts } from '@/services/content';
 import { Footer } from '@/components/footer';
-import bookmarksJson from '@/app/bookmarks/bookmarks.json';
-import Link from 'next/link';
 import { Icon } from '@/components/icon';
 
-export default async function Home() {
-  const posts = getPosts();
-  const crafts = getCrafts();
+const links = [
+  { label: 'Crafts', href: '/crafts' },
+  { label: 'Writing', href: '/writing' },
+];
 
+export default async function Home() {
   return (
-    <main className='flex flex-col justify-center gap-4 max-w-xl mx-auto  h-full'>
+    <main className='flex flex-col justify-bet gap-4 max-w-xl mx-auto  h-full'>
       <section
         aria-label='Information about Guilherme Victor'
         className='flex flex-col sm:flex-row items-start pb-4 border-b'
@@ -47,41 +45,25 @@ export default async function Home() {
           </a>
         </div>
       </section>
-      <section className='grid grid-cols-1 gap-x-8 space-y-8 sm:space-y-0 sm:grid-cols-3'>
-        <ListColumn title='Crafts'>
-          {crafts.map(craft => (
-            <ListItem
-              key={craft.slug}
-              title={craft.metadata.title}
-              href={craft.metadata.url}
-            />
-          ))}
-        </ListColumn>
-
-        <ListColumn title='Writing'>
-          {posts.map(post => (
-            <ListItem
-              key={post.slug}
-              title={post.metadata.title}
-              href={post.metadata.url}
-            />
-          ))}
-        </ListColumn>
-
-        <ListColumn title='Bookmarks'>
-          {bookmarksJson.data.slice(0, 3).map(bookmark => (
-            <ListItem
-              key={bookmark.id}
-              title={bookmark.title}
-              href={bookmark.originalArticleUrl}
-            />
-          ))}
-          <li>
-            <Link className='block pt-4' href='/bookmarks'>
-              More Bookmarks
-            </Link>
-          </li>
-        </ListColumn>
+      <section>
+        <nav>
+          <ul className='flex flex-col gap-2'>
+            {links.map(link => (
+              <li
+                key={link.href}
+                className='hover:bg-secondary/5 rounded-lg px-2 transition-all'
+              >
+                <a
+                  href={link.href}
+                  className='flex items-center justify-between w-full h-10 no-underline'
+                >
+                  <span>{link.label}</span>
+                  <Icon icon='chevron-right' className='size-6' />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </section>
       <Footer />
     </main>
