@@ -1,6 +1,7 @@
 import { ExternalLink } from '@/components/external-link';
 import { Footer } from '@/components/footer';
 import { Icon } from '@/components/icon';
+import Link from 'next/link';
 
 const links = [
   { label: 'Crafts', href: '/crafts' },
@@ -53,13 +54,13 @@ export default async function Home() {
                 key={link.href}
                 className='hover:bg-secondary/5 rounded-lg px-2 transition-all'
               >
-                <a
+                <Link
                   href={link.href}
                   className='flex items-center justify-between w-full h-10 no-underline'
                 >
                   <span>{link.label}</span>
                   <Icon icon='chevron-right' className='size-6' />
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
