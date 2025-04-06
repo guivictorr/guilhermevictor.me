@@ -1,6 +1,7 @@
 'use client';
+
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 const tabs = [
   { id: 1, text: 'Dashboard' },
