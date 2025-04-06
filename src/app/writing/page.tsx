@@ -57,23 +57,20 @@ export default function WritingHome() {
                 <span className='absolute top-[14px] left-0 text-sm text-secondary'>
                   {year}
                 </span>
-                <ul className='divide-y divide-secondary/10'>
+                <ul className='divide-y divide-secondary/10 group'>
                   {posts.map(post => (
-                    <li
-                      key={post.title}
-                      className='group/listItem ml-[25%] group-hover:text-secondary'
-                    >
+                    <li key={post.title} className='ml-[25%]'>
                       <Link
                         href={post.url ?? ''}
-                        className='relative flex items-center w-full justify-between py-3 no-underline before:absolute before:h-full before:w-full before:-left-1/2'
+                        className='group-hover:text-secondary/50 hover:!text-primary relative flex items-center w-full justify-between py-3 no-underline before:absolute before:h-full before:w-full before:-left-1/2'
                       >
-                        <span className='group-hover/listItem:!text-primary transition truncate'>
+                        <span className='transition truncate'>
                           {post.title}
                         </span>
                         {!!post.publishedAt && (
                           <time
                             dateTime={post.publishedAt.toString()}
-                            className='group-hover/listItem:!text-secondary transition text-sm'
+                            className='transition text-sm'
                           >
                             {format(post.publishedAt, 'MMMM dd')}
                           </time>
