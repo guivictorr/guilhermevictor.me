@@ -6,7 +6,7 @@ import { buildSEO } from '@/app/seo';
 import { PostLayout } from '@/components/post-layout';
 
 type PostPageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
@@ -15,7 +15,8 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: PostPageProps) {
+export async function generateMetadata(props: PostPageProps) {
+  const params = await props.params;
   const post = getPost(params.slug);
 
   return buildSEO({
@@ -25,7 +26,8 @@ export async function generateMetadata({ params }: PostPageProps) {
   });
 }
 
-export default function PostPage({ params }: PostPageProps) {
+export default async function PostPage(props: PostPageProps) {
+  const params = await props.params;
   const { slug } = params;
   const post = getPost(slug);
   const posts = getPosts();
