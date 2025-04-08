@@ -16,7 +16,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
-        serif: ['var(--font-playfair-display)'],
+        serif: ['var(--font-serif)'],
       },
     },
   },
