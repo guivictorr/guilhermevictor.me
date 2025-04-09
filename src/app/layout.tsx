@@ -11,11 +11,11 @@ import '@/globals.css';
 import { buildSEO } from '@/app/seo';
 import { Scripts } from './scripts';
 import { ThemeSwitcher } from '@/components/theme-switcher';
-import { Noise } from '@/components/noise';
 
 const serif = Instrument_Serif({
   variable: '--font-serif',
   weight: ['400'],
+  subsets: ['latin'],
 });
 export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
