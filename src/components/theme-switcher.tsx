@@ -9,6 +9,28 @@ export function ThemeSwitcher() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  function handleThemeToggle(theme: string, coords?: { x: number; y: number }) {
+    const root = document.documentElement;
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+
+    if (!document.startViewTransition || prefersReducedMotion) {
+      setTheme(theme);
+      return;
+    }
+
+    if (coords) {
+      root.style.setProperty('--x', `${coords.x}px`);
+      root.style.setProperty('--y', `${coords.y}px`);
+    }
+
+    document.startViewTransition(() => {
+      setTheme(theme);
+    });
+  }
+
   return (
     <fieldset className='absolute top-8 right-8 z-20 flex items-center gap-8'>
       <legend className='sr-only'>Select a display theme:</legend>
@@ -31,13 +53,13 @@ export function ThemeSwitcher() {
               id={`${id}_${t}`}
               value={t}
               className='sr-only'
-              onChange={() => {
-                if (!document.startViewTransition) {
-                  setTheme(t);
-                  return;
-                }
-                document.startViewTransition(() => {
-                  setTheme(t);
+              onChange={event => {
+                const target = event.currentTarget;
+                const rect = target.getBoundingClientRect();
+
+                handleThemeToggle(t, {
+                  x: rect.right,
+                  y: rect.top,
                 });
               }}
               checked={t === theme}
