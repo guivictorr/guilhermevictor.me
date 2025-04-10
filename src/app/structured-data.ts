@@ -55,12 +55,6 @@ export const structuredData = {
         {
           '@type': 'ListItem',
           position: 2,
-          name: 'Writing',
-          item: `${baseUrl}/writing`,
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
           name: post.metadata.title,
           item: `${baseUrl}/writing/${post.slug}`,
         },
