@@ -1,5 +1,5 @@
 import { baseUrl } from '@/constants';
-import { getCrafts, getPosts } from '@/services/content';
+import { getPosts } from '@/services/content';
 
 export const structuredData = {
   '@context': 'https://schema.org',
@@ -43,29 +43,6 @@ export const structuredData = {
     url: `${baseUrl}${data.metadata.url}`,
   })),
   breadcrumb: [
-    ...getCrafts().map(craft => ({
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Guilherme Victor',
-          item: baseUrl,
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Crafts',
-          item: `${baseUrl}/crafts`,
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: craft.metadata.title,
-          item: `${baseUrl}/crafts/${craft.slug}`,
-        },
-      ],
-    })),
     ...getPosts().map(post => ({
       '@type': 'BreadcrumbList',
       itemListElement: [

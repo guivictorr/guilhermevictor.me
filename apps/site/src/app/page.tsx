@@ -3,14 +3,18 @@ import { Footer } from '@/components/footer';
 import { Icon } from '@/components/icon';
 import Link from 'next/link';
 
-const links = [
-  { label: 'Writing', href: '/writing' },
-  { label: 'Crafts', href: '/crafts' },
-];
+import { getPosts } from '@/services/content';
+import { format } from 'date-fns';
 
-export default async function Home() {
+export default function Home() {
+  const posts = getPosts().map(post => post.metadata);
+
+  const groupedPostsByYear = Object.groupBy(posts, post =>
+    new Date(post.publishedAt).getFullYear().toString(),
+  );
+
   return (
-    <main className='flex flex-col justify-bet gap-4 max-w-xl mx-auto  h-full'>
+    <main className='flex flex-col justify-between gap-8 max-w-xl mx-auto'>
       <section
         aria-label='Information about Guilherme Victor'
         className='flex flex-col sm:flex-row items-start pb-4 border-b'
@@ -48,21 +52,41 @@ export default async function Home() {
       </section>
       <section aria-label='Main navigation'>
         <nav>
-          <ul className='flex flex-col gap-2'>
-            {links.map(link => (
-              <li
-                key={link.href}
-                className='hover:bg-secondary/5 rounded-lg px-2 transition-all'
-              >
-                <Link
-                  href={link.href}
-                  className='flex items-center justify-between w-full h-10 no-underline'
-                >
-                  <span>{link.label}</span>
-                  <Icon icon='chevron-right' className='size-6' />
-                </Link>
-              </li>
-            ))}
+          <ul className='group flex flex-col gap-4'>
+            {Object.entries(groupedPostsByYear)
+              .reverse()
+              .map(([year, posts]) => (
+                <li key={year} className='relative'>
+                  <span className='text-sm text-secondary mb-1 block'>
+                    {year}
+                  </span>
+                  <ul>
+                    {posts?.map(post => (
+                      <li
+                        key={post.title}
+                        className='group-hover:text-secondary/50 hover:!text-primary'
+                      >
+                        <Link
+                          href={post.url ?? ''}
+                          className='group-hover:text-secondary/50 hover:!text-primary flex items-center w-full justify-between py-2 no-underline'
+                        >
+                          <span className='transition truncate'>
+                            {post.title}
+                          </span>
+                          {!!post.publishedAt && (
+                            <time
+                              dateTime={post.publishedAt.toString()}
+                              className='transition text-sm'
+                            >
+                              {format(post.publishedAt, 'MMMM dd')}
+                            </time>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
           </ul>
         </nav>
       </section>

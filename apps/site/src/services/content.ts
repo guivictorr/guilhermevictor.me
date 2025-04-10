@@ -81,20 +81,6 @@ export const getPosts = () => {
   );
 };
 
-export const getCrafts = () => {
-  return getMDXData(path.join(process.cwd(), 'content/crafts')).sort((a, b) => {
-    return (
-      new Date(String(b.metadata.publishedAt)).getTime() -
-      new Date(String(a.metadata.publishedAt)).getTime()
-    );
-  });
-};
-
-export const getCraft = (slug: string) => {
-  return getMDXData(path.join(process.cwd(), 'content/crafts')).find(
-    file => file.slug === slug,
-  );
-};
 export const getPost = (slug: string) => {
   return getMDXData(path.join(process.cwd(), 'content/writing')).find(
     file => file.slug === slug,
