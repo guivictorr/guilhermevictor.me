@@ -5,8 +5,8 @@ export const runtime = 'edge';
 
 const colors = {
   primary: '#FDDCBD',
-  secondary: '#FDDCBDAA',
-  background: '#180F0A',
+  secondary: '#D1BAA2',
+  background: '#261911',
 };
 
 export async function GET({ nextUrl }: NextRequest) {
