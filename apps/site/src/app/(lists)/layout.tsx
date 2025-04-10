@@ -1,20 +1,18 @@
-'use client';
 import { Icon } from '@/components/icon';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { PropsWithChildren } from 'react';
 
 export default function ListsLayout({ children }: PropsWithChildren) {
-  const router = useRouter();
   return (
     <div className='max-w-2xl mx-auto'>
       <nav>
-        <button
-          onClick={() => router.back()}
+        <Link
+          href='/'
           className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
         >
           <Icon icon='back' />
-          <span>Back</span>
-        </button>
+          <span>Home</span>
+        </Link>
       </nav>
       <main>{children}</main>
     </div>
