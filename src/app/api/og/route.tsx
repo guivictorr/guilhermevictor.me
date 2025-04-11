@@ -18,8 +18,8 @@ export async function GET({ nextUrl }: NextRequest) {
   const geistFont = await fetch(
     new URL('GeistRegular.otf', import.meta.url),
   ).then(res => res.arrayBuffer());
-  const playfairDisplayFont = await fetch(
-    new URL('PlayfairDisplay.ttf', import.meta.url),
+  const serifFont = await fetch(
+    new URL('InstrumentSerif.ttf', import.meta.url),
   ).then(res => res.arrayBuffer());
 
   return new ImageResponse(
@@ -51,8 +51,8 @@ export async function GET({ nextUrl }: NextRequest) {
         <p
           style={{
             fontSize: 98,
-            lineHeight: '80%',
-            fontFamily: '"Playfair"',
+            lineHeight: '90%',
+            fontFamily: '"Serif"',
             fontWeight: 500,
           }}
         >
@@ -64,6 +64,9 @@ export async function GET({ nextUrl }: NextRequest) {
             color: colors.secondary,
             lineHeight: '100%',
             fontFamily: '"Geist"',
+            wordBreak: 'break-all',
+            textOverflow: 'ellipsis',
+            maxWidth: '90%',
             fontWeight: 400,
           }}
         >
@@ -82,8 +85,8 @@ export async function GET({ nextUrl }: NextRequest) {
           weight: 400,
         },
         {
-          name: 'Playfair',
-          data: playfairDisplayFont,
+          name: 'Serif',
+          data: serifFont,
           style: 'normal',
           weight: 500,
         },

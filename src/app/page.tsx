@@ -52,7 +52,7 @@ export default function Home() {
       </section>
       <section aria-label='Main navigation'>
         <nav>
-          <ul className='group flex flex-col gap-4'>
+          <ul className='flex flex-col gap-4'>
             {Object.entries(groupedPostsByYear)
               .reverse()
               .map(([year, posts]) => (
@@ -62,21 +62,18 @@ export default function Home() {
                   </span>
                   <ul>
                     {posts?.map(post => (
-                      <li
-                        key={post.title}
-                        className='group-hover:text-secondary/50 hover:!text-primary'
-                      >
+                      <li key={post.title}>
                         <Link
                           href={post.url ?? ''}
-                          className='group-hover:text-secondary/50 hover:!text-primary flex items-center w-full justify-between py-2 no-underline'
+                          className='flex items-center w-full gap-2 justify-between py-2 no-underline'
                         >
-                          <span className='transition truncate'>
+                          <span className='transition line-clamp-1'>
                             {post.title}
                           </span>
                           {!!post.publishedAt && (
                             <time
                               dateTime={post.publishedAt.toString()}
-                              className='transition text-sm'
+                              className='transition text-sm shrink-0'
                             >
                               {format(post.publishedAt, 'MMMM dd')}
                             </time>
