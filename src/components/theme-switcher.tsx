@@ -32,7 +32,7 @@ export function ThemeSwitcher() {
   }
 
   return (
-    <fieldset className='absolute top-8 right-8 z-20 flex items-center gap-8'>
+    <fieldset className='flex items-center gap-8'>
       <legend className='sr-only'>Select a display theme:</legend>
       {mounted &&
         themes.map(t => (

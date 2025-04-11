@@ -37,7 +37,9 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <ThemeProvider>
           <Analytics />
           <Vignette />
-          <ThemeSwitcher />
+          <div className='absolute top-8 right-8 z-20 '>
+            <ThemeSwitcher />
+          </div>
           {/* <Noise /> */}
 
           <div className='flex flex-col justify-between items-center h-screen md:py-32 py-28'>
