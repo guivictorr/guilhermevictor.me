@@ -2,17 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --sh-identifier: rgb(var(--color-secondary));
-  --sh-sign: rgb(var(--color-secondary));
-  --sh-string: rgb(var(--color-primary));
-  --sh-keyword: 255 0 0;
-  --sh-comment: 255 0 0;
-  --sh-property: 255 0 0;
-  --sh-class: 255 0 0;
-  --sh-jsxliterals: 255 0 0;
-  --sh-entity: 255 0 0;
-}
+/* :root { */
+/*   --sh-identifier: rgb(var(--color-secondary)); */
+/*   --sh-sign: rgb(var(--color-secondary)); */
+/*   --sh-string: rgb(var(--color-secondary)); */
+/*   --sh-keyword: rgb(var(--color-secondary)); */
+/*   --sh-comment: rgb(var(--color-background)); */
+/*   --sh-property: rgb(var(--color-secondary)); */
+/*   --sh-class: rgb(var(--color-secondary)); */
+/*   --sh-jsxliterals: rgb(var(--color-secondary)); */
+/*   --sh-entity: rgb(var(--color-secondary)); */
+/* } */
 
 @layer base {
   :root {
@@ -21,6 +21,22 @@
     --color-background: 251 241 199; /* Light warm background */
     --color-transparent: 251 241 199; /* Fully white for transparency */
     --noise-opacity: 30%;
+
+    /* Code syntax highlighting */
+    --sh-identifier: rgb(80, 55, 20); /* variables, function names */
+    --sh-function: rgb(100, 60, 25); /* function calls */
+    --sh-sign: rgb(180, 100, 40); /* operators like =, + */
+    --sh-string: rgb(150, 90, 50); /* string literals */
+    --sh-number: rgb(160, 80, 30); /* numeric values */
+    --sh-keyword: rgb(90, 45, 15); /* if, return, const, etc */
+    --sh-boolean: rgb(180, 50, 50); /* true, false */
+    --sh-null: rgb(130, 70, 30); /* null, undefined */
+    --sh-comment: rgb(190, 170, 130); /* comments */
+    --sh-property: rgb(100, 65, 25); /* object keys */
+    --sh-class: rgb(60, 40, 15); /* class names */
+    --sh-type: rgb(120, 80, 60); /* types/interfaces */
+    --sh-jsxliterals: rgb(100, 75, 20); /* JSX tags */
+    --sh-entity: rgb(120, 90, 30); /* HTML/JSX entities */
   }
 
   [data-theme='dark'] {
@@ -29,6 +45,21 @@
     --color-background: 38 28 17;
     --color-transparent: 0 0 0;
     --noise-opacity: 15%;
+
+    --sh-identifier: rgb(253, 220, 189);
+    --sh-function: rgb(255, 200, 170);
+    --sh-sign: rgb(240, 180, 130);
+    --sh-string: rgb(225, 170, 140);
+    --sh-number: rgb(255, 150, 120);
+    --sh-keyword: rgb(255, 235, 200);
+    --sh-boolean: rgb(255, 100, 100);
+    --sh-null: rgb(230, 130, 90);
+    --sh-comment: rgb(120, 100, 80);
+    --sh-property: rgb(240, 210, 180);
+    --sh-class: rgb(190, 160, 120);
+    --sh-type: rgb(220, 180, 150);
+    --sh-jsxliterals: rgb(255, 210, 170);
+    --sh-entity: rgb(235, 200, 160);
   }
 }
 
@@ -48,7 +79,7 @@ a {
 }
 
 .prose pre {
-  @apply border bg-background/20 border-secondary/10 rounded-md p-4 overflow-x-auto;
+  @apply border bg-background/20 border-secondary/10 rounded-md p-4 overflow-x-auto text-sm;
 }
 
 .prose strong {
@@ -95,5 +126,5 @@ a {
 }
 
 ::view-transition-new(root) {
-  animation: reveal-new 0.6s ease-in-out forwards;
+  animation: reveal-new 0.8s ease-in-out;
 }

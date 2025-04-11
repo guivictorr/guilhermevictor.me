@@ -1,0 +1,157 @@
+---
+title: Theme transition with View Transition API
+url: /writing/theme-transition
+publishedAt: 2025-04-11
+updatedAt: 2025-04-11
+description:
+keywords: frontend, web, view transition, css
+---
+
+In this post, I'm gonna explain how I made this cool transition for my theme switcher.
+
+<CraftPreview>
+  <ThemeSwitcher/>
+</CraftPreview>
+
+## View Transition API
+
+The [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) was introduced in 2023 (I think)
+to improve the experience of creating beautiful transitions between pages. Today, it's almost fully compatible with all browsers except Firefox.
+
+View transition has a lot of tools and in this feature, we're going to use only three of them: `document.startViewTransition`, `::view-transition-old()` and `::view-transition-new()`
+
+## The Switcher
+
+In this post I'm going to focus only on building the transition between themes, supposing that you already have a theme transition system.
+
+Let's start with the function responsible for changing the theme. The only thing you're going to do is wrap the code that's changing the DOM with the `document.startViewTransition` function.
+
+```ts
+function handleThemeToggle(theme: string) {
+  document.startViewTransition(() => {
+    setTheme(theme);
+  });
+}
+```
+
+With just this you already have a cool opacity transition between changes because View Transitions has a default opacity animation.
+
+Now let's add some conditionals to cover unsupported browsers and users who prefer reduced motion.
+
+```ts
+const prefersReducedMotion = window.matchMedia(
+  '(prefers-reduced-motion: reduce)',
+).matches;
+
+if (!document.startViewTransition || prefersReducedMotion) {
+  setTheme(theme);
+  return;
+}
+
+document.startViewTransition(() => {
+  setTheme(theme);
+});
+```
+
+## CSS
+
+Now let's move to the css to customize and give a personal touch to this transition animation.
+
+In css, we're going to use `::view-transition-old` and `::view-transition-new` to customize the transition. 
+They're basically snapshots of each view before and after the transition.
+
+First, let's remove the default opacity animation that comes with View Transition.
+
+```css
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+```
+
+This `root` value it's a group of view transition that it's created by default, you can have multiple groups of view transitions.
+
+Now, let's create our own animation using the common `@keyframes` that we're used to.
+
+```css
+@keyframes reveal-new {
+  from {
+    clip-path: circle(0% at top right);
+  }
+  to {
+    clip-path: circle(200% at top right);
+  }
+}
+```
+
+I'm using the awesome property `clip-path` to animate the transition between the old and new view. The circle is going to expand from the top right corner of the page, revealing the new view with the currently selected theme, 
+while outside the circle, the old view is going to vanish.
+
+To make this work, you need to pass the animation to the `::view-transition-new`
+
+```css
+::view-transition-new(root) {
+  animation: reveal-new 0.8s ease-in-out;
+}
+```
+
+Nice, now we have a cool transition between our theme changes.
+
+## Coordinates
+
+Now, let's make our `clip-path` circle expand from the mouse or element position. First, in the `handleThemeToggle` function we're going to get the current position of the element or mouse.
+
+```ts
+type Coords = { x: number; y: number; };
+
+function handleThemeToggle(theme: string, coords?: Coords) {
+  const root = document.documentElement;
+
+  // const prefersReducedMotion = window.matchMedia(
+  //   '(prefers-reduced-motion: reduce)',
+  // ).matches;
+  //
+  // if (!document.startViewTransition || prefersReducedMotion) {
+  //   setTheme(theme);
+  //   return;
+  // }
+
+  if (coords) {
+    root.style.setProperty('--x', `${coords.x}px`);
+    root.style.setProperty('--y', `${coords.y}px`);
+  }
+
+  // document.startViewTransition(() => {
+  //   setTheme(theme);
+  // });
+}
+```
+
+In this case, I'm getting the element position because I'm using radio buttons to change the theme, but if you're using mouse events you can get the `clientX` and `clientY` values.
+
+```ts
+const target = event.currentTarget;
+const rect = target.getBoundingClientRect();
+
+handleThemeToggle(t, {
+  x: rect.right, // or clientX
+  y: rect.top, // or clientY
+});
+```
+
+Now, let's update our animation with the curent `--x` and `--y` variables with the coordinates of our element.
+
+```css
+@keyframes reveal-new {
+  from {
+    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+  }
+  to {
+    clip-path: circle(200% at var(--x, 50%) var(--y, 50%));
+  }
+}
+```
+
+And that's it! You should have a nice theme transition using View Transitions API. Now, explore the possibilities of this cool feature and create really nice transitions on your projects.
+
+Thank you very much for reading.
