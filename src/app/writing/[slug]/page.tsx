@@ -41,11 +41,8 @@ export default async function PostPage(props: PostPageProps) {
     return notFound();
   }
 
-  const nextItem = posts.filter(
-    ({ metadata }) =>
-      new Date(String(metadata.publishedAt)) >
-      new Date(String(post.metadata.publishedAt)),
-  )[0];
+  const nextItemIndex = posts.findIndex(p => p.slug === slug);
+  const nextItem = posts[nextItemIndex - 1];
 
   const previousItem = posts.filter(
     ({ metadata }) =>
