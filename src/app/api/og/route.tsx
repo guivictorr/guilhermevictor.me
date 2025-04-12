@@ -13,7 +13,6 @@ export async function GET({ nextUrl }: NextRequest) {
   const { searchParams } = nextUrl;
 
   const title = searchParams.get('title');
-  const description = searchParams.get('description');
 
   const geistFont = await fetch(
     new URL('GeistRegular.otf', import.meta.url),
@@ -57,20 +56,6 @@ export async function GET({ nextUrl }: NextRequest) {
           }}
         >
           {title}
-        </p>
-        <p
-          style={{
-            fontSize: 42,
-            color: colors.secondary,
-            lineHeight: '100%',
-            fontFamily: '"Geist"',
-            wordBreak: 'break-all',
-            textOverflow: 'ellipsis',
-            maxWidth: '90%',
-            fontWeight: 400,
-          }}
-        >
-          {description}
         </p>
       </div>
     ),
