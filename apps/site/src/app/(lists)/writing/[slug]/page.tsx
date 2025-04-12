@@ -23,6 +23,9 @@ export async function generateMetadata(props: PostPageProps) {
     title: post?.metadata.title ?? '',
     description: post?.metadata.description ?? '',
     dynamic_og: true,
+    alternates: {
+      canonical: `/writing/${post?.slug}`,
+    },
   });
 }
 
