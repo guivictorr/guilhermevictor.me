@@ -40,7 +40,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
           <div className='absolute top-8 right-8 z-20 '>
             <ThemeSwitcher />
           </div>
-          {/* <Noise /> */}
 
           <div className='flex flex-col justify-between items-center h-screen md:py-32 py-28'>
             <div className='md:max-w-6xl px-6 sm:px-8 w-full flex-1'>
