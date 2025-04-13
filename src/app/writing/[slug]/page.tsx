@@ -62,40 +62,15 @@ export default async function PostPage(props: PostPageProps) {
     return notFound();
   }
 
-  const headings = [
-    {
-      level: 1,
-      id: '#index',
-      text: post.metadata.title,
-    },
-    ...getMarkdownTitles(post.content),
-  ];
+  const headings = getMarkdownTitles(post.content);
 
   return (
-    <div className='lg:grid lg:grid-cols-[20%_60%_20%] place-content-center mx-auto mt-32 max-w-6xl'>
-      <aside
-        className='hidden lg:block'
-        aria-hidden={headings.length === 0}
-        aria-label='Table of contents'
+    <div className='lg:grid lg:grid-cols-[70%_30%]'>
+      <section
+        className={`w-full max-w-4xl mx-auto pt-28 pb-14 px-4 ${
+          headings.length === 0 && 'col-span-2'
+        }`}
       >
-        <nav className='relative h-full'>
-          <ul className='sticky top-20 left-0 space-y-2'>
-            {headings.map(heading => (
-              <li key={heading.id}>
-                <a
-                  href={heading.id}
-                  className='no-underline text-lowcontrast hover:text-primary transition'
-                >
-                  <span className='line-clamp-1 max-w-[90%]'>
-                    {heading.text}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-      <section className='w-full'>
         <Header metadata={post.metadata} />
         <main>
           <hr className='border-secondary/10 my-8' />
@@ -103,6 +78,39 @@ export default async function PostPage(props: PostPageProps) {
         </main>
         <Footer slug={slug} />
       </section>
+
+      {headings.length > 0 && (
+        <aside
+          className='hidden lg:block border-l border-l-secondary/10 pt-32 px-14'
+          aria-hidden={headings.length === 0}
+          aria-labelledby='toc'
+        >
+          <nav className='relative h-full w-full'>
+            <ol className='fixed top-28 space-y-4 list-decimal list-inside'>
+              <div>
+                <h3 id='toc' className='font-serif text-primary text-2xl'>
+                  Table of contents
+                </h3>
+              </div>
+              {headings.map(heading => (
+                <li
+                  style={{
+                    marginLeft: heading.level === 2 ? 0 : heading.level * 8,
+                  }}
+                  className='marker:text-lowcontrast'
+                  key={heading.id}
+                >
+                  <a href={heading.id} className='no-underline'>
+                    <span className='max-w-[90%] text-secondary hover:text-primary transition'>
+                      {heading.text}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </aside>
+      )}
     </div>
   );
 }
