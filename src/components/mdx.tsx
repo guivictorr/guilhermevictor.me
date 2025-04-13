@@ -1,9 +1,8 @@
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote/rsc';
-import { PropsWithChildren, HTMLAttributes } from 'react';
+import { PropsWithChildren, HTMLAttributes, ReactNode } from 'react';
 import { highlight } from 'sugar-high';
 import { ExternalLink } from './external-link';
 import { ExclusionTabs } from './exclusion-tabs';
-import { CraftPreview } from './craft-preview';
 import { ThemeSwitcher } from './theme-switcher';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
@@ -16,14 +15,44 @@ function Code({ children, ...props }: CodeProps) {
   return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
 }
 
+type HeadingProps = {
+  level: 'h1' | 'h2';
+  children: ReactNode;
+} & HTMLHeadingElement;
+
+function Heading({ level: Slot, children }: HeadingProps) {
+  const id = String(children).toLowerCase().replace(/ /gi, '-');
+  return (
+    <Slot>
+      <a className='no-underline text-primary' id={id}>
+        <span>{children}</span>
+      </a>
+    </Slot>
+  );
+}
+
+function CraftPreview({ children }: PropsWithChildren) {
+  return (
+    <div className='border bg-background border-secondary/10 rounded-md p-14 md:p-20 overflow-x-auto flex items-center justify-center'>
+      {children}
+    </div>
+  );
+}
+
 const components: MDXRemoteProps['components'] = {
   code: Code,
-  a: ({ children, href }) => (
-    <ExternalLink href={href ?? '/'}>{children}</ExternalLink>
-  ),
   ExclusionTabs: ExclusionTabs,
   ThemeSwitcher: ThemeSwitcher,
   CraftPreview: CraftPreview,
+  a: ({ children, href }) => (
+    <ExternalLink href={href ?? '/'}>{children}</ExternalLink>
+  ),
+  h1: props => <Heading level='h1' {...props} />,
+  h2: props => <Heading level='h2' {...props} />,
+  h3: props => <Heading level='h3' {...props} />,
+  h4: props => <Heading level='h4' {...props} />,
+  h5: props => <Heading level='h5' {...props} />,
+  h6: props => <Heading level='h6' {...props} />,
 };
 
 export const MDX = (props: MDXRemoteProps) => {
