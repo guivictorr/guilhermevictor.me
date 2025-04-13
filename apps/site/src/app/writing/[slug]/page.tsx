@@ -30,6 +30,28 @@ export async function generateMetadata(props: PostPageProps) {
     },
   });
 }
+type MarkdownTitle = {
+  level: number;
+  text: string;
+  id: string;
+};
+function getMarkdownTitles(markdown: string): MarkdownTitle[] {
+  const lines = markdown.split('\n');
+  const titles: MarkdownTitle[] = [];
+
+  for (const line of lines) {
+    const match = line.match(/^(#{1,6})\s+(.*)$/);
+    if (match) {
+      titles.push({
+        level: match[1].length,
+        text: match[2].trim(),
+        id: `#${String(match[2].trim()).toLowerCase().replace(/ /gi, '-')}`,
+      });
+    }
+  }
+
+  return titles;
+}
 
 export default async function PostPage(props: PostPageProps) {
   const params = await props.params;
@@ -40,14 +62,47 @@ export default async function PostPage(props: PostPageProps) {
     return notFound();
   }
 
+  const headings = [
+    {
+      level: 1,
+      id: '#index',
+      text: post.metadata.title,
+    },
+    ...getMarkdownTitles(post.content),
+  ];
+
   return (
-    <div className='max-w-2xl mx-auto'>
-      <Header metadata={post.metadata} />
-      <main>
-        <hr className='border-secondary/10 my-8' />
-        <MDX source={post.content} />
-      </main>
-      <Footer slug={slug} />
+    <div className='lg:grid lg:grid-cols-[20%_60%_20%] place-content-center mx-auto mt-32 max-w-6xl'>
+      <aside
+        className='hidden lg:block'
+        aria-hidden={headings.length === 0}
+        aria-label='Table of contents'
+      >
+        <nav className='relative h-full'>
+          <ul className='sticky top-20 left-0 space-y-2'>
+            {headings.map(heading => (
+              <li key={heading.id}>
+                <a
+                  href={heading.id}
+                  className='no-underline text-lowcontrast hover:text-primary transition'
+                >
+                  <span className='line-clamp-1 max-w-[90%]'>
+                    {heading.text}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+      <section className='w-full'>
+        <Header metadata={post.metadata} />
+        <main>
+          <hr className='border-secondary/10 my-8' />
+          <MDX source={post.content} />
+        </main>
+        <Footer slug={slug} />
+      </section>
     </div>
   );
 }
@@ -64,7 +119,11 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
           <span>Home</span>
         </Link>
       </nav>
-      <h1 className='text-3xl font-serif text-primary'>{metadata.title}</h1>
+      <h1 className='text-3xl font-serif text-primary'>
+        <a className='no-underline text-primary' id='index'>
+          <span>{metadata.title}</span>
+        </a>
+      </h1>
       {metadata.publishedAt && (
         <time
           className='text-sm text-secondary'

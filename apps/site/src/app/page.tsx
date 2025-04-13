@@ -14,10 +14,10 @@ export default function Home() {
   );
 
   return (
-    <main className='flex flex-col justify-between gap-8 max-w-xl mx-auto'>
+    <main className='space-y-8 max-w-xl mx-auto mt-32'>
       <section
         aria-label='Information about Guilherme Victor'
-        className='flex flex-col sm:flex-row items-start pb-4 border-b'
+        className='flex items-start pb-4 border-b'
       >
         <div>
           <p className='leading-tight'>Guilherme Victor</p>

@@ -41,11 +41,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
             <ThemeSwitcher />
           </div>
 
-          <div className='flex flex-col justify-between items-center h-screen md:py-32 py-28'>
-            <div className='md:max-w-6xl px-6 sm:px-8 w-full flex-1'>
-              {children}
-            </div>
-          </div>
+          <div className='px-6'>{children}</div>
         </ThemeProvider>
       </body>
     </html>
