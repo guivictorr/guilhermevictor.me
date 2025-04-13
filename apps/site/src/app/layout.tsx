@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html
       lang='en'
-      className={`${serif.variable} ${GeistSans.variable}`}
+      className={`${serif.variable} ${GeistSans.variable} scroll-smooth scroll-pt-20`}
       suppressHydrationWarning
     >
       <head>
