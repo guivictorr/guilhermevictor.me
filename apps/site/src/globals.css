@@ -80,6 +80,10 @@ a {
   @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
 }
 
+.prose p .sh__line {
+  @apply border border-secondary/20 rounded-md px-2 py-1;
+}
+
 .prose pre {
   @apply border bg-background/20 border-secondary/10 rounded-md p-4 overflow-x-auto text-sm;
 }
