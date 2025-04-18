@@ -14,7 +14,7 @@ export default function Home() {
   );
 
   return (
-    <main className='space-y-8 max-w-xl mx-auto mt-32 px-2'>
+    <main className='space-y-8 max-w-xl mx-auto mt-20 md:mt-32 px-2'>
       <section
         aria-label='Information about Guilherme Victor'
         className='flex items-start pb-4 border-b'

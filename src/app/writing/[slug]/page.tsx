@@ -67,7 +67,7 @@ export default async function PostPage(props: PostPageProps) {
   return (
     <div className='lg:grid lg:grid-cols-[70%_30%]'>
       <section
-        className={`w-full max-w-4xl mx-auto pt-28 pb-14 px-4 ${
+        className={`w-full max-w-4xl mx-auto pt-20 pb-14 px-4 ${
           headings.length === 0 && 'col-span-2'
         }`}
       >
@@ -151,7 +151,7 @@ function Footer({ slug }: { slug: string }) {
   const previousItem = posts[currentItemIndex + 1];
 
   return (
-    <footer className='md:pb-32 pb-16'>
+    <footer>
       <hr className='border-secondary/10 my-8' />
 
       <nav className='flex justify-between'>

@@ -2,6 +2,7 @@
 import { useTheme } from 'next-themes';
 import { useState, useEffect, useId } from 'react';
 import { Icon } from './icon';
+import { motion } from 'motion/react';
 
 export function ThemeSwitcher() {
   const { theme, themes, setTheme } = useTheme();
@@ -32,19 +33,25 @@ export function ThemeSwitcher() {
   }
 
   return (
-    <fieldset className='flex items-center gap-8'>
+    <fieldset className='flex items-center gap-2'>
       <legend className='sr-only'>Select a display theme:</legend>
       {mounted &&
         themes.map(t => (
           <span
             key={t}
-            className='p-1 relative has-[:focus-visible]:ring-2 ring-primary rounded-sm'
+            className='p-1 has-[:focus-visible]:ring-2 ring-primary rounded-sm'
           >
-            <label htmlFor={`${id}_${t}`} className='cursor-pointer'>
+            <label
+              htmlFor={`${id}_${t}`}
+              className='relative cursor-pointer size-8 flex items-center justify-center'
+            >
               <span className='sr-only'>{t}</span>
               <Icon icon={t as 'system' | 'dark' | 'light'} />
               {t === theme && (
-                <div className='absolute size-1 bg-primary rounded-full -bottom-1 left-1/2 -translate-x-1/2'></div>
+                <motion.div
+                  layoutId={id}
+                  className='absolute rounded-full inset-0 mix-blend-difference bg-primary z-10'
+                ></motion.div>
               )}
             </label>
             <input
