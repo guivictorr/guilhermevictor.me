@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <ThemeProvider>
           <Analytics />
           <Vignette />
-          <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border border-secondary/50 rounded-full'>
+          <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
             <ThemeSwitcher />
           </div>
 
