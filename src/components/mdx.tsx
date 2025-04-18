@@ -4,6 +4,7 @@ import { highlight } from 'sugar-high';
 import { ExternalLink } from './external-link';
 import { ExclusionTabs } from './exclusion-tabs';
 import { ThemeSwitcher } from './theme-switcher';
+import { Pre } from './pre';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {
@@ -41,6 +42,7 @@ function CraftPreview({ children }: PropsWithChildren) {
 
 const components: MDXRemoteProps['components'] = {
   code: Code,
+  pre: Pre,
   ExclusionTabs: ExclusionTabs,
   ThemeSwitcher: ThemeSwitcher,
   CraftPreview: CraftPreview,
