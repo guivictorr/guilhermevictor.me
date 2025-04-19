@@ -1,12 +1,17 @@
 'use client';
-import { PropsWithChildren } from 'react';
+
+import { PropsWithChildren, useId } from 'react';
 
 export function Pre({ children }: PropsWithChildren) {
+  const id = useId();
   async function copy() {
-    await navigator.clipboard.writeText(String(children));
+    const textToCopy = document.querySelector(`#${id} #raw`)?.textContent;
+    if (!textToCopy) return;
+    await navigator.clipboard.writeText(textToCopy);
   }
+
   return (
-    <pre className='relative overflow-hidden'>
+    <pre id={id} className='relative overflow-hidden'>
       <div className='overflow-y-auto'>{children}</div>
       <button
         type='button'
