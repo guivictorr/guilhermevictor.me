@@ -13,7 +13,14 @@ function Code({ children, ...props }: CodeProps) {
   }
 
   const codeHTML = highlight(children.toString());
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
+  return (
+    <>
+      <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
+      <span aria-hidden className='hidden' id='raw'>
+        {children.toString()}
+      </span>
+    </>
+  );
 }
 
 type HeadingProps = {
