@@ -4,6 +4,7 @@ import { highlight } from 'sugar-high';
 import { ExternalLink } from './external-link';
 import { ExclusionTabs } from './exclusion-tabs';
 import { ThemeSwitcher } from './theme-switcher';
+import { Pre } from './pre';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {
@@ -12,7 +13,14 @@ function Code({ children, ...props }: CodeProps) {
   }
 
   const codeHTML = highlight(children.toString());
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
+  return (
+    <>
+      <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
+      <span aria-hidden className='hidden' id='raw'>
+        {children.toString()}
+      </span>
+    </>
+  );
 }
 
 type HeadingProps = {
@@ -41,6 +49,7 @@ function CraftPreview({ children }: PropsWithChildren) {
 
 const components: MDXRemoteProps['components'] = {
   code: Code,
+  pre: Pre,
   ExclusionTabs: ExclusionTabs,
   ThemeSwitcher: ThemeSwitcher,
   CraftPreview: CraftPreview,
