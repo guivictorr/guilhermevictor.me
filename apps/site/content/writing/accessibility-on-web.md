@@ -1,8 +1,8 @@
 ---
 title: Accessibility on web
 url: /writing/accessibility-on-web
-publishedAt: 2024-01-09
-updatedAt: 2024-07-24
+publishedAt: 2024-01-09T03:00:00Z
+updatedAt: 2024-07-24T03:00:00Z
 description: This is just an introduction based on my personal research and note-taking about accessibility on web.
 keywords: a11y, accessibility, frontend, web, wcag, aria
 ---

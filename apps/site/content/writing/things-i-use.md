@@ -1,8 +1,8 @@
 ---
 title: Things I use
 url: /writing/things-i-use
-publishedAt: 2024-01-15
-updatedAt: 2024-07-24
+publishedAt: 2024-01-15T03:00:00Z
+updatedAt: 2024-07-24T03:00:00Z
 description: List of things that I use on my setup
 keywords:
 ---
