@@ -160,7 +160,7 @@ function Footer({ slug }: { slug: string }) {
             href={String(previousItem.metadata.url)}
             className='no-underline block'
           >
-            <span className='text-sm text-secondary'>Previous</span>
+            <span className='text-sm text-secondary'>Anterior</span>
             <span className='block text-primary'>
               {previousItem.metadata.title}
             </span>
@@ -172,7 +172,7 @@ function Footer({ slug }: { slug: string }) {
             href={String(nextItem.metadata.url)}
             className='no-underline block text-end'
           >
-            <span className='text-sm text-secondary'>Next</span>
+            <span className='text-sm text-secondary'>Próximo</span>
             <span className='block text-primary'>
               {nextItem.metadata.title}
             </span>
