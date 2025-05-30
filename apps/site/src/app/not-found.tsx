@@ -13,9 +13,7 @@ export default function NotFound() {
       </Link>
 
       <section className='flex items-center justify-center flex-1 h-full'>
-        <h1 className='font-serif text-3xl'>
-          Someday I&apos;ll make a proper not found page...
-        </h1>
+        <h1 className='font-serif text-3xl'>404</h1>
       </section>
     </main>
   );
