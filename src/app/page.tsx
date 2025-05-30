@@ -16,16 +16,16 @@ export default function Home() {
   return (
     <main className='space-y-8 max-w-xl mx-auto mt-20 md:mt-32 px-2'>
       <section
-        aria-label='Information about Guilherme Victor'
+        aria-label='Informações sobre Guilherme Victor'
         className='flex items-start pb-4 border-b'
       >
         <div>
           <p className='leading-tight'>Guilherme Victor</p>
           <h1 className='flex mb-2 mt-1 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
-            software developer
+            desenvolvedor de software
           </h1>
           <p className='max-w-sm'>
-            You can find me on{' '}
+            Você pode me encontrar no{' '}
             <ExternalLink href='https://x.com/oguivictor'>Twitter</ExternalLink>
             ,{' '}
             <ExternalLink href='https://bsky.app/profile/guilhermevictor.me'>
@@ -35,22 +35,22 @@ export default function Home() {
             <ExternalLink href='https://linkedin.com/in/guilhermeviictor'>
               Linkedin
             </ExternalLink>{' '}
-            and see my code on{' '}
+            e ver meu código no{' '}
             <ExternalLink href='https://github.com/guivictorr'>
               Github.
             </ExternalLink>
           </p>
           <a
-            href='/cv_en.pdf'
+            href='/cv.pdf'
             download='Guilherme_Victor_CV.pdf'
             className='flex items-center gap-1 mt-2'
           >
             <Icon icon='download' />
-            Download my CV
+            Baixe meu CV
           </a>
         </div>
       </section>
-      <section aria-label='Main navigation'>
+      <section aria-label='Navegação principal'>
         <nav>
           <ul className='flex flex-col gap-4'>
             {Object.entries(groupedPostsByYear)

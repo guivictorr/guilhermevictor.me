@@ -19,14 +19,14 @@ const serif = Instrument_Serif({
 });
 export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
-  description: 'My place to experiment and write about web development',
+  description: 'Meu lugar para experimentar e compartilhar conhecimento.',
   dynamic_og: false,
 });
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html
-      lang='en'
+      lang='pt-br'
       className={`${serif.variable} ${GeistSans.variable} scroll-smooth scroll-pt-20`}
       suppressHydrationWarning
     >

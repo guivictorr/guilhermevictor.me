@@ -89,7 +89,7 @@ export default async function PostPage(props: PostPageProps) {
             <ol className='fixed top-28 space-y-4 list-decimal list-inside'>
               <div>
                 <h3 id='toc' className='font-serif text-primary text-2xl'>
-                  Table of contents
+                  Índice
                 </h3>
               </div>
               {headings.map(heading => (

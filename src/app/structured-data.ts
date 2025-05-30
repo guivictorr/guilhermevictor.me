@@ -6,7 +6,7 @@ export const structuredData = {
   '@type': 'Blog',
   name: 'Guilherme Victor',
   url: baseUrl,
-  description: 'My place to experiment and write about web development',
+  description: 'Meu lugar para experimentar e compartilhar conhecimento.',
   publisher: {
     '@type': 'Person',
     name: 'Guilherme Victor',
