@@ -11,6 +11,8 @@ import '@/globals.css';
 import { buildSEO } from '@/app/seo';
 import { Scripts } from './scripts';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import { setDefaultOptions } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 
 const serif = Instrument_Serif({
   variable: '--font-serif',
@@ -21,6 +23,10 @@ export const metadata: Metadata = buildSEO({
   title: 'Guilherme Victor',
   description: 'Meu lugar para experimentar e compartilhar conhecimento.',
   dynamic_og: false,
+});
+
+setDefaultOptions({
+  locale: ptBR,
 });
 
 export default async function RootLayout({ children }: PropsWithChildren) {

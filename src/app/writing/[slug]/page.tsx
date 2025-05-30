@@ -134,7 +134,7 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
       </h1>
       {metadata.publishedAt && (
         <time
-          className='text-sm text-secondary'
+          className='text-sm text-secondary capitalize'
           dateTime={metadata.publishedAt.toString()}
         >
           {format(metadata.publishedAt, 'MMMM dd, yyyy')}

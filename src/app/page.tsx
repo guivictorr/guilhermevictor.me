@@ -73,7 +73,7 @@ export default function Home() {
                           {!!post.publishedAt && (
                             <time
                               dateTime={post.publishedAt.toString()}
-                              className='transition text-sm shrink-0'
+                              className='transition text-sm shrink-0 capitalize'
                             >
                               {format(post.publishedAt, 'MMMM dd')}
                             </time>
