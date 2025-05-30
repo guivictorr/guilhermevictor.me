@@ -13,9 +13,9 @@ export function TextReveal() {
   const radialGradientValue = useTransform(
     sliderMotionValue,
     [0, 100],
-    ['-70vh', '10vh'],
+    ['-50%', '10%'],
   );
-  const radialGradient = useMotionTemplate`radial-gradient(circle at 50% ${radialGradientValue}, rgba(var(--color-primary)) 40%, rgba(0,0,0,0) 80%)`;
+  const radialGradient = useMotionTemplate`radial-gradient(circle at 50% ${radialGradientValue}, rgba(var(--color-primary)) 40%, rgba(0,0,0,0) 50%)`;
 
   return (
     <motion.div
@@ -25,7 +25,15 @@ export function TextReveal() {
         backgroundClip: 'text',
       }}
     >
-      <p className='text-6xl' style={{ WebkitTextFillColor: 'transparent' }}>
+      <pre className='!my-0'>
+        <motion.code className='text-primary tabular-nums'>
+          {radialGradient}
+        </motion.code>
+      </pre>
+      <p
+        className='text-6xl font-serif'
+        style={{ WebkitTextFillColor: 'transparent' }}
+      >
         Text Reveal
       </p>
 
@@ -41,6 +49,7 @@ export function TextReveal() {
         </Slider.Track>
         <Slider.Thumb className='block size-5 rounded-full bg-primary' />
       </Slider.Root>
+      <span className='text-sm text-lowcontrast'>Slide to animate</span>
     </motion.div>
   );
 }
