@@ -48,6 +48,18 @@ function CraftPreview({ children }: PropsWithChildren) {
   );
 }
 
+function Callout({ children }: PropsWithChildren) {
+  return (
+    <aside className='border border-secondary/10 bg-primary/10 rounded-md px-6 py-4 gap-4 flex flex-col *:m-0 relative overflow-hidden'>
+      <div
+        aria-hidden
+        className='w-1 h-full bg-lowcontrast absolute left-0 top-0'
+      ></div>
+      {children}
+    </aside>
+  );
+}
+
 const components: MDXRemoteProps['components'] = {
   code: Code,
   pre: Pre,
@@ -64,6 +76,7 @@ const components: MDXRemoteProps['components'] = {
   h4: props => <Heading level='h4' {...props} />,
   h5: props => <Heading level='h5' {...props} />,
   h6: props => <Heading level='h6' {...props} />,
+  Callout: Callout,
 };
 
 export const MDX = (props: MDXRemoteProps) => {
