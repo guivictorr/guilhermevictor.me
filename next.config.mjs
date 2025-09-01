@@ -6,6 +6,9 @@ const nextConfig = {
   experimental: {
     viewTransition: true,
   },
+  images: {
+    remotePatterns: [{ hostname: 'i.discogs.com' }],
+  },
   async redirects() {
     return [
       {

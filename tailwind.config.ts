@@ -7,14 +7,13 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    colors: {
-      primary: 'rgb(var(--color-primary))',
-      secondary: 'rgb(var(--color-secondary))',
-      background: 'rgb(var(--color-background))',
-      lowcontrast: 'rgb(var(--color-low-contrast))',
-      transparent: 'rgb(var(--color-transparent))',
-    },
     extend: {
+      colors: {
+        primary: 'rgb(var(--color-primary))',
+        secondary: 'rgb(var(--color-secondary))',
+        background: 'rgb(var(--color-background))',
+        lowcontrast: 'rgb(var(--color-low-contrast))',
+      },
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
         serif: ['var(--font-serif)'],

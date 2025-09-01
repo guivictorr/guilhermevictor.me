@@ -20,7 +20,6 @@
     --color-secondary: 100 75 20;
     --color-background: 251 241 199; /* Light warm background */
     --color-low-contrast: 125 102 53;
-    --color-transparent: 251 241 199; /* Fully white for transparency */
     --noise-opacity: 30%;
 
     /* Code syntax highlighting */
@@ -45,7 +44,6 @@
     --color-secondary: 209 186 162;
     --color-low-contrast: 182 162 143;
     --color-background: 38 28 17;
-    --color-transparent: 0 0 0;
     --noise-opacity: 15%;
 
     --sh-identifier: rgb(253, 220, 189);
