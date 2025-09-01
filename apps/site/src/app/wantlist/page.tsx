@@ -6,7 +6,7 @@ export default async function Wantlist() {
   const discogsWantlist = await getDiscogsWantList();
 
   return (
-    <main className='space-y-8 max-w-xl mx-auto my-20 md:mt-32 px-2'>
+    <main className='space-y-8 mx-auto my-20 md:mt-32 px-2'>
       <header className='p-4'>
         <h1 className='font-serif text-3xl text-primary'>Lista de desejos</h1>
         <span className='text-xs text-lowcontrast'>
@@ -16,28 +16,26 @@ export default async function Wantlist() {
           </a>
         </span>
       </header>
-      <ul className='space-y-4'>
+      <ul className='grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-8'>
         {discogsWantlist.wants.map(record => (
-          <li
-            key={record.id}
-            className='group hover:bg-secondary/10 p-4 rounded transition'
-          >
+          <li key={record.id} className='group'>
             <a
-              href={`https://www.google.com/search?tbm=shop&q=LP%20${record.basic_information.artists[0].name}-${record.basic_information.title}`}
+              href={`https://www.google.com/search?tbm=shop&q="LP"%20${record.basic_information.artists[0].name} - ${record.basic_information.title}`}
+              className='flex gap-4 no-underline'
               target='_blank'
-              className='no-underline flex gap-3 text-primary'
             >
-              <Shimmer className='h-[100px] w-full max-w-[100px] md:max-w-[250px] md:h-[250px]'>
+              <Shimmer className='size-[75px] min-h-[75px] min-w-[75px] md:size-[150px] md:min-h-[150px] md:min-w-[150px]'>
                 <Image
                   src={record.basic_information.cover_image}
                   alt={record.basic_information.title}
                   sizes='(max-width: 768px) 20vw, 33vw'
-                  fill
+                  width={500}
+                  height={500}
                 />
               </Shimmer>
 
               <div className='flex flex-col'>
-                <span className='text-lg line-clamp-2'>
+                <span className='text-lg line-clamp-2 text-primary'>
                   {record.basic_information.title}
                 </span>
                 <span className='text-secondary'>
@@ -45,10 +43,9 @@ export default async function Wantlist() {
                     .map(artist => artist.name)
                     .join(', ')}
                 </span>
-                <span className='text-secondary'>
-                  {Boolean(record.basic_information.year)
-                    ? record.basic_information.year
-                    : 'Ano não definido'}
+                <span className='text-sm text-secondary'>
+                  {Boolean(record.basic_information.year) &&
+                    record.basic_information.year}
                 </span>
               </div>
             </a>
