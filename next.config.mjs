@@ -7,7 +7,10 @@ const nextConfig = {
     viewTransition: true,
   },
   images: {
-    remotePatterns: [{ hostname: 'i.discogs.com' }],
+    remotePatterns: [
+      { hostname: 'i.discogs.com' },
+      { hostname: 'lastfm.freetls.fastly.net' },
+    ],
   },
   async redirects() {
     return [
