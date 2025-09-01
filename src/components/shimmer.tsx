@@ -19,7 +19,7 @@ export function Shimmer({
 }: ShimmerProps) {
   return (
     <div
-      className={`relative overflow-hidden group hover:brightness-110 transition-[filter] ${className}`}
+      className={`relative overflow-hidden group hover:brightness-110 transition ${className}`}
       style={
         {
           '--shimmer-color': shimmerColor,
