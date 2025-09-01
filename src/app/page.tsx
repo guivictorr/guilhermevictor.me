@@ -5,16 +5,27 @@ import Link from 'next/link';
 
 import { getPosts } from '@/services/content';
 import { format } from 'date-fns';
+import { getDiscogsCollection } from '@/services/discogs';
+import { Shimmer } from '@/components/shimmer';
+import Image from 'next/image';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/carousel';
 
-export default function Home() {
+export default async function Home() {
   const posts = getPosts().map(post => post.metadata);
+  const records = await getDiscogsCollection();
 
   const groupedPostsByYear = Object.groupBy(posts, post =>
     new Date(post.publishedAt).getFullYear().toString(),
   );
 
   return (
-    <main className='space-y-8 max-w-xl mx-auto pt-20 md:pt-28 px-2'>
+    <main className='space-y-8 max-w-xl mx-auto py-20 md:pt-28 px-2'>
       <section
         aria-label='Informações sobre Guilherme Victor'
         className='flex items-start pb-4 border-b'
@@ -86,6 +97,38 @@ export default function Home() {
               ))}
           </ul>
         </nav>
+      </section>
+
+      <section className='space-y-4 hidden md:block'>
+        <h2 className='flex mb-2 mt-1 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
+          coleção de discos
+        </h2>
+
+        <Carousel>
+          <CarouselContent>
+            {records.releases.map(record => (
+              <CarouselItem className='basis-1/3' key={record.id}>
+                <a
+                  href={`https://www.discogs.com/release/${record.id}`}
+                  target='_blank'
+                  className='no-underline'
+                >
+                  <Shimmer className='size-[75px] min-h-[75px] min-w-[75px] md:size-[150px] md:min-h-[150px] md:min-w-[150px]'>
+                    <Image
+                      src={record.basic_information.cover_image}
+                      alt={record.basic_information.title}
+                      sizes='(max-width: 768px) 20vw, 33vw'
+                      width={150}
+                      height={150}
+                    />
+                  </Shimmer>
+                </a>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </section>
       <Footer />
     </main>
