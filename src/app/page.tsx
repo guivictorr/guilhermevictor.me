@@ -28,7 +28,7 @@ export default async function Home() {
     <main className='space-y-8 max-w-xl mx-auto py-20 md:pt-28 px-2'>
       <section
         aria-label='Informações sobre Guilherme Victor'
-        className='flex items-start pb-4 border-b'
+        className='flex items-start pb-4'
       >
         <div>
           <p className='leading-tight'>Guilherme Victor</p>
@@ -99,21 +99,27 @@ export default async function Home() {
         </nav>
       </section>
 
-      <section className='space-y-4 hidden md:block'>
-        <h2 className='flex mb-2 mt-1 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
-          coleção de discos
-        </h2>
+      <section className='space-y-4'>
+        <Carousel opts={{ loop: true, align: 'start', skipSnaps: true }}>
+          <div className='flex justify-between items-center gap-4 pb-4'>
+            <h2 className='flex mt-1 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
+              coleção de discos
+            </h2>
 
-        <Carousel>
-          <CarouselContent>
+            <div className='space-x-8'>
+              <CarouselPrevious />
+              <CarouselNext />
+            </div>
+          </div>
+          <CarouselContent className='items-center'>
             {records.releases.map(record => (
-              <CarouselItem className='basis-1/3' key={record.id}>
+              <CarouselItem className='basis-1/4' key={record.id}>
                 <a
                   href={`https://www.discogs.com/release/${record.id}`}
                   target='_blank'
                   className='no-underline'
                 >
-                  <Shimmer className='size-[75px] min-h-[75px] min-w-[75px] md:size-[150px] md:min-h-[150px] md:min-w-[150px]'>
+                  <Shimmer className='object-cover'>
                     <Image
                       src={record.basic_information.cover_image}
                       alt={record.basic_information.title}
@@ -126,8 +132,6 @@ export default async function Home() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
         </Carousel>
       </section>
       <Footer />
