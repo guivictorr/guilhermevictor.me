@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import type React from 'react';
 
 import type { ReactNode } from 'react';
@@ -19,7 +20,7 @@ export function Shimmer({
 }: ShimmerProps) {
   return (
     <div
-      className={`relative overflow-hidden group hover:brightness-110 transition ${className}`}
+      className={cn('relative overflow-hidden group transition', className)}
       style={
         {
           '--shimmer-color': shimmerColor,
@@ -28,13 +29,11 @@ export function Shimmer({
       }
     >
       {children}
-
-      {/* Shimmer overlay */}
       <div
-        className={`absolute inset-0 opacity-0 -translate-x-full
+        className='absolute inset-0 opacity-0 -translate-x-full
           bg-gradient-to-r from-transparent via-[var(--shimmer-color)] to-transparent
-          group-hover:translate-x-full group-hover:opacity-100 brightness-125 transition-transform ease-in-out
-          pointer-events-none`}
+          group-hover:translate-x-full group-hover:opacity-100 transition-transform ease-in-out
+          pointer-events-none'
         style={{
           transitionDuration: 'var(--shimmer-duration)',
         }}
