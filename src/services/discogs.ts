@@ -4,7 +4,7 @@ const DISCOGS_KEY = process.env.DISCOGS_KEY;
 const DISCOGS_API_URL = `https://api.discogs.com/users/${DISCOGS_USERNAME}/wants?per_page=100`;
 const DISCOGS_COLLECTION_ENDPOINT = `https://api.discogs.com/users/${DISCOGS_USERNAME}/collection/folders/0/releases?per_page=100&sort=artist&sort_order=asc`;
 
-type DiscogsRelease = {
+export type DiscogsRelease = {
   id: number;
   basic_information: {
     cover_image: string;

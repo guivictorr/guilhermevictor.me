@@ -47,7 +47,8 @@ export default async function RootLayout({ children }: PropsWithChildren) {
             <ThemeSwitcher />
           </div>
 
-          <div className='px-2 pb-12 md:px-6'>{children}</div>
+          {/* <div className='px-2 pb-12 md:px-6'>{children}</div> */}
+          {children}
         </ThemeProvider>
       </body>
     </html>
