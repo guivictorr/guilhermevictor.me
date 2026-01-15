@@ -17,7 +17,7 @@ export function TextReveal() {
     [0, 100],
     ['-300%', '40%'],
   );
-  const radialGradient = useMotionTemplate`radial-gradient(circle at 50% ${radialGradientValue}, rgba(var(--color-primary)) 30%, rgba(0,0,0,0) 80%)`;
+  const radialGradient = useMotionTemplate`radial-gradient(circle at 50% ${radialGradientValue}, var(--color-primary) 30%, rgba(0,0,0,0) 80%)`;
 
   return (
     <motion.div
@@ -27,16 +27,16 @@ export function TextReveal() {
         backgroundClip: debug ? 'initial' : 'text',
       }}
     >
-      {/* <pre className='!my-0'> */}
-      {/*   <motion.code className='text-primary tabular-nums'> */}
-      {/*     {radialGradient} */}
-      {/*   </motion.code> */}
-      {/* </pre> */}
+      <pre className='my-0!'>
+        <motion.code className='text-primary tabular-nums'>
+          {radialGradient}
+        </motion.code>
+      </pre>
       <p
         className='text-3xl md:text-6xl font-bold'
         style={{
           WebkitTextFillColor: 'transparent',
-          WebkitTextStrokeColor: 'var(--color-primary)',
+          WebkitTextStrokeColor: 'var(--primary)',
           WebkitTextStroke: debug ? 1 : 0,
         }}
       >
@@ -51,13 +51,13 @@ export function TextReveal() {
         Modo debug
       </button>
       <Slider.Root
-        className='relative flex h-5 w-[200px] touch-none select-none items-center'
+        className='relative flex h-5 w-50 touch-none select-none items-center'
         onValueChange={value => sliderMotionValue.set(value[0])}
         defaultValue={[0]}
         max={100}
         step={1}
       >
-        <Slider.Track className='relative h-[3px] grow rounded-full bg-lowcontrast/50'>
+        <Slider.Track className='relative h-0.75 grow rounded-full bg-lowcontrast/50'>
           <Slider.Range className='absolute h-full rounded-full bg-primary' />
         </Slider.Track>
         <Slider.Thumb className='block size-5 rounded-full bg-primary' />
