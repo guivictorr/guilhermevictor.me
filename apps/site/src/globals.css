@@ -92,19 +92,6 @@
   }
 }
 
-@layer utilities {
-  .vignette {
-    background: linear-gradient(
-      180deg,
-      rgb(var(--color-background)) 0%,
-      rgba(255, 255, 255, 0) 15%,
-      rgba(255, 255, 255, 0) 50%,
-      rgba(255, 255, 255, 0) 80%,
-      rgb(var(--color-background)) 100%
-    );
-  }
-}
-
 * {
   @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/10;
 }
