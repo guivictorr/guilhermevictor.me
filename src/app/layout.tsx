@@ -42,7 +42,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
       <body className='bg-background text-secondary scroll-smooth'>
         <ThemeProvider>
           <Analytics />
-          <Vignette />
           <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
             <ThemeSwitcher />
           </div>
