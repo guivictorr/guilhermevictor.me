@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 
 export default async function Home() {
   return (
-    <main className='space-y-8 max-w-xl mx-auto py-20 md:pt-28 px-2'>
+    <main className='space-y-8 max-w-xl mx-auto pt-20 md:pt-28 px-2'>
       <section aria-label='Informações sobre Guilherme Victor'>
         <div>
           <p className='leading-tight'>Guilherme Victor</p>
