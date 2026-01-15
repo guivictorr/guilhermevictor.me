@@ -42,7 +42,7 @@ export function Pre({ children }: PropsWithChildren) {
       <button
         type='button'
         onClick={copy}
-        className='absolute z-20 top-2 right-2 px-2 py-1 text-xs text-secondary border rounded-md bg-background'
+        className='absolute z-20 top-2 right-2 px-2 py-1 text-xs text-secondary border rounded-md bg-background cursor-pointer'
       >
         Copy
       </button>

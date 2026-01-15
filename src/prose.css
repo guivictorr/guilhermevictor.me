@@ -1,0 +1,27 @@
+.prose {
+  @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
+}
+
+.prose p .sh__line {
+  @apply border rounded-md px-2 py-1;
+}
+
+.prose pre {
+  @apply border bg-background/20 rounded-md p-4 text-sm;
+}
+
+.prose strong {
+  @apply text-primary;
+}
+
+.prose ul {
+  @apply list-none p-0 m-0;
+}
+
+.prose li {
+  @apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
+}
+
+.prose blockquote {
+  @apply border-l-secondary border-l-2 text-secondary font-serif;
+}
