@@ -5,7 +5,6 @@ import { GeistSans } from 'geist/font/sans';
 import { Instrument_Serif } from 'next/font/google';
 
 import { Analytics } from '@vercel/analytics/react';
-import { Vignette } from '@/components/vignette';
 
 import '@/globals.css';
 import { buildSEO } from '@/app/seo';
@@ -39,7 +38,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
       <head>
         <Scripts />
       </head>
-      <body className='bg-background text-secondary scroll-smooth'>
+      <body className='bg-background text-secondary scroll-smooth pb-24'>
         <ThemeProvider>
           <Analytics />
           <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
