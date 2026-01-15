@@ -2,7 +2,6 @@
 import { useTheme } from 'next-themes';
 import { useState, useEffect, useId } from 'react';
 import { Icon } from './icon';
-import { motion } from 'motion/react';
 
 export function ThemeSwitcher() {
   const { theme, themes, setTheme } = useTheme();
@@ -48,10 +47,7 @@ export function ThemeSwitcher() {
               <span className='sr-only'>{t}</span>
               <Icon icon={t as 'system' | 'dark' | 'light'} />
               {t === theme && (
-                <motion.div
-                  layoutId={id}
-                  className='absolute rounded-full inset-0 mix-blend-difference bg-primary z-10'
-                ></motion.div>
+                <div className='absolute rounded-full inset-0 mix-blend-difference bg-primary z-10'></div>
               )}
             </label>
             <input

@@ -1,105 +1,95 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './prose.css';
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
-/* :root { */
-/*   --sh-identifier: rgb(var(--color-secondary)); */
-/*   --sh-sign: rgb(var(--color-secondary)); */
-/*   --sh-string: rgb(var(--color-secondary)); */
-/*   --sh-keyword: rgb(var(--color-secondary)); */
-/*   --sh-comment: rgb(var(--color-background)); */
-/*   --sh-property: rgb(var(--color-secondary)); */
-/*   --sh-class: rgb(var(--color-secondary)); */
-/*   --sh-jsxliterals: rgb(var(--color-secondary)); */
-/*   --sh-entity: rgb(var(--color-secondary)); */
-/* } */
+:root {
+  --primary: rgb(125 87 61); /* Lighter beige */
+  --secondary: rgb(100 75 20);
+  --background: rgb(251 241 199); /* Light warm background */
+  --low-contrast: rgb(125 102 53);
+  --noise-opacity: 30%;
 
-@layer base {
-  :root {
-    --color-primary: 125 87 61; /* Lighter beige */
-    --color-secondary: 100 75 20;
-    --color-background: 251 241 199; /* Light warm background */
-    --color-low-contrast: 125 102 53;
-    --noise-opacity: 30%;
+  --sh-identifier: rgb(80 55 20); /* variables, function names */
+  --sh-function: rgb(100 60 25); /* function calls */
+  --sh-sign: rgb(180 100 40); /* operators like =, + */
+  --sh-string: rgb(150 90 50); /* string literals */
+  --sh-number: rgb(160 80 30); /* numeric values */
+  --sh-keyword: rgb(90 45 15); /* if, return, const, etc */
+  --sh-boolean: rgb(180 50 50); /* true, false */
+  --sh-null: rgb(130 70 30); /* null, undefined */
+  --sh-comment: rgb(190 170 130); /* comments */
+  --sh-property: rgb(100 65 25); /* object keys */
+  --sh-class: rgb(60 40 15); /* class names */
+  --sh-type: rgb(120 80 60); /* types/interfaces */
+  --sh-jsxliterals: rgb(100 75 20); /* JSX tags */
+  --sh-entity: rgb(120 90 30); /* HTML/JSX entities */
+}
 
-    /* Code syntax highlighting */
-    --sh-identifier: rgb(80, 55, 20); /* variables, function names */
-    --sh-function: rgb(100, 60, 25); /* function calls */
-    --sh-sign: rgb(180, 100, 40); /* operators like =, + */
-    --sh-string: rgb(150, 90, 50); /* string literals */
-    --sh-number: rgb(160, 80, 30); /* numeric values */
-    --sh-keyword: rgb(90, 45, 15); /* if, return, const, etc */
-    --sh-boolean: rgb(180, 50, 50); /* true, false */
-    --sh-null: rgb(130, 70, 30); /* null, undefined */
-    --sh-comment: rgb(190, 170, 130); /* comments */
-    --sh-property: rgb(100, 65, 25); /* object keys */
-    --sh-class: rgb(60, 40, 15); /* class names */
-    --sh-type: rgb(120, 80, 60); /* types/interfaces */
-    --sh-jsxliterals: rgb(100, 75, 20); /* JSX tags */
-    --sh-entity: rgb(120, 90, 30); /* HTML/JSX entities */
+[data-theme='dark'] {
+  --primary: rgb(253 220 189);
+  --secondary: rgb(209 186 162);
+  --low-contrast: rgb(182 162 143);
+  --background: rgb(38 28 17);
+  --noise-opacity: 15%;
+
+  --sh-identifier: rgb(253 220 189);
+  --sh-function: rgb(255 200 170);
+  --sh-sign: rgb(240 180 130);
+  --sh-string: rgb(225 170 140);
+  --sh-number: rgb(255 150 120);
+  --sh-keyword: rgb(255 235 200);
+  --sh-boolean: rgb(255 100 100);
+  --sh-null: rgb(230 130 90);
+  --sh-comment: rgb(120 100 80);
+  --sh-property: rgb(240 210 180);
+  --sh-class: rgb(190 160 120);
+  --sh-type: rgb(220 180 150);
+  --sh-jsxliterals: rgb(255 210 170);
+  --sh-entity: rgb(235 200 160);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-background: var(--background);
+  --color-lowcontrast: var(--low-contrast);
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-serif);
+  --animate-flash: flash 0.8s ease-out;
+
+  @keyframes flash {
+    0% {
+      opacity: 0;
+      filter: blur(6px);
+      clip-path: circle(0% at center);
+    }
+
+    5% {
+      opacity: 0.8;
+      clip-path: circle(30% at center);
+    }
+
+    20% {
+      opacity: 0.8;
+      clip-path: circle(100% at center);
+    }
+
+    30% {
+      filter: blur(2px);
+    }
+
+    100% {
+      opacity: 0;
+      filter: blur(0px);
+      clip-path: circle(100% at center);
+    }
   }
+}
 
-  [data-theme='dark'] {
-    --color-primary: 253 220 189;
-    --color-secondary: 209 186 162;
-    --color-low-contrast: 182 162 143;
-    --color-background: 38 28 17;
-    --noise-opacity: 15%;
-
-    --sh-identifier: rgb(253, 220, 189);
-    --sh-function: rgb(255, 200, 170);
-    --sh-sign: rgb(240, 180, 130);
-    --sh-string: rgb(225, 170, 140);
-    --sh-number: rgb(255, 150, 120);
-    --sh-keyword: rgb(255, 235, 200);
-    --sh-boolean: rgb(255, 100, 100);
-    --sh-null: rgb(230, 130, 90);
-    --sh-comment: rgb(120, 100, 80);
-    --sh-property: rgb(240, 210, 180);
-    --sh-class: rgb(190, 160, 120);
-    --sh-type: rgb(220, 180, 150);
-    --sh-jsxliterals: rgb(255, 210, 170);
-    --sh-entity: rgb(235, 200, 160);
+@layer components {
+  a {
+    @apply relative underline text-primary;
   }
-}
-
-* {
-  @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/10;
-}
-
-a {
-  @apply relative underline text-primary;
-}
-::selection {
-  @apply text-background bg-secondary;
-}
-
-.prose {
-  @apply max-w-none text-secondary antialiased hyphens-auto prose-headings:text-primary prose-headings:font-serif prose-headings:font-medium prose-headings:text-xl prose-headings:mt-8 prose-headings:mb-6;
-}
-
-.prose p .sh__line {
-  @apply border rounded-md px-2 py-1;
-}
-
-.prose pre {
-  @apply border bg-background/20 rounded-md p-4 text-sm;
-}
-
-.prose strong {
-  @apply text-primary;
-}
-
-.prose ul {
-  @apply list-none p-0 m-0;
-}
-
-.prose li {
-  @apply before:content-['—'] before:mr-4 before:text-primary text-secondary p-0;
-}
-
-.prose blockquote {
-  @apply border-l-secondary border-l-[2px] text-secondary font-serif;
 }
 
 @layer utilities {
@@ -113,6 +103,14 @@ a {
       rgb(var(--color-background)) 100%
     );
   }
+}
+
+* {
+  @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/10;
+}
+
+::selection {
+  @apply text-background bg-secondary;
 }
 
 ::view-transition-old(root),
