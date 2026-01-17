@@ -43,7 +43,7 @@ export default async function Home() {
           <a
             href='/cv.pdf'
             download='Guilherme_Victor_CV.pdf'
-            className='flex items-center gap-1 mt-2'
+            className='flex items-center gap-1 mt-2 w-fit'
           >
             <Icon icon='download' />
             Baixe meu CV

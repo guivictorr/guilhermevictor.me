@@ -38,6 +38,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.2",
     "eslint-config-prettier": "^10.1.8",
+    "lefthook": "^2.0.15",
     "prettier": "^3.8.0",
     "typescript": "5"
   }

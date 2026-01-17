@@ -81,7 +81,7 @@ export default async function PostPage(props: PostPageProps) {
 
       {headings.length > 0 && (
         <aside
-          className='hidden lg:block border-l border-l-secondary/10 pt-32 px-14'
+          className='hidden lg:block border-l border-l-secondary/10 pl-8'
           aria-hidden={headings.length === 0}
           aria-labelledby='toc'
         >

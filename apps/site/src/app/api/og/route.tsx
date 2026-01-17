@@ -22,43 +22,41 @@ export async function GET({ nextUrl }: NextRequest) {
   ).then(res => res.arrayBuffer());
 
   return new ImageResponse(
-    (
-      <div
+    <div
+      style={{
+        background: colors.background,
+        color: colors.primary,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        paddingBottom: 112,
+        paddingLeft: 42,
+      }}
+    >
+      <p
         style={{
-          background: colors.background,
-          color: colors.primary,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end',
-          paddingBottom: 112,
-          paddingLeft: 42,
+          position: 'absolute',
+          fontSize: 24,
+          top: 24,
+          left: 24,
+          fontFamily: '"Geist"',
         }}
       >
-        <p
-          style={{
-            position: 'absolute',
-            fontSize: 24,
-            top: 24,
-            left: 24,
-            fontFamily: '"Geist"',
-          }}
-        >
-          Guilherme Victor
-        </p>
-        <p
-          style={{
-            fontSize: 98,
-            lineHeight: '90%',
-            fontFamily: '"Serif"',
-            fontWeight: 500,
-          }}
-        >
-          {title}
-        </p>
-      </div>
-    ),
+        Guilherme Victor
+      </p>
+      <p
+        style={{
+          fontSize: 98,
+          lineHeight: '90%',
+          fontFamily: '"Serif"',
+          fontWeight: 500,
+        }}
+      >
+        {title}
+      </p>
+    </div>,
     {
       width: 1200,
       height: 630,
