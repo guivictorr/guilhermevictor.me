@@ -2,11 +2,13 @@
 import { useTheme } from 'next-themes';
 import { useState, useEffect, useId } from 'react';
 import { Icon } from './icon';
+import { motion } from 'motion/react';
 
 export function ThemeSwitcher() {
   const { theme, themes, setTheme } = useTheme();
   const id = useId();
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   function handleThemeToggle(theme: string, coords?: { x: number; y: number }) {
@@ -38,7 +40,7 @@ export function ThemeSwitcher() {
         themes.map(t => (
           <span
             key={t}
-            className='p-1 has-[:focus-visible]:ring-2 ring-primary rounded-sm'
+            className='p-1 has-focus-visible:ring-2 ring-primary rounded-sm'
           >
             <label
               htmlFor={`${id}_${t}`}
@@ -47,7 +49,10 @@ export function ThemeSwitcher() {
               <span className='sr-only'>{t}</span>
               <Icon icon={t as 'system' | 'dark' | 'light'} />
               {t === theme && (
-                <div className='absolute rounded-full inset-0 mix-blend-difference bg-primary z-10'></div>
+                <motion.div
+                  layoutId={id}
+                  className='absolute rounded-full inset-0 mix-blend-difference bg-primary z-10'
+                ></motion.div>
               )}
             </label>
             <input

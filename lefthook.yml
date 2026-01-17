@@ -1,0 +1,10 @@
+# lefthook.yml
+
+pre-commit:
+  commands:
+    lint:
+      run: pnpm lint:eslint:check
+      stage_fixed: true
+    format:
+      run: pnpm lint:prettier:check
+      stage_fixed: true

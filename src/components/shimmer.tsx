@@ -31,7 +31,7 @@ export function Shimmer({
       {children}
       <div
         className='absolute inset-0 opacity-0 -translate-x-full
-          bg-gradient-to-r from-transparent via-[var(--shimmer-color)] to-transparent
+          bg-linear-to-r from-transparent via-(--shimmer-color) to-transparent
           group-hover:translate-x-full group-hover:opacity-100 transition-transform ease-in-out
           pointer-events-none'
         style={{
