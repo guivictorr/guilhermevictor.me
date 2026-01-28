@@ -1,10 +1,10 @@
 import { ExternalLink } from '@/components/external-link';
 import { Footer } from '@/components/footer';
-import { Icon } from '@/components/icon';
 import Link from 'next/link';
 
 import { getPosts } from '@/services/content';
 import { format } from 'date-fns';
+import { Disc3, DownloadIcon } from 'lucide-react';
 
 export default async function Home() {
   return (
@@ -17,9 +17,10 @@ export default async function Home() {
           </h1>
           <Link
             href='/records'
-            className='no-underline flex-col text-2xl sm:text-4xl text-primary font-serif italic'
+            className='group no-underline flex items-center gap-2 text-2xl sm:text-4xl text-primary font-serif italic leading-0 w-fit'
           >
             colecionador de discos
+            <Disc3 className='group-hover:rotate-180 transition-[rotate] duration-300 ease-in-out size-8!' />
           </Link>
           <p className='mb-2 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
             neovim user
@@ -45,7 +46,7 @@ export default async function Home() {
             download='Guilherme_Victor_CV.pdf'
             className='flex items-center gap-1 mt-2 w-fit'
           >
-            <Icon icon='download' />
+            <DownloadIcon />
             Baixe meu CV
           </a>
         </div>
