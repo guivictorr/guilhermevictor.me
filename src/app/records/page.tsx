@@ -6,8 +6,9 @@ export default async function Records() {
   return (
     <main>
       <header className='py-8'>
-        <h1 className='text-center'>Coleção de discos</h1>
-        <p className='text-center'>(wip)</p>
+        <h1 className='text-center font-serif text-6xl'>
+          Minha coleção de discos (wip)
+        </h1>
       </header>
       <RecordsList records={records.releases} />
     </main>

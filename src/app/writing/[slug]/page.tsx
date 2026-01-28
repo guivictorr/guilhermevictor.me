@@ -4,8 +4,9 @@ import { getPost, getPosts, MetadataOutput } from '@/services/content';
 import { buildSEO } from '@/app/seo';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Icon } from '@/components/icon';
 import { format } from 'date-fns';
+import { Metadata } from 'next';
+import { HomeButton } from '@/components/home-button';
 
 type PostPageProps = {
   params: Promise<{ slug: string }>;
@@ -17,7 +18,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata(props: PostPageProps) {
+export async function generateMetadata(
+  props: PostPageProps,
+): Promise<Metadata> {
   const params = await props.params;
   const post = getPost(params.slug);
 
@@ -119,13 +122,7 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
   return (
     <header>
       <nav className='mb-6'>
-        <Link
-          href='/'
-          className='no-underline [&>svg]:w-6 flex items-center gap-1.5 text-secondary w-fit font-serif italic'
-        >
-          <Icon icon='back' />
-          <span>Home</span>
-        </Link>
+        <HomeButton />
       </nav>
       <h1 className='text-3xl font-serif text-primary'>
         <a className='no-underline text-primary' id='index'>
