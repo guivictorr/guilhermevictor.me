@@ -1,8 +1,14 @@
 'use client';
 import { useTheme } from 'next-themes';
 import { useState, useEffect, useId } from 'react';
-import { Icon } from './icon';
 import { motion } from 'motion/react';
+import { MonitorCogIcon, MoonIcon, SunIcon } from 'lucide-react';
+
+const icons = {
+  system: <MonitorCogIcon />,
+  dark: <MoonIcon />,
+  light: <SunIcon />,
+};
 
 export function ThemeSwitcher() {
   const { theme, themes, setTheme } = useTheme();
@@ -47,7 +53,7 @@ export function ThemeSwitcher() {
               className='relative cursor-pointer size-8 flex items-center justify-center'
             >
               <span className='sr-only'>{t}</span>
-              <Icon icon={t as 'system' | 'dark' | 'light'} />
+              {icons[t as 'system' | 'dark' | 'light']}
               {t === theme && (
                 <motion.div
                   layoutId={id}
