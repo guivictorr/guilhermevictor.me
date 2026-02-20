@@ -5,11 +5,14 @@ import Link from 'next/link';
 import { getPosts } from '@/services/content';
 import { Disc3, DownloadIcon } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import { PropsWithChildren } from 'react';
-import { DateTimeFormatOptions, useFormatter } from 'next-intl';
 import { Time } from '@/components/time';
 
-export default async function Home() {
+type HomeProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function Home({ params }: HomeProps) {
+  const { locale } = await params;
   const t = await getTranslations('home-page');
   return (
     <main className='space-y-8 max-w-xl mx-auto pt-20 md:pt-28 px-2'>
@@ -46,7 +49,7 @@ export default async function Home() {
             </ExternalLink>
           </p>
           <a
-            href='/cv.pdf'
+            href={`/cv_${locale}.pdf`}
             download='Guilherme_Victor_CV.pdf'
             className='flex items-center gap-1 mt-2 w-fit'
           >
