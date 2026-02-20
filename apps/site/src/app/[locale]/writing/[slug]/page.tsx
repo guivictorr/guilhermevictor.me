@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Metadata } from 'next';
 import { HomeButton } from '@/components/home-button';
+import { Time } from '@/components/time';
 
 type PostPageProps = {
   params: Promise<{ slug: string }>;
@@ -130,12 +131,7 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
         </a>
       </h1>
       {metadata.publishedAt && (
-        <time
-          className='text-sm text-secondary capitalize'
-          dateTime={metadata.publishedAt.toString()}
-        >
-          {format(metadata.publishedAt, 'MMMM dd, yyyy')}
-        </time>
+        <Time year='numeric'>{metadata.publishedAt.toISOString()}</Time>
       )}
     </header>
   );

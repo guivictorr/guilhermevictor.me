@@ -3,9 +3,11 @@ import { Footer } from '@/components/footer';
 import Link from 'next/link';
 
 import { getPosts } from '@/services/content';
-import { format } from 'date-fns';
 import { Disc3, DownloadIcon } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+import { PropsWithChildren } from 'react';
+import { DateTimeFormatOptions, useFormatter } from 'next-intl';
+import { Time } from '@/components/time';
 
 export default async function Home() {
   const t = await getTranslations('home-page');
@@ -85,12 +87,7 @@ async function Posts() {
                         {post.title}
                       </span>
                       {!!post.publishedAt && (
-                        <time
-                          dateTime={post.publishedAt.toString()}
-                          className='transition text-sm shrink-0 capitalize'
-                        >
-                          {format(post.publishedAt, 'MMMM dd')}
-                        </time>
+                        <Time>{post.publishedAt.toISOString()}</Time>
                       )}
                     </Link>
                   </li>
