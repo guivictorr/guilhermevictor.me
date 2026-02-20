@@ -5,13 +5,15 @@ import Link from 'next/link';
 import { getPosts } from '@/services/content';
 import { format } from 'date-fns';
 import { Disc3, DownloadIcon } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
 export default async function Home() {
+  const t = await getTranslations('home-page');
   return (
     <main className='space-y-8 max-w-xl mx-auto pt-20 md:pt-28 px-2'>
       <section aria-label='Informações sobre Guilherme Victor'>
         <div>
-          <p className='leading-tight'>Guilherme Victor</p>
+          <p className='leading-tight'>{t('title')}</p>
           <h1 className='mt-1 flex-col text-2xl sm:text-4xl text-primary font-serif italic'>
             desenvolvedor de software
           </h1>

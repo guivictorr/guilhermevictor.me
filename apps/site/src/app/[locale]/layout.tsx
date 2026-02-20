@@ -1,17 +1,21 @@
 import { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
-import { PropsWithChildren } from 'react';
 import { GeistSans } from 'geist/font/sans';
 import { Instrument_Serif } from 'next/font/google';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
 
 import { Analytics } from '@vercel/analytics/react';
 
 import '@/globals.css';
 import { buildSEO } from '@/app/seo';
-import { Scripts } from './scripts';
+import { Scripts } from '../scripts';
 import { ThemeSwitcher } from '@/components/theme-switcher';
-import { setDefaultOptions } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
+import { routing } from '@/lib/next-intl';
+import { notFound } from 'next/navigation';
+
+type RootLayoutProps = React.PropsWithChildren & {
+  params: Promise<{ locale: string }>;
+};
 
 const serif = Instrument_Serif({
   variable: '--font-serif',
@@ -24,14 +28,17 @@ export const metadata: Metadata = buildSEO({
   dynamic_og: false,
 });
 
-setDefaultOptions({
-  locale: ptBR,
-});
-
-export default async function RootLayout({ children }: PropsWithChildren) {
+export default async function RootLayout({
+  children,
+  params,
+}: RootLayoutProps) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
   return (
     <html
-      lang='pt-br'
+      lang={locale}
       className={`${serif.variable} ${GeistSans.variable} scroll-smooth scroll-pt-20 snap-y snap-mandatory`}
       suppressHydrationWarning
     >
@@ -44,9 +51,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
           <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
             <ThemeSwitcher />
           </div>
-
-          {/* <div className='px-2 pb-12 md:px-6'>{children}</div> */}
-          {children}
+          <NextIntlClientProvider>{children}</NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>
