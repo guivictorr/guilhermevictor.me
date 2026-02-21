@@ -12,6 +12,7 @@ import { Scripts } from '../scripts';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { routing } from '@/lib/next-intl';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 type RootLayoutProps = React.PropsWithChildren & {
   params: Promise<{ locale: string }>;
@@ -22,11 +23,18 @@ const serif = Instrument_Serif({
   weight: ['400'],
   subsets: ['latin'],
 });
-export const metadata: Metadata = buildSEO({
-  title: 'Guilherme Victor',
-  description: 'Meu lugar para experimentar e compartilhar conhecimento.',
-  dynamic_og: false,
-});
+
+export async function generateMetadata({
+  params,
+}: RootLayoutProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+  return buildSEO({
+    title: 'Guilherme Victor',
+    description: t('description'),
+    dynamic_og: false,
+  });
+}
 
 export default async function RootLayout({
   children,

@@ -11,7 +11,7 @@ import { getTranslations } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 
 type PostPageProps = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 };
 
 export async function generateStaticParams() {
