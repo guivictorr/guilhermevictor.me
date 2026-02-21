@@ -1,5 +1,12 @@
 {
   "home-page": {
-    "title": "Olá mundo"
+    "software-developer": "desenvolvedor de software",
+    "record-collector": "colecionador de discos",
+    "social-media": "Você pode me encontrar no <twitter>Twitter</twitter>, <bluesky>Bluesky</bluesky> ou <linkedin>Linkedin</linkedin> e ver meu código no <github>Github</github>.",
+    "download-cv": "Baixe meu CV",
+    "last-played-song": "última música tocada.",
+    "a11y": {
+      "last-played-song": "A última música que Guilherme ouviu foi: {song} by {artist}"
+    }
   }
 }
