@@ -1,7 +1,9 @@
 import Script from 'next/script';
 import { structuredData } from '@/app/structured-data';
+import { useTranslations } from 'next-intl';
 
 export function Scripts() {
+  const t = useTranslations('metadata');
   if (process.env.NODE_ENV === 'development') return null;
   return (
     <>
@@ -36,7 +38,7 @@ export function Scripts() {
         key='structured-data'
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: JSON.stringify(structuredData(t)),
         }}
       />
     </>
