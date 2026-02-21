@@ -1,8 +1,10 @@
 import { getDiscogsCollection } from '@/services/discogs';
 import { RecordsList } from './records-list';
 import { HomeButton } from '@/components/home-button';
+import { getTranslations } from 'next-intl/server';
 
 export default async function Records() {
+  const t = await getTranslations('records-page');
   const records = await getDiscogsCollection();
   return (
     <main>
@@ -10,9 +12,7 @@ export default async function Records() {
         <nav>
           <HomeButton />
         </nav>
-        <h1 className='text-center font-serif text-6xl'>
-          Minha coleção de discos (wip)
-        </h1>
+        <h1 className='text-center font-serif text-6xl'>{t('title')}</h1>
       </header>
       <RecordsList records={records.releases} />
     </main>

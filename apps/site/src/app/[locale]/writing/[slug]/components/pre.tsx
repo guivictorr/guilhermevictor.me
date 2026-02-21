@@ -1,9 +1,11 @@
 'use client';
 
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 import { PropsWithChildren, useEffect, useId, useState } from 'react';
 
 export function Pre({ children }: PropsWithChildren) {
+  const t = useTranslations('post-page.components.pre');
   const id = useId();
   const [copied, setCopied] = useState(false);
 
@@ -36,7 +38,9 @@ export function Pre({ children }: PropsWithChildren) {
           },
         )}
       >
-        <span className='text-background text-6xl font-serif'>Copied</span>
+        <span className='text-background text-6xl font-serif'>
+          {t('copied')}
+        </span>
       </div>
       <div className='overflow-y-auto'>{children}</div>
       <button
@@ -44,7 +48,7 @@ export function Pre({ children }: PropsWithChildren) {
         onClick={copy}
         className='absolute z-20 top-2 right-2 px-2 py-1 text-xs text-secondary border rounded-md bg-background cursor-pointer'
       >
-        Copy
+        {t('copy')}
       </button>
     </pre>
   );
