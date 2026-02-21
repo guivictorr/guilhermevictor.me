@@ -1,10 +1,9 @@
-import { MDX } from '@/components/mdx';
+import { MDX } from '@/app/[locale]/writing/[slug]/components/mdx';
 import { getPost, getPosts, MetadataOutput } from '@/services/content';
 
 import { buildSEO } from '@/app/seo';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { Metadata } from 'next';
 import { HomeButton } from '@/components/home-button';
 import { Time } from '@/components/time';
