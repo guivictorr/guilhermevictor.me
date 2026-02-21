@@ -46,13 +46,15 @@ export default async function RootLayout({
         <Scripts />
       </head>
       <body className='bg-background text-secondary scroll-smooth pb-24'>
-        <ThemeProvider>
-          <Analytics />
-          <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
-            <ThemeSwitcher />
-          </div>
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <Analytics />
+            <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
+              <ThemeSwitcher />
+            </div>
+            {children}
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

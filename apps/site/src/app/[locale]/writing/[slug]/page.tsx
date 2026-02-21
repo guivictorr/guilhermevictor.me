@@ -140,7 +140,7 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
 }
 
 function Footer({ slug }: { slug: string }) {
-  const t = useTranslations();
+  const t = useTranslations('post-page');
   const posts = getPosts();
   const currentItemIndex = posts.findIndex(p => p.slug === slug);
   const nextItem = posts[currentItemIndex - 1];
