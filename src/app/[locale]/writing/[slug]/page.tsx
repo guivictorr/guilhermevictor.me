@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { HomeButton } from '@/components/home-button';
 import { Time } from '@/components/time';
+import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
 type PostPageProps = {
   params: Promise<{ slug: string }>;
@@ -57,6 +59,7 @@ function getMarkdownTitles(markdown: string): MarkdownTitle[] {
 }
 
 export default async function PostPage(props: PostPageProps) {
+  const t = await getTranslations('post-page');
   const params = await props.params;
   const { slug } = params;
   const post = getPost(slug);
@@ -92,7 +95,7 @@ export default async function PostPage(props: PostPageProps) {
             <ol className='fixed top-28 space-y-4 list-decimal list-inside'>
               <div>
                 <h3 id='toc' className='font-serif text-primary text-2xl'>
-                  Índice
+                  {t('index')}
                 </h3>
               </div>
               {headings.map(heading => (
@@ -137,6 +140,7 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
 }
 
 function Footer({ slug }: { slug: string }) {
+  const t = useTranslations();
   const posts = getPosts();
   const currentItemIndex = posts.findIndex(p => p.slug === slug);
   const nextItem = posts[currentItemIndex - 1];
@@ -152,7 +156,7 @@ function Footer({ slug }: { slug: string }) {
             href={String(previousItem.metadata.url)}
             className='no-underline block'
           >
-            <span className='text-sm text-secondary'>Anterior</span>
+            <span className='text-sm text-secondary'>{t('previous')}</span>
             <span className='block text-primary'>
               {previousItem.metadata.title}
             </span>
@@ -164,7 +168,7 @@ function Footer({ slug }: { slug: string }) {
             href={String(nextItem.metadata.url)}
             className='no-underline block text-end'
           >
-            <span className='text-sm text-secondary'>Próximo</span>
+            <span className='text-sm text-secondary'>{t('next')}</span>
             <span className='block text-primary'>
               {nextItem.metadata.title}
             </span>

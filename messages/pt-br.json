@@ -8,5 +8,31 @@
     "a11y": {
       "last-played-song": "A última música que Guilherme ouviu foi: {song} by {artist}"
     }
+  },
+  "post-page": {
+    "index": "Índice",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "components": {
+      "text-reveal": {
+        "debug-mode": "Modo debug",
+        "slide-to-animate": "Deslize para animar"
+      },
+      "pre": {
+        "copied": "Copiado",
+        "copy": "Copiar"
+      }
+    }
+  },
+  "records-page": {
+    "title": "Minha coleção de discos (wip)"
+  },
+  "components": {
+    "home-button": {
+      "home": "Início"
+    },
+    "theme-switcher": {
+      "select-theme": "Selecione um tema"
+    }
   }
 }
