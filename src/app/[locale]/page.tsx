@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { getPosts } from '@/services/content';
 import { Disc3, DownloadIcon } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Time } from '@/components/time';
 import { getLatestPlayedTrack } from '@/services/lastfm';
 
@@ -69,7 +69,8 @@ export default async function Home({ params }: HomeProps) {
 }
 
 async function Posts() {
-  const posts = getPosts().map(post => post.metadata);
+  const locale = await getLocale();
+  const posts = getPosts({ locale }).map(post => post.metadata);
   const groupedPostsByYear = Object.groupBy(posts, post =>
     new Date(post.publishedAt).getFullYear().toString(),
   );
