@@ -8,14 +8,14 @@ import { Metadata } from 'next';
 import { HomeButton } from '@/components/home-button';
 import { Time } from '@/components/time';
 import { getTranslations } from 'next-intl/server';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 type PostPageProps = {
   params: Promise<{ slug: string; locale: string }>;
 };
 
 export async function generateStaticParams() {
-  return getPosts().map(({ slug }) => ({
+  return getPosts({ locale: 'en' }).map(({ slug }) => ({
     slug,
   }));
 }
@@ -23,8 +23,8 @@ export async function generateStaticParams() {
 export async function generateMetadata(
   props: PostPageProps,
 ): Promise<Metadata> {
-  const params = await props.params;
-  const post = getPost(params.slug);
+  const { locale, slug } = await props.params;
+  const post = getPost({ locale, slug });
 
   return buildSEO({
     title: post?.metadata.title ?? '',
@@ -61,8 +61,8 @@ function getMarkdownTitles(markdown: string): MarkdownTitle[] {
 export default async function PostPage(props: PostPageProps) {
   const t = await getTranslations('post-page');
   const params = await props.params;
-  const { slug } = params;
-  const post = getPost(slug);
+  const { slug, locale } = params;
+  const post = getPost({ slug, locale });
 
   if (!post) {
     return notFound();
@@ -141,7 +141,8 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
 
 function Footer({ slug }: { slug: string }) {
   const t = useTranslations('post-page');
-  const posts = getPosts();
+  const locale = useLocale();
+  const posts = getPosts({ locale });
   const currentItemIndex = posts.findIndex(p => p.slug === slug);
   const nextItem = posts[currentItemIndex - 1];
   const previousItem = posts[currentItemIndex + 1];
