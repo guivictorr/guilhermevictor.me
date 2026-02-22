@@ -1,19 +1,21 @@
-import { MDX } from '@/components/mdx';
+import { MDX } from '@/app/[locale]/writing/[slug]/components/mdx';
 import { getPost, getPosts, MetadataOutput } from '@/services/content';
 
 import { buildSEO } from '@/app/seo';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { Metadata } from 'next';
 import { HomeButton } from '@/components/home-button';
+import { Time } from '@/components/time';
+import { getTranslations } from 'next-intl/server';
+import { useLocale, useTranslations } from 'next-intl';
 
 type PostPageProps = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 };
 
 export async function generateStaticParams() {
-  return getPosts().map(({ slug }) => ({
+  return getPosts({ locale: 'en' }).map(({ slug }) => ({
     slug,
   }));
 }
@@ -21,8 +23,8 @@ export async function generateStaticParams() {
 export async function generateMetadata(
   props: PostPageProps,
 ): Promise<Metadata> {
-  const params = await props.params;
-  const post = getPost(params.slug);
+  const { locale, slug } = await props.params;
+  const post = getPost({ locale, slug });
 
   return buildSEO({
     title: post?.metadata.title ?? '',
@@ -57,9 +59,10 @@ function getMarkdownTitles(markdown: string): MarkdownTitle[] {
 }
 
 export default async function PostPage(props: PostPageProps) {
+  const t = await getTranslations('post-page');
   const params = await props.params;
-  const { slug } = params;
-  const post = getPost(slug);
+  const { slug, locale } = params;
+  const post = getPost({ slug, locale });
 
   if (!post) {
     return notFound();
@@ -92,7 +95,7 @@ export default async function PostPage(props: PostPageProps) {
             <ol className='fixed top-28 space-y-4 list-decimal list-inside'>
               <div>
                 <h3 id='toc' className='font-serif text-primary text-2xl'>
-                  Índice
+                  {t('index')}
                 </h3>
               </div>
               {headings.map(heading => (
@@ -130,19 +133,16 @@ function Header({ metadata }: { metadata: MetadataOutput }) {
         </a>
       </h1>
       {metadata.publishedAt && (
-        <time
-          className='text-sm text-secondary capitalize'
-          dateTime={metadata.publishedAt.toString()}
-        >
-          {format(metadata.publishedAt, 'MMMM dd, yyyy')}
-        </time>
+        <Time year='numeric'>{metadata.publishedAt.toISOString()}</Time>
       )}
     </header>
   );
 }
 
 function Footer({ slug }: { slug: string }) {
-  const posts = getPosts();
+  const t = useTranslations('post-page');
+  const locale = useLocale();
+  const posts = getPosts({ locale });
   const currentItemIndex = posts.findIndex(p => p.slug === slug);
   const nextItem = posts[currentItemIndex - 1];
   const previousItem = posts[currentItemIndex + 1];
@@ -157,7 +157,7 @@ function Footer({ slug }: { slug: string }) {
             href={String(previousItem.metadata.url)}
             className='no-underline block'
           >
-            <span className='text-sm text-secondary'>Anterior</span>
+            <span className='text-sm text-secondary'>{t('previous')}</span>
             <span className='block text-primary'>
               {previousItem.metadata.title}
             </span>
@@ -169,7 +169,7 @@ function Footer({ slug }: { slug: string }) {
             href={String(nextItem.metadata.url)}
             className='no-underline block text-end'
           >
-            <span className='text-sm text-secondary'>Próximo</span>
+            <span className='text-sm text-secondary'>{t('next')}</span>
             <span className='block text-primary'>
               {nextItem.metadata.title}
             </span>

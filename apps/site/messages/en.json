@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "description": "My place to experiment and share knowledge.",
+    "job-title": "Software Developer"
+  },
+  "home-page": {
+    "software-developer": "software developer",
+    "record-collector": "record collector",
+    "social-media": "You can find me on <twitter>Twitter</twitter>, <bluesky>Bluesky</bluesky> or <linkedin>Linkedin</linkedin> and see my code on <github>Github</github>.",
+    "download-cv": "Download my CV",
+    "last-played-song": "last played song.",
+    "a11y": {
+      "last-played-song": "The last song Guilherme listened to was: {song} by {artist}"
+    }
+  },
+  "post-page": {
+    "index": "Table of Contents",
+    "previous": "Previous",
+    "next": "Next",
+    "components": {
+      "text-reveal": {
+        "debug-mode": "Debug mode",
+        "slide-to-animate": "Slide to animate"
+      },
+      "pre": {
+        "copied": "Copied",
+        "copy": "Copy"
+      }
+    }
+  },
+  "records-page": {
+    "title": "My record collection (wip)"
+  },
+  "components": {
+    "home-button": {
+      "home": "Home"
+    },
+    "theme-switcher": {
+      "select-theme": "Select a theme"
+    }
+  }
+}
