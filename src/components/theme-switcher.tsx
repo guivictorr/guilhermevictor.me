@@ -48,7 +48,7 @@ export function ThemeSwitcher() {
         themes.map(t => (
           <span
             key={t}
-            className='p-1 has-focus-visible:ring-2 ring-primary rounded-sm'
+            className='has-focus-visible:ring-2 ring-primary rounded-sm'
           >
             <label
               htmlFor={`${id}_${t}`}

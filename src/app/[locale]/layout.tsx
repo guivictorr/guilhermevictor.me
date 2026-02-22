@@ -13,6 +13,7 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import { routing } from '@/lib/next-intl';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { NavigationMenu } from '@/components/navigation-menu';
 
 type RootLayoutProps = React.PropsWithChildren & {
   params: Promise<{ locale: string }>;
@@ -57,9 +58,7 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <ThemeProvider>
             <Analytics />
-            <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-20 bg-background border rounded-full'>
-              <ThemeSwitcher />
-            </div>
+            <NavigationMenu />
             {children}
           </ThemeProvider>
         </NextIntlClientProvider>

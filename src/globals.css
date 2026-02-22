@@ -93,7 +93,7 @@
 }
 
 * {
-  @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/10;
+  @apply focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-4 focus-visible:ring-offset-background border-secondary/20;
 }
 
 svg.lucide {
