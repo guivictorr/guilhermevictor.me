@@ -54,15 +54,40 @@ export default async function RootLayout({
       <head>
         <Scripts />
       </head>
-      <body className='bg-background text-secondary scroll-smooth pb-24'>
+      <body className='bg-background text-secondary scroll-smooth pb-28'>
         <NextIntlClientProvider>
           <ThemeProvider>
             <Analytics />
             <NavigationMenu />
+            <GlobalFade />
             {children}
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>
+  );
+}
+
+function GlobalFade() {
+  return (
+    <>
+      <div
+        className='bg-background backdrop-blur-xs fixed top-0 h-28 w-full z-10 pointer-events-none'
+        style={{
+          background: 'linear-gradient(to top, transparent, var(--background))',
+          maskImage:
+            'linear-gradient(to bottom, var(--background), 80% ,transparent)',
+        }}
+      ></div>
+      <div
+        className='bg-background backdrop-blur-xs fixed bottom-0 h-28 w-full z-10 pointer-events-none'
+        style={{
+          background:
+            'linear-gradient(to bottom, transparent, var(--background))',
+          maskImage:
+            'linear-gradient(to top, var(--background), 80% ,transparent)',
+        }}
+      ></div>
+    </>
   );
 }

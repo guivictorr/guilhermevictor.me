@@ -14,7 +14,7 @@ export function Time({
     ...dateFormatOptions,
   });
   return (
-    <time dateTime={children} className='text-sm'>
+    <time dateTime={children} className='text-sm whitespace-nowrap'>
       {formattedDate}
     </time>
   );

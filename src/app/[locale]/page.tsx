@@ -15,7 +15,7 @@ export default async function Home({ params }: HomeProps) {
   const { locale } = await params;
   const t = await getTranslations('home-page');
   return (
-    <div className='space-y-8 max-w-xl mx-auto pt-20 md:pt-28 px-2'>
+    <div className='space-y-8 max-w-xl mx-auto pt-20 md:pt-28 px-8 sm:px-0'>
       <main className='space-y-8'>
         <section>
           <div>
