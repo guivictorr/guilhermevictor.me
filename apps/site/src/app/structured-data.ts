@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 
 export const structuredData = (
   t: Awaited<ReturnType<typeof getTranslations>>,
+  locale: string,
 ) => ({
   '@context': 'https://schema.org',
   '@type': 'Blog',
@@ -25,7 +26,7 @@ export const structuredData = (
     '@type': 'WebPage',
     '@id': baseUrl,
   },
-  blogPost: getPosts().map(data => ({
+  blogPost: getPosts({ locale }).map(data => ({
     '@type': 'BlogPosting',
     headline: data.metadata.title,
     description: data.metadata.description,
@@ -46,7 +47,7 @@ export const structuredData = (
     url: `${baseUrl}${data.metadata.url}`,
   })),
   breadcrumb: [
-    ...getPosts().map(post => ({
+    ...getPosts({ locale }).map(post => ({
       '@type': 'BreadcrumbList',
       itemListElement: [
         {
