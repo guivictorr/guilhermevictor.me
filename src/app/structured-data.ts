@@ -1,12 +1,16 @@
 import { baseUrl } from '@/constants';
 import { getPosts } from '@/services/content';
+import { getTranslations } from 'next-intl/server';
 
-export const structuredData = {
+export const structuredData = (
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  locale: string,
+) => ({
   '@context': 'https://schema.org',
   '@type': 'Blog',
   name: 'Guilherme Victor',
   url: baseUrl,
-  description: 'Meu lugar para experimentar e compartilhar conhecimento.',
+  description: t('description'),
   publisher: {
     '@type': 'Person',
     name: 'Guilherme Victor',
@@ -22,7 +26,7 @@ export const structuredData = {
     '@type': 'WebPage',
     '@id': baseUrl,
   },
-  blogPost: getPosts().map(data => ({
+  blogPost: getPosts({ locale }).map(data => ({
     '@type': 'BlogPosting',
     headline: data.metadata.title,
     description: data.metadata.description,
@@ -37,13 +41,13 @@ export const structuredData = {
     author: {
       '@type': 'Person',
       name: 'Guilherme Victor',
-      jobTitle: 'Software Developer',
+      jobTitle: t('job-title'),
       url: 'https://github.com/guivictorr.png',
     },
     url: `${baseUrl}${data.metadata.url}`,
   })),
   breadcrumb: [
-    ...getPosts().map(post => ({
+    ...getPosts({ locale }).map(post => ({
       '@type': 'BreadcrumbList',
       itemListElement: [
         {
@@ -61,4 +65,4 @@ export const structuredData = {
       ],
     })),
   ],
-};
+});

@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import { useState, useEffect, useId } from 'react';
 import { motion } from 'motion/react';
 import { MonitorCogIcon, MoonIcon, SunIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const icons = {
   system: <MonitorCogIcon />,
@@ -11,6 +12,7 @@ const icons = {
 };
 
 export function ThemeSwitcher() {
+  const t = useTranslations('components.theme-switcher');
   const { theme, themes, setTheme } = useTheme();
   const id = useId();
   const [mounted, setMounted] = useState(false);
@@ -41,7 +43,7 @@ export function ThemeSwitcher() {
 
   return (
     <fieldset className='flex items-center gap-2'>
-      <legend className='sr-only'>Select a display theme:</legend>
+      <legend className='sr-only'>{t('select-theme')}</legend>
       {mounted &&
         themes.map(t => (
           <span

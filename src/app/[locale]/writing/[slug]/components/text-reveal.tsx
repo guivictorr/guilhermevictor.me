@@ -7,9 +7,11 @@ import {
   useMotionValue,
   useTransform,
 } from 'motion/react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 export function TextReveal() {
+  const t = useTranslations('post-page.components.text-reveal');
   const [debug, setDebug] = useState(false);
   const sliderMotionValue = useMotionValue(0);
   const radialGradientValue = useTransform(
@@ -48,7 +50,7 @@ export function TextReveal() {
         onClick={() => setDebug(prev => !prev)}
         className='absolute bottom-4 right-4 text-sm aria-pressed:bg-primary aria-pressed:text-background bg-background border rounded-full py-1 px-2 text-primary'
       >
-        Modo debug
+        {t('debug-mode')}
       </button>
       <Slider.Root
         className='relative flex h-5 w-50 touch-none select-none items-center'
@@ -62,7 +64,7 @@ export function TextReveal() {
         </Slider.Track>
         <Slider.Thumb className='block size-5 rounded-full bg-primary' />
       </Slider.Root>
-      <span className='text-sm text-lowcontrast'>Deslize para animar</span>
+      <span className='text-sm text-lowcontrast'>{t('slide-to-animate')}</span>
     </motion.div>
   );
 }

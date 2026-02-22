@@ -1,11 +1,11 @@
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote/rsc';
 import { PropsWithChildren, HTMLAttributes, ReactNode } from 'react';
 import { highlight } from 'sugar-high';
-import { ExternalLink } from './external-link';
 import { ExclusionTabs } from './exclusion-tabs';
-import { ThemeSwitcher } from './theme-switcher';
 import { Pre } from './pre';
 import { TextReveal } from './text-reveal';
+import { ThemeSwitcher } from '@/components/theme-switcher';
+import { ExternalLink } from '@/components/external-link';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {

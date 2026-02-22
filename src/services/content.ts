@@ -70,8 +70,8 @@ const getMDXData = (dir: string) => {
   });
 };
 
-export const getPosts = () => {
-  return getMDXData(path.join(process.cwd(), 'content/writing')).sort(
+export const getPosts = ({ locale }: { locale: string }) => {
+  return getMDXData(path.join(process.cwd(), `content/writing/${locale}`)).sort(
     (a, b) => {
       return (
         new Date(String(b.metadata.publishedAt)).getTime() -
@@ -81,8 +81,8 @@ export const getPosts = () => {
   );
 };
 
-export const getPost = (slug: string) => {
-  return getMDXData(path.join(process.cwd(), 'content/writing')).find(
+export const getPost = ({ locale, slug }: { locale: string; slug: string }) => {
+  return getMDXData(path.join(process.cwd(), `content/writing/${locale}`)).find(
     file => file.slug === slug,
   );
 };

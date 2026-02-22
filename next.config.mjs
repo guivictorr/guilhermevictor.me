@@ -1,4 +1,5 @@
 // @ts-check
+import createNextIntlPlugin from 'next-intl/plugin';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -43,4 +44,5 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin('./src/lib/next-intl.ts');
+export default withNextIntl(nextConfig);

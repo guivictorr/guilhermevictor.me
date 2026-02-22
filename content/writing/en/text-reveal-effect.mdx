@@ -1,0 +1,22 @@
+---
+title: Text fade effect
+url: /writing/text-reveal-effect
+publishedAt: 2025-05-30T21:00:00Z
+updatedAt: 2025-05-30T21:00:00Z
+description: Text fade animation
+keywords: frontend, web, animation, css
+---
+
+In this post, I will try to explain how the effect presented below is made.
+
+<CraftPreview>
+  <TextReveal/>
+</CraftPreview>
+
+This technique of revealing text with a fade-in and fade-out effect can be achieved with few modern CSS tools, such as `background-image` and `background-clip`.
+
+Basically, around our text, we will have a `div` with `background-image` properties with a `radial-gradient()` where the last color needs to be transparent and a `background-clip: 'text'` which will use the text as a mask.
+
+In our text, we must apply a `color: transparent` so that the text does not appear on the screen, and only serves as a mask for the gradient to fill it with its colors.
+
+Thus, when we animate the `y` axis of the `radial-gradient()`, it will traverse the text revealing the mask, using the colors of the `radial-gradient()`.
