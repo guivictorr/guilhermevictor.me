@@ -14,11 +14,11 @@ type PostPageProps = {
   params: Promise<{ slug: string; locale: string }>;
 };
 
-export async function generateStaticParams() {
-  return getPosts({ locale: 'en' }).map(({ slug }) => ({
-    slug,
-  }));
-}
+// export async function generateStaticParams() {
+//   return getPosts({ locale: 'en' }).map(({ slug }) => ({
+//     slug,
+//   }));
+// }
 
 export async function generateMetadata(
   props: PostPageProps,
