@@ -12,7 +12,7 @@ import { Scripts } from '../scripts';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { routing } from '@/lib/next-intl';
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 type RootLayoutProps = React.PropsWithChildren & {
   params: Promise<{ locale: string }>;
@@ -24,6 +24,9 @@ const serif = Instrument_Serif({
   subsets: ['latin'],
 });
 
+export function generateStaticParams() {
+  return routing.locales.map(locale => ({ locale }));
+}
 export async function generateMetadata({
   params,
 }: RootLayoutProps): Promise<Metadata> {
@@ -44,6 +47,7 @@ export default async function RootLayout({
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+  setRequestLocale(locale);
   return (
     <html
       lang={locale}

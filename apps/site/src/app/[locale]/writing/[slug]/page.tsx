@@ -7,18 +7,20 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { HomeButton } from '@/components/home-button';
 import { Time } from '@/components/time';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { useLocale, useTranslations } from 'next-intl';
 
+type Params = Promise<{ slug: string; locale: string }>;
 type PostPageProps = {
-  params: Promise<{ slug: string; locale: string }>;
+  params: Params;
 };
 
-// export async function generateStaticParams() {
-//   return getPosts({ locale: 'en' }).map(({ slug }) => ({
-//     slug,
-//   }));
-// }
+export async function generateStaticParams(props: { params: Awaited<Params> }) {
+  const { locale } = props.params;
+  return getPosts({ locale }).map(({ slug }) => ({
+    slug,
+  }));
+}
 
 export async function generateMetadata(
   props: PostPageProps,
@@ -59,7 +61,6 @@ function getMarkdownTitles(markdown: string): MarkdownTitle[] {
 }
 
 export default async function PostPage(props: PostPageProps) {
-  const t = await getTranslations('post-page');
   const params = await props.params;
   const { slug, locale } = params;
   const post = getPost({ slug, locale });
@@ -69,6 +70,8 @@ export default async function PostPage(props: PostPageProps) {
   }
 
   const headings = getMarkdownTitles(post.content);
+  setRequestLocale(locale);
+  const t = await getTranslations('post-page');
 
   return (
     <div className='lg:grid lg:grid-cols-[70%_30%]'>
