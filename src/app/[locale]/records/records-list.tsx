@@ -2,7 +2,6 @@
 
 import { DiscogsRelease } from '@/services/discogs';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useScroll, useTransform, motion, MotionValue } from 'motion/react';
 import { useRef } from 'react';
 
