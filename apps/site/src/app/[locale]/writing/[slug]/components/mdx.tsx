@@ -5,7 +5,7 @@ import { ExclusionTabs } from './exclusion-tabs';
 import { Pre } from './pre';
 import { TextReveal } from './text-reveal';
 import { ThemeSwitcher } from '@/components/theme-switcher';
-import { ExternalLink } from '@/components/external-link';
+import { Link } from '@/components/link';
 
 type CodeProps = PropsWithChildren & HTMLAttributes<HTMLDivElement>;
 function Code({ children, ...props }: CodeProps) {
@@ -68,7 +68,9 @@ const components: MDXRemoteProps['components'] = {
   TextReveal: TextReveal,
   CraftPreview: CraftPreview,
   a: ({ children, href }) => (
-    <ExternalLink href={href ?? '/'}>{children}</ExternalLink>
+    <Link href={href ?? '/'} icon={false}>
+      {children}
+    </Link>
   ),
   h1: props => <Heading level='h1' {...props} />,
   h2: props => <Heading level='h2' {...props} />,

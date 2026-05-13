@@ -11,6 +11,8 @@ const nextConfig = {
     remotePatterns: [
       { hostname: 'i.discogs.com' },
       { hostname: 'lastfm.freetls.fastly.net' },
+      { hostname: 'pecege.com' },
+      { hostname: 'www.linka.la' },
     ],
   },
   async redirects() {

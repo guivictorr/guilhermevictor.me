@@ -4,11 +4,10 @@
     "job-title": "Desenvolvedor de software"
   },
   "home-page": {
-    "software-developer": "desenvolvedor de software",
-    "record-collector": "colecionador de discos",
-    "social-media": "Você pode me encontrar no <twitter>Twitter</twitter>, <bluesky>Bluesky</bluesky> ou <linkedin>Linkedin</linkedin> e ver meu código no <github>Github</github>.",
-    "download-cv": "Baixe meu CV",
-    "last-played-song": "última música tocada.",
+    "bio": "Atualmente construindo <linka>Linka Eventos</linka> como Desenvolvedor Full Stack no <pecege>Pecege</pecege>, trabalhando remotamente de Campina Grande, Brasil. Coleciono <records>discos</records> e quase sempre estou <song>ouvindo</song>, lendo ou assistindo algo. Também <writing>escrevo</writing> ocasionalmente.",
+    "socials": "Me encontre no <github>GitHub</github>, <linkedin>LinkedIn</linkedin>, <x>X</x> ou <bluesky>Bluesky</bluesky>.",
+    "cv": "Confira meu <cv>CV</cv>.",
+    "last-played-song": "Última música tocada {time}",
     "a11y": {
       "last-played-song": "A última música que Guilherme ouviu foi: {song} by {artist}"
     }
