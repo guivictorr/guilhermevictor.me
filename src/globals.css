@@ -3,8 +3,8 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --primary: rgb(125 87 61); /* Lighter beige */
-  --secondary: rgb(100 75 20);
+  --secondary: rgb(125 87 61); /* Lighter beige */
+  --primary: rgb(100 75 20);
   --background: rgb(251 241 199); /* Light warm background */
   --low-contrast: rgb(125 102 53);
   --noise-opacity: 30%;
@@ -56,6 +56,32 @@
   --font-sans: var(--font-geist-sans);
   --font-serif: var(--font-serif);
   --animate-flash: flash 0.8s ease-out;
+  --animate-in: enter 0.15s ease-out both;
+  --animate-out: exit 0.1s ease-in both;
+
+  @keyframes enter {
+    from {
+      opacity: var(--enter-opacity, 1);
+      transform: translate3d(var(--enter-x, 0), var(--enter-y, 0), 0)
+        scale3d(
+          var(--enter-scale, 1),
+          var(--enter-scale, 1),
+          var(--enter-scale, 1)
+        );
+    }
+  }
+
+  @keyframes exit {
+    to {
+      opacity: var(--exit-opacity, 1);
+      transform: translate3d(var(--exit-x, 0), var(--exit-y, 0), 0)
+        scale3d(
+          var(--exit-scale, 1),
+          var(--exit-scale, 1),
+          var(--exit-scale, 1)
+        );
+    }
+  }
 
   @keyframes flash {
     0% {
@@ -86,10 +112,29 @@
   }
 }
 
-@layer components {
-  a {
-    @apply relative underline text-primary;
-  }
+@utility fade-in-0 {
+  --enter-opacity: 0;
+}
+@utility fade-out-0 {
+  --exit-opacity: 0;
+}
+@utility zoom-in-95 {
+  --enter-scale: 0.95;
+}
+@utility zoom-out-95 {
+  --exit-scale: 0.95;
+}
+@utility slide-in-from-top-2 {
+  --enter-y: -0.5rem;
+}
+@utility slide-in-from-bottom-2 {
+  --enter-y: 0.5rem;
+}
+@utility slide-in-from-left-2 {
+  --enter-x: -0.5rem;
+}
+@utility slide-in-from-right-2 {
+  --enter-x: 0.5rem;
 }
 
 * {

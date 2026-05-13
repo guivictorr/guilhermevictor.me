@@ -74,7 +74,7 @@ export default async function PostPage(props: PostPageProps) {
   const t = await getTranslations('post-page');
 
   return (
-    <div className='lg:grid lg:grid-cols-[70%_30%]'>
+    <div className='lg:grid lg:grid-cols-[70%_30%] pb-32'>
       <section
         className={`w-full max-w-4xl mx-auto pt-20 px-4 ${
           headings.length === 0 && 'col-span-2'

@@ -20,6 +20,6 @@ export async function getLatestPlayedTrack(): Promise<LastFMSong> {
     song: firstTrack.name,
     url: firstTrack.url,
     date: firstTrack.date.uts,
-    image: firstTrack.image[1]['#text'],
+    image: firstTrack.image[3]['#text'],
   };
 }

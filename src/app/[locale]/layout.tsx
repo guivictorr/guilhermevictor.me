@@ -57,7 +57,7 @@ export default async function RootLayout({
       <head>
         <Scripts />
       </head>
-      <body className='bg-background text-secondary scroll-smooth pb-24'>
+      <body className='bg-background text-secondary scroll-smooth'>
         <NextIntlClientProvider>
           <ThemeProvider>
             <Analytics />
