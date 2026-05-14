@@ -2,83 +2,41 @@
 
 import { DiscogsRelease } from '@/services/discogs';
 import Image from 'next/image';
-import { useScroll, useTransform, motion, MotionValue } from 'motion/react';
-import { useRef } from 'react';
 
-type RecordsListProps = {
-  records: DiscogsRelease[];
-};
-
-type CardProps = {
-  i: number;
-  record: DiscogsRelease;
-  progress: MotionValue<number>;
-  total: number;
-};
-
-const Card = ({ i, record, progress, total }: CardProps) => {
-  const step = 1 / (total - 1);
-
-  const center = step * i;
-
-  const range = [center - step, center, center + step];
-
-  const scale = useTransform(progress, range, [0.5, 1, 1.5]);
-  const opacity = useTransform(progress, range, [0.1, 1, 0]);
-  const y = useTransform(progress, range, [0, 0, 1000]);
-
+export function RecordsList({ records }: { records: DiscogsRelease[] }) {
   return (
-    <motion.div
-      style={{
-        scale,
-        opacity,
-        y,
-        zIndex: total - i,
-        animationDuration: '2s',
-      }}
-      className='absolute inset-0 flex items-center justify-center pointer-events-none'
-    >
-      <div className='relative size-125 block overflow-hidden rounded-md'>
-        <Image
-          src={record.basic_information.cover_image}
-          alt={record.basic_information.title}
-          fill
-          className='object-cover'
-          priority={i < 2}
-        />
-      </div>
-    </motion.div>
+    <section className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8'>
+      {records.map(record => (
+        <RecordCard key={record.id} record={record} />
+      ))}
+    </section>
   );
-};
+}
 
-export function RecordsList({ records }: RecordsListProps) {
-  const container = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ['start start', 'end end'],
-  });
+function RecordCard({ record }: { record: DiscogsRelease }) {
+  const artist = record.basic_information.artists
+    .map(a => a.name.replace(/\s\(\d+\)$/, ''))
+    .join(', ');
 
   return (
-    <div ref={container} className='grid grid-cols-1 relative'>
-      <div className='col-start-1 row-start-1 sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center pointer-events-none'>
-        <div className='relative w-full h-full flex items-center justify-center'>
-          {records.map((record, i) => (
-            <Card
-              key={record.id}
-              i={i}
-              record={record}
-              progress={scrollYProgress}
-              total={records.length}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className='col-start-1 row-start-1 w-full'>
-        {records.map((_, i) => (
-          <div key={i} className='h-screen w-full snap-start' />
-        ))}
+    <div className='relative aspect-square group overflow-hidden'>
+      <Image
+        src={record.basic_information.cover_image}
+        alt={record.basic_information.title}
+        fill
+        sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 14vw'
+        className='object-cover transition-transform duration-500 ease-out group-hover:scale-110'
+      />
+      <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3'>
+        <p className='text-white text-xs font-semibold leading-tight line-clamp-2'>
+          {record.basic_information.title}
+        </p>
+        <p className='text-white/60 text-xs truncate mt-0.5'>{artist}</p>
+        {record.basic_information.year > 0 && (
+          <p className='text-white/40 text-xs mt-0.5'>
+            {record.basic_information.year}
+          </p>
+        )}
       </div>
     </div>
   );
