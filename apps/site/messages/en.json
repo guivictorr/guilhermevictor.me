@@ -4,9 +4,9 @@
     "job-title": "Software Developer"
   },
   "home-page": {
-    "bio": "Currently building <linka>Linka Eventos</linka> as a Full Stack Developer at <pecege>Pecege</pecege>, working remotely from Campina Grande, Brasil. I collect <records>records</records> and I'm almost always <song>listening</song>, reading or watching something. I also <writing>write</writing> occasionally.",
+    "bio": "Currently building <linka>Linka Eventos</linka> as a Full Stack Developer at <pecege>Pecege</pecege>, working remotely from Campina Grande, Brasil. I collect <records>records</records> and I'm almost always <song>listening</song>, reading, watching or playing something. I also <writing>write</writing> occasionally.",
     "socials": "Find me on <github>GitHub</github>, <linkedin>LinkedIn</linkedin>, <x>X</x>, or <bluesky>Bluesky</bluesky>.",
-    "cv": "Check out my <cv>CV</cv>.",
+    "cv": "Curriculum Vitae",
     "last-played-song": "Last played {time}",
     "a11y": {
       "last-played-song": "The last song Guilherme listened to was: {song} by {artist}"
