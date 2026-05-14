@@ -35,6 +35,8 @@ export async function generateMetadata({
   return buildSEO({
     title: 'Guilherme Victor',
     description: t('description'),
+    canonical: '/',
+    locale,
     dynamic_og: false,
   });
 }

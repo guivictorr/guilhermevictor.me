@@ -14,7 +14,7 @@ export const structuredData = (
   publisher: {
     '@type': 'Person',
     name: 'Guilherme Victor',
-    url: 'https://linkedin.com/in/guilhermeviictor',
+    url: 'https://github.com/guivictorr',
     image: {
       '@type': 'ImageObject',
       url: 'https://github.com/guivictorr.png',
@@ -35,34 +35,13 @@ export const structuredData = (
       description: data.metadata.description,
     }).toString()}`,
     datePublished: data.metadata.publishedAt,
-    dateModified: new Date().toISOString(),
     keywords: data.metadata.keywords,
-    articleBody: data.metadata.description,
     author: {
       '@type': 'Person',
       name: 'Guilherme Victor',
       jobTitle: t('job-title'),
-      url: 'https://github.com/guivictorr.png',
+      url: 'https://github.com/guivictorr',
     },
     url: `${baseUrl}${data.metadata.url}`,
   })),
-  breadcrumb: [
-    ...getPosts({ locale }).map(post => ({
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Guilherme Victor',
-          item: baseUrl,
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: post.metadata.title,
-          item: `${baseUrl}/writing/${post.slug}`,
-        },
-      ],
-    })),
-  ],
 });

@@ -25,7 +25,8 @@ export const Link = ({
         className,
       )}
       href={href}
-      rel='noopener'
+      rel={rest.target === '_blank' ? 'noopener noreferrer' : undefined}
+      prefetch={rest.target === '_blank' ? false : rest.prefetch}
       {...rest}
     >
       {iconElement}
@@ -69,7 +70,6 @@ function resolveIcon(icon: LinkProps['icon'], href: string) {
       alt=''
       aria-hidden
       className='inline align-baseline mr-1 shrink-0'
-      priority
     />
   );
 }

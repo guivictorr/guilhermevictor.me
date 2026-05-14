@@ -31,10 +31,9 @@ export async function generateMetadata(
   return buildSEO({
     title: post?.metadata.title ?? '',
     description: post?.metadata.description ?? '',
+    canonical: `/writing/${post?.slug}`,
+    locale,
     dynamic_og: true,
-    alternates: {
-      canonical: `/writing/${post?.slug}`,
-    },
   });
 }
 type MarkdownTitle = {
@@ -52,7 +51,12 @@ function getMarkdownTitles(markdown: string): MarkdownTitle[] {
       titles.push({
         level: match[1].length,
         text: match[2].trim(),
-        id: `#${String(match[2].trim()).toLowerCase().replace(/ /gi, '-')}`,
+        id: `#${String(match[2].trim())
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/\p{M}/gu, '')
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')}`,
       });
     }
   }
