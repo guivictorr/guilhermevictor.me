@@ -9,7 +9,8 @@
     "cv": "Curriculum Vitae",
     "last-played-song": "Última música tocada {time}",
     "a11y": {
-      "last-played-song": "A última música que Guilherme ouviu foi: {song} by {artist}"
+      "last-played-song": "A última música que Guilherme ouviu foi: {song} by {artist}",
+      "music-trigger": "Mostrar última música tocada"
     }
   },
   "post-page": {
@@ -28,7 +29,12 @@
     }
   },
   "records-page": {
-    "title": "Minha coleção de discos (wip)"
+    "title": "Minha coleção de discos",
+    "description": "Um mural visual da minha coleção de discos de vinil."
+  },
+  "writing-page": {
+    "title": "Escrita",
+    "description": "Pensamentos ocasionais sobre desenvolvimento web e engenharia de software."
   },
   "components": {
     "home-button": {

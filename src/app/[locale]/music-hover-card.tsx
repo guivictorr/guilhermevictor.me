@@ -23,6 +23,7 @@ export function MusicHoverCard({ track, children }: MusicHoverCardProps) {
       <HoverCardTrigger
         delay={100}
         closeDelay={50}
+        aria-label={t('home-page.a11y.music-trigger')}
         className='text-primary cursor-default hover:text-lowcontrast transition-colors'
       >
         {children}

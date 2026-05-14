@@ -6,14 +6,20 @@ import Image from 'next/image';
 export function RecordsList({ records }: { records: DiscogsRelease[] }) {
   return (
     <section className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8'>
-      {records.map(record => (
-        <RecordCard key={record.id} record={record} />
+      {records.map((record, index) => (
+        <RecordCard key={record.id} record={record} priority={index < 8} />
       ))}
     </section>
   );
 }
 
-function RecordCard({ record }: { record: DiscogsRelease }) {
+function RecordCard({
+  record,
+  priority = false,
+}: {
+  record: DiscogsRelease;
+  priority?: boolean;
+}) {
   const artist = record.basic_information.artists
     .map(a => a.name.replace(/\s\(\d+\)$/, ''))
     .join(', ');
@@ -25,6 +31,7 @@ function RecordCard({ record }: { record: DiscogsRelease }) {
         alt={record.basic_information.title}
         fill
         sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 14vw'
+        priority={priority}
         className='object-cover transition-transform duration-500 ease-out group-hover:scale-110'
       />
       <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3'>

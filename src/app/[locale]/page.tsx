@@ -4,11 +4,27 @@ import { MusicHoverCard } from '@/app/[locale]/music-hover-card';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Disc3Icon, FileTextIcon, PenLineIcon } from 'lucide-react';
 import { getLatestPlayedTrack } from '@/services/lastfm';
+import { buildSEO } from '@/app/seo';
+import { Metadata } from 'next';
+
+type Props = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+  return buildSEO({
+    title: 'Guilherme Victor',
+    description: t('description'),
+    canonical: '/',
+    locale,
+    dynamic_og: false,
+  });
+}
 
 export default async function Home() {
   return (
     <main className='grid place-content-center w-screen h-screen'>
-      <div className='max-w-xl space-y-2'>
+      <div className='max-w-xl space-y-2 px-4 sm:px-0'>
         <h1 className='font-serif text-primary text-3xl'>Guilherme Victor</h1>
         <Information />
       </div>
