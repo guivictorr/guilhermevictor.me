@@ -2,7 +2,7 @@ import { Link } from '@/components/link';
 import { MusicHoverCard } from '@/app/[locale]/music-hover-card';
 
 import { getLocale, getTranslations } from 'next-intl/server';
-import { Disc3Icon, PenLineIcon } from 'lucide-react';
+import { Disc3Icon, FileTextIcon, PenLineIcon } from 'lucide-react';
 import { getLatestPlayedTrack } from '@/services/lastfm';
 
 export default async function Home() {
@@ -74,13 +74,9 @@ async function Information() {
         })}
       </p>
       <p>
-        {t.rich('cv', {
-          cv: chunks => (
-            <Link target='_blank' href={`/cv_${locale}.pdf`}>
-              {chunks}
-            </Link>
-          ),
-        })}
+        <Link target='_blank' href={`/cv_${locale}.pdf`} icon={FileTextIcon}>
+          {t('cv')}
+        </Link>
       </p>
     </>
   );
