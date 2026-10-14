@@ -14,7 +14,7 @@ import { getDb } from "./db/client.server"
 import { books, games, movies, records, showLogs, shows } from "./db/schema"
 import { fetchRelease } from "./discogs.server"
 import { fetchGame } from "./igdb.server"
-import { fetchBook } from "./openlibrary.server"
+import { fetchBook } from "./googlebooks.server"
 import { fetchMovie, fetchSeason, fetchShow } from "./tmdb.server"
 
 /*
@@ -26,24 +26,26 @@ import { fetchMovie, fetchSeason, fetchShow } from "./tmdb.server"
 
 export type Detail = Movie | Show | Game | Book | Release
 export type DetailOf<T extends MediaType> = Extract<Detail, { type: T }>
+/** Google Books volume ids are strings; every other provider uses numbers. */
+export type IdOf<T extends MediaType> = T extends "book" ? string : number
 
 /** Shared by page loads and logging, so logging right after viewing doesn't refetch. */
 const LIVE_TTL = 1000 * 60 * 10
 /** Stored copies are rewritten at most this often when pages are visited. */
 const REFRESH_AFTER = 1000 * 60 * 60 * 24
 
-async function loadLive(type: MediaType, id: number): Promise<Detail> {
+async function loadLive(type: MediaType, id: string | number): Promise<Detail> {
   switch (type) {
     case "movie":
-      return fetchMovie(id)
+      return fetchMovie(Number(id))
     case "show":
-      return fetchShow(id)
+      return fetchShow(Number(id))
     case "book":
-      return fetchBook(id)
+      return fetchBook(String(id))
     case "record":
-      return fetchRelease(id)
+      return fetchRelease(Number(id))
     case "game": {
-      const game = await fetchGame(id)
+      const game = await fetchGame(Number(id))
       if (!game) throw notFound()
       return game
     }
@@ -52,7 +54,7 @@ async function loadLive(type: MediaType, id: number): Promise<Detail> {
 
 export function fetchLive<T extends MediaType>(
   type: T,
-  id: number
+  id: IdOf<T>
 ): Promise<DetailOf<T>> {
   return cached(`details:${type}:${id}`, LIVE_TTL, () =>
     loadLive(type, id)
@@ -124,14 +126,17 @@ export function bookColumns(b: Book) {
   return {
     title: b.title,
     year: b.year ?? null,
-    genres: b.subjects.slice(0, 5),
+    genres: b.categories.slice(0, 5),
     poster: b.cover ?? null,
-    authors: b.authors.map((a) => a.name),
+    authors: b.authors,
+    publisher: b.publisher ?? null,
+    publishedDate: b.publishedDate ?? null,
     pages: b.pages ?? null,
-    subjects: b.subjects,
-    isbns: [...new Set(b.editions.flatMap((e) => (e.isbn ? [e.isbn] : [])))],
-    // Other editions stay on Open Library.
-    data: { ...b, editions: [] },
+    language: b.language ?? null,
+    categories: b.categories,
+    isbn13: b.isbn13 ?? null,
+    isbn10: b.isbn10 ?? null,
+    data: b,
   }
 }
 
@@ -214,7 +219,7 @@ function stored(
 /** The work's stored details, or undefined when it isn't in the archive. */
 async function readStored(
   type: MediaType,
-  id: number
+  id: string | number
 ): Promise<Stored | undefined> {
   const db = getDb()
   switch (type) {
@@ -222,28 +227,28 @@ async function readStored(
       const [row] = await db
         .select({ data: movies.data, fetchedAt: movies.fetchedAt })
         .from(movies)
-        .where(eq(movies.id, id))
+        .where(eq(movies.id, Number(id)))
       return stored(row)
     }
     case "show": {
       const [row] = await db
         .select({ data: shows.data, fetchedAt: shows.fetchedAt })
         .from(shows)
-        .where(eq(shows.id, id))
+        .where(eq(shows.id, Number(id)))
       return stored(row)
     }
     case "game": {
       const [row] = await db
         .select({ data: games.data, fetchedAt: games.fetchedAt })
         .from(games)
-        .where(eq(games.id, id))
+        .where(eq(games.id, Number(id)))
       return stored(row)
     }
     case "book": {
       const [row] = await db
         .select({ data: books.data, fetchedAt: books.fetchedAt })
         .from(books)
-        .where(eq(books.id, id))
+        .where(eq(books.id, String(id)))
       return stored(row)
     }
     case "record": {
@@ -251,7 +256,7 @@ async function readStored(
       const [row] = await db
         .select({ data: records.data, fetchedAt: records.fetchedAt })
         .from(records)
-        .where(eq(records.releaseId, id))
+        .where(eq(records.releaseId, Number(id)))
         .orderBy(sql`${records.data} is null`)
         .limit(1)
       return stored(row)
@@ -267,7 +272,7 @@ const isStale = (fetchedAt?: Date) =>
 /** Live details, falling back to the stored copy when the provider fails. */
 export async function liveOrStored<T extends MediaType>(
   type: T,
-  id: number
+  id: IdOf<T>
 ): Promise<DetailOf<T>> {
   let live: DetailOf<T>
   try {
@@ -350,13 +355,13 @@ async function writeSeason(season: Season) {
  */
 export async function ensureDetails(
   type: MediaType,
-  id: number,
+  id: string | number,
   { refresh = false } = {}
 ): Promise<boolean> {
   try {
     const copy = await readStored(type, id)
     if (!copy || (copy.data && !refresh)) return true
-    await writeDetails(await fetchLive(type, id))
+    await writeDetails(await loadLive(type, id))
     return true
   } catch (error) {
     console.warn(`Couldn't store details ${type}:${id}`, error)

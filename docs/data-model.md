@@ -6,14 +6,14 @@ the export file format depends on them.
 
 ## Kinds and ids
 
-| Kind   | `MediaType` | Provider id                                                             | Notes                                           |
-| ------ | ----------- | ----------------------------------------------------------------------- | ----------------------------------------------- |
-| Movie  | `movie`     | TMDB movie id                                                           |                                                 |
-| Show   | `show`      | TMDB tv id                                                              | seasons by `seasonNumber` (0 = specials)        |
-| Game   | `game`      | IGDB game id                                                            |                                                 |
-| Book   | `book`      | numeric part of the Open Library **work** id (`OL21464434W` → 21464434) | a book is the work; editions listed on its page |
-| Record | `record`    | Discogs **release** id (a specific pressing)                            | master id used for "other versions"             |
-| Flight | —           | uuid                                                                    | own records, no provider                        |
+| Kind   | `MediaType` | Provider id                                           | Notes                                       |
+| ------ | ----------- | ----------------------------------------------------- | ------------------------------------------- |
+| Movie  | `movie`     | TMDB movie id                                         |                                             |
+| Show   | `show`      | TMDB tv id                                            | seasons by `seasonNumber` (0 = specials)    |
+| Game   | `game`      | IGDB game id                                          |                                             |
+| Book   | `book`      | Google Books **volume** id, a string (`zyTCAlFPjgYC`) | an edition; translations are separate books |
+| Record | `record`    | Discogs **release** id (a specific pressing)          | master id used for "other versions"         |
+| Flight | —           | uuid                                                  | own records, no provider                    |
 
 ## Logs (`log.ts`)
 
@@ -60,9 +60,10 @@ derived is stored.
 
 ## Images
 
-`ImageRef = { provider: "tmdb" | "igdb" | "discogs" | "openlibrary", path }`.
+`ImageRef = { provider: "tmdb" | "igdb" | "discogs" | "googlebooks", path }`.
 URLs are built at render time with size presets (`lib/images.ts`). Discogs paths
-are full signed URLs; Open Library uses cover ids (`author:<id>` for author photos).
+are full signed URLs; Google Books paths are volume ids. Work ids are `WorkId`
+(number, or string for books).
 
 ## Export format
 

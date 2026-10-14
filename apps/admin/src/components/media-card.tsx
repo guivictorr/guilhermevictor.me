@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router"
-import type { ImageRef, MediaType } from "@workspace/schemas"
+import type { ImageRef, MediaType, WorkId } from "@workspace/schemas"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { cn } from "@workspace/ui/lib/utils"
 import { Poster } from "./poster"
 
 export type CardMedia = {
   type: MediaType
-  id: number
+  id: WorkId
   title: string
   subtitle?: string
   year?: number

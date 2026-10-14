@@ -56,7 +56,7 @@ export const KINDS: Record<MediaType, KindConfig> = {
     icon: BookOpenIcon,
     to: "/books",
     aspect: "poster",
-    provider: "Open Library",
+    provider: "Google Books",
   },
   record: {
     label: "Record",

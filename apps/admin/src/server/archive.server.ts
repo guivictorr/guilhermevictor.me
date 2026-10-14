@@ -86,7 +86,7 @@ const now = () => new Date()
 // --- works: rows → library/backlog items ------------------------------------
 
 type WorkRow = {
-  id: number
+  id: number | string
   title: string
   year: number | null
   genres: Array<string>
@@ -159,10 +159,13 @@ const allWorkItems = async (db: Conn) =>
     )
   ).flat()
 
+/** Book ids are Google Books volume ids (strings); the rest are numbers. */
+const numericId = (id: string | number) => Number(id)
+const bookId = (id: string | number) => String(id)
+
 /** Insert values for a new work row from the snapshot the UI sends. */
 function snapshotValues(item: LibraryItemInput) {
   return {
-    id: item.id,
     title: item.title,
     year: item.year ?? null,
     genres: item.genres,
@@ -256,7 +259,7 @@ const recordLogEntry = (
 async function selectLogs(
   db: Conn,
   type: MediaType,
-  id?: number
+  id?: string | number
 ): Promise<Array<LogEntry>> {
   switch (type) {
     case "movie":
@@ -264,28 +267,34 @@ async function selectLogs(
         await db
           .select()
           .from(movieLogs)
-          .where(id === undefined ? undefined : eq(movieLogs.movieId, id))
+          .where(
+            id === undefined ? undefined : eq(movieLogs.movieId, numericId(id))
+          )
       ).map(movieLogEntry)
     case "show":
       return (
         await db
           .select()
           .from(showLogs)
-          .where(id === undefined ? undefined : eq(showLogs.showId, id))
+          .where(
+            id === undefined ? undefined : eq(showLogs.showId, numericId(id))
+          )
       ).map(showLogEntry)
     case "game":
       return (
         await db
           .select()
           .from(gameLogs)
-          .where(id === undefined ? undefined : eq(gameLogs.gameId, id))
+          .where(
+            id === undefined ? undefined : eq(gameLogs.gameId, numericId(id))
+          )
       ).map(gameLogEntry)
     case "book":
       return (
         await db
           .select()
           .from(bookLogs)
-          .where(id === undefined ? undefined : eq(bookLogs.bookId, id))
+          .where(id === undefined ? undefined : eq(bookLogs.bookId, bookId(id)))
       ).map(bookLogEntry)
     case "record":
       return (
@@ -293,7 +302,9 @@ async function selectLogs(
           .select({ log: recordLogs, releaseId: records.releaseId })
           .from(recordLogs)
           .innerJoin(records, eq(records.id, recordLogs.recordId))
-          .where(id === undefined ? undefined : eq(records.releaseId, id))
+          .where(
+            id === undefined ? undefined : eq(records.releaseId, numericId(id))
+          )
       ).map((r) => recordLogEntry(r.log, r.releaseId))
   }
 }
@@ -434,24 +445,25 @@ async function upsertLoggedWork(
   item: LibraryItemInput
 ) {
   const values = snapshotValues(item)
+  const id = numericId(item.id)
   const set = { backlogAddedAt: null }
   switch (type) {
     case "movie":
       await db
         .insert(movies)
-        .values(values)
+        .values({ ...values, id })
         .onConflictDoUpdate({ target: movies.id, set })
       return
     case "show":
       await db
         .insert(shows)
-        .values(values)
+        .values({ ...values, id })
         .onConflictDoUpdate({ target: shows.id, set })
       return
     case "game":
       await db
         .insert(games)
-        .values(values)
+        .values({ ...values, id })
         .onConflictDoUpdate({ target: games.id, set })
       return
     case "book":
@@ -459,6 +471,7 @@ async function upsertLoggedWork(
         .insert(books)
         .values({
           ...values,
+          id: bookId(item.id),
           authors: item.subtitle ? item.subtitle.split(", ") : [],
         })
         .onConflictDoUpdate({ target: books.id, set })
@@ -466,7 +479,7 @@ async function upsertLoggedWork(
 }
 
 /** Deletes a work row once it has no logs and isn't in the backlog. */
-async function pruneWork(db: Conn, type: NumericKind, id: number) {
+async function pruneWork(db: Conn, type: NumericKind, id: string | number) {
   switch (type) {
     case "movie":
       await db.execute(sql`delete from movies w where w.id = ${id}
@@ -612,8 +625,8 @@ const workExport = (row: WorkRow & { fetchedAt: Date | null }) => ({
   fetchedAt: isoOrUndefined(row.fetchedAt),
 })
 
-const workImport = (row: {
-  id: number
+const workImport = <TId extends number | string>(row: {
+  id: TId
   title: string
   year?: number
   poster?: LibraryItem["poster"]
@@ -769,23 +782,24 @@ export const pgRepository: ArchiveRepository = {
       backlogAddedAt: sql`coalesce(${table.backlogAddedAt}, ${backlogAddedAt})`,
     })
     const values = { ...snapshotValues(item), backlogAddedAt }
+    const id = numericId(item.id)
     switch (item.type) {
       case "movie":
         await db
           .insert(movies)
-          .values(values)
+          .values({ ...values, id })
           .onConflictDoUpdate({ target: movies.id, set: keep(movies) })
         return
       case "show":
         await db
           .insert(shows)
-          .values(values)
+          .values({ ...values, id })
           .onConflictDoUpdate({ target: shows.id, set: keep(shows) })
         return
       case "game":
         await db
           .insert(games)
-          .values(values)
+          .values({ ...values, id })
           .onConflictDoUpdate({ target: games.id, set: keep(games) })
         return
       case "book":
@@ -793,6 +807,7 @@ export const pgRepository: ArchiveRepository = {
           .insert(books)
           .values({
             ...values,
+            id: bookId(item.id),
             authors: item.subtitle ? item.subtitle.split(", ") : [],
           })
           .onConflictDoUpdate({ target: books.id, set: keep(books) })
@@ -802,11 +817,11 @@ export const pgRepository: ArchiveRepository = {
         const [existing] = await db
           .select({ id: records.id })
           .from(records)
-          .where(eq(records.releaseId, item.id))
+          .where(eq(records.releaseId, id))
           .limit(1)
         if (existing) return
         await db.insert(records).values({
-          releaseId: item.id,
+          releaseId: id,
           title: item.title,
           artist: item.subtitle ?? "",
           year: item.year ?? null,
@@ -825,28 +840,28 @@ export const pgRepository: ArchiveRepository = {
           await tx
             .update(movies)
             .set({ backlogAddedAt: null })
-            .where(eq(movies.id, id))
+            .where(eq(movies.id, numericId(id)))
           return pruneWork(tx, type, id)
         case "show":
           await tx
             .update(shows)
             .set({ backlogAddedAt: null })
-            .where(eq(shows.id, id))
+            .where(eq(shows.id, numericId(id)))
           return pruneWork(tx, type, id)
         case "game":
           await tx
             .update(games)
             .set({ backlogAddedAt: null })
-            .where(eq(games.id, id))
+            .where(eq(games.id, numericId(id)))
           return pruneWork(tx, type, id)
         case "book":
           await tx
             .update(books)
             .set({ backlogAddedAt: null })
-            .where(eq(books.id, id))
+            .where(eq(books.id, bookId(id)))
           return pruneWork(tx, type, id)
         case "record":
-          await tx.delete(records).where(wantedRelease(id))
+          await tx.delete(records).where(wantedRelease(numericId(id)))
       }
     })
   },

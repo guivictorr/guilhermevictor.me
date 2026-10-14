@@ -1,7 +1,14 @@
 import { z } from "zod"
 import { CollectionItem } from "./collection"
 import { Flight } from "./flight"
-import { ImageRef, IsoDate, IsoDateTime, MediaType, Rating } from "./common"
+import {
+  ImageRef,
+  IsoDate,
+  IsoDateTime,
+  MediaType,
+  Rating,
+  WorkId,
+} from "./common"
 
 /*
  * Log fields are placeholders until the per-type column spec is defined.
@@ -92,7 +99,8 @@ export type BookFormat = z.infer<typeof BookFormat>
 
 const bookLogFields = z.object({
   kind: z.literal("book"),
-  mediaId: z.number().int(),
+  /** Google Books volume id. */
+  mediaId: z.string(),
   status: BookStatus,
   format: BookFormat.optional(),
   startedAt: IsoDate.optional(),
@@ -166,7 +174,7 @@ export type LogEntry = z.infer<typeof LogEntry>
  */
 export const LibraryItem = z.object({
   type: MediaType,
-  id: z.number().int(),
+  id: WorkId,
   title: z.string(),
   subtitle: z.string().optional(),
   year: z.number().int().optional(),

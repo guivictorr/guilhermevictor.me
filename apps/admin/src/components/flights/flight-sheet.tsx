@@ -22,6 +22,7 @@ import { FormShell } from "@/components/log/log-forms"
 import { ResponsiveSheet, useOpenSession } from "@/components/responsive-sheet"
 import { airportsQuery, searchAirports } from "@/lib/airports"
 import { airlineCode } from "@/lib/flight-math"
+import { connectionTemplate } from "@/lib/flight-trips"
 import { flightsQuery, useDeleteFlight, useSaveFlight } from "@/queries/archive"
 
 const CABIN_OPTIONS = [
@@ -48,10 +49,12 @@ function useFieldErrorsOf<T>() {
 function AirportField({ label, flown }: { label: string; flown: Set<string> }) {
   const { field, errors, invalid } = useFieldErrorsOf<string | undefined>()
   const { data: airports } = useQuery(airportsQuery())
-  const [input, setInput] = useState("")
+  // Undefined until the user types, so a pre-filled airport shows its label.
+  const [typed, setTyped] = useState<string>()
+  const query = typed ?? ""
   const results = useMemo(
-    () => (airports ? searchAirports(airports, input, flown) : []),
-    [airports, input, flown]
+    () => (airports ? searchAirports(airports, query, flown) : []),
+    [airports, query, flown]
   )
   const toLabel = (code: string | null) => {
     if (!code) return ""
@@ -67,8 +70,8 @@ function AirportField({ label, flown }: { label: string; flown: Set<string> }) {
         filter={null}
         value={field.state.value ?? null}
         onValueChange={(code) => field.handleChange(code ?? undefined)}
-        inputValue={input}
-        onInputValueChange={setInput}
+        inputValue={typed ?? toLabel(field.state.value ?? null)}
+        onInputValueChange={setTyped}
         itemToStringLabel={toLabel}
       >
         <ComboboxInput
@@ -130,14 +133,40 @@ function DateTimeField({
   )
 }
 
+type SheetState = {
+  open: boolean
+  editing?: Flight
+  /** Pre-filled values for a new flight (e.g. a connection). */
+  template?: Partial<FlightInput>
+}
+
+/** Open/close state for `FlightSheet`, including "add a connection" flows. */
+export function useFlightSheet() {
+  const [state, setState] = useState<SheetState>({ open: false })
+  return {
+    openNew: () => setState({ open: true }),
+    openEdit: (flight: Flight) => setState({ open: true, editing: flight }),
+    openConnection: (flight: Flight | FlightInput) =>
+      setState({ open: true, template: connectionTemplate(flight) }),
+    sheetProps: {
+      ...state,
+      onOpenChange: (open: boolean) => setState((s) => ({ ...s, open })),
+      onAddConnection: (flight: FlightInput) =>
+        setState({ open: true, template: connectionTemplate(flight) }),
+    },
+  }
+}
+
 export function FlightSheet({
   open,
   onOpenChange,
   editing,
-}: {
-  open: boolean
+  template,
+  onAddConnection,
+}: SheetState & {
   onOpenChange: (open: boolean) => void
-  editing?: Flight
+  /** Offered after saving a new flight, to chain the next leg. */
+  onAddConnection?: (flight: FlightInput) => void
 }) {
   const session = useOpenSession(open)
   const save = useSaveFlight()
@@ -163,22 +192,32 @@ export function FlightSheet({
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
-      title={editing ? "Edit flight" : "New flight"}
+      title={editing ? "Edit flight" : template ? "Connection" : "New flight"}
       description={
         editing
           ? `${editing.from} → ${editing.to}`
-          : "Times are local to each airport"
+          : template?.from
+            ? `Continuing from ${template.from} · times are local`
+            : "Times are local to each airport"
       }
     >
       <FlightForm
         key={`${editing?.id ?? "new"}-${session}`}
         editing={editing}
+        template={template}
         history={flights ?? []}
         onSubmit={async (input) => {
           try {
             await save.mutateAsync({ id: editing?.id, input })
             toast.success(editing ? "Flight updated" : "Flight logged", {
               description: `${input.from} → ${input.to}`,
+              action:
+                !editing && onAddConnection
+                  ? {
+                      label: "Add connection",
+                      onClick: () => onAddConnection(input),
+                    }
+                  : undefined,
             })
             onOpenChange(false)
           } catch (error) {
@@ -205,10 +244,12 @@ export function FlightSheet({
 
 function FlightForm({
   editing,
+  template,
   history,
   onSubmit,
 }: {
   editing?: Flight
+  template?: Partial<FlightInput>
   history: Array<Flight>
   onSubmit: (input: FlightInput) => Promise<void>
 }) {
@@ -226,19 +267,20 @@ function FlightForm({
     return map
   }, [history])
 
+  const base = editing ?? template
   const defaultValues: z.input<typeof FlightInput> = {
-    from: editing?.from ?? "",
-    to: editing?.to ?? "",
-    departure: editing?.departure ?? "",
-    arrival: editing?.arrival,
-    flightNumber: editing?.flightNumber,
-    airline: editing?.airline,
-    aircraft: editing?.aircraft,
-    registration: editing?.registration,
-    seat: editing?.seat,
-    cabin: editing?.cabin,
-    reservation: editing?.reservation,
-    notes: editing?.notes,
+    from: base?.from ?? "",
+    to: base?.to ?? "",
+    departure: base?.departure ?? "",
+    arrival: base?.arrival,
+    flightNumber: base?.flightNumber,
+    airline: base?.airline,
+    aircraft: base?.aircraft,
+    registration: base?.registration,
+    seat: base?.seat,
+    cabin: base?.cabin,
+    reservation: base?.reservation,
+    notes: base?.notes,
   }
   const form = useAppForm({
     defaultValues,

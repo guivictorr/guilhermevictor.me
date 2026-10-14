@@ -1,11 +1,11 @@
 import { z } from "zod"
-import { ImageRef, MediaType } from "./common"
+import { ImageRef, MediaType, WorkId } from "./common"
 
 /** Lightweight shape used by search results, rails and library cards. */
 export const MediaSummary = z.object({
   type: MediaType,
-  /** Provider id: TMDB id for movies/shows, IGDB id for games. */
-  id: z.number().int(),
+  /** Provider id: TMDB, IGDB, Discogs (numbers) or Google Books (string). */
+  id: WorkId,
   title: z.string(),
   /** Secondary line, e.g. the artist for records. */
   subtitle: z.string().optional(),
@@ -28,7 +28,7 @@ export type MediaSummary = z.infer<typeof MediaSummary>
 
 /** Provider community score, normalized to 0–5 so it sits next to our stars. */
 export const ProviderRating = z.object({
-  source: z.enum(["tmdb", "igdb", "discogs", "openlibrary"]),
+  source: z.enum(["tmdb", "igdb", "discogs", "googlebooks"]),
   value: z.number().min(0).max(5),
   count: z.number().int().optional(),
 })
@@ -287,61 +287,31 @@ export const MasterRelease = z.object({
 })
 export type MasterRelease = z.infer<typeof MasterRelease>
 
-/** One printing of a book (Open Library "edition"). */
-export const BookEdition = z.object({
-  /** Open Library edition id, e.g. "OL35664121M". */
-  key: z.string(),
-  title: z.string(),
-  publisher: z.string().optional(),
-  publishDate: z.string().optional(),
-  pages: z.number().int().optional(),
-  isbn: z.string().optional(),
-  language: z.string().optional(),
-  format: z.string().optional(),
-  cover: ImageRef.optional(),
-})
-export type BookEdition = z.infer<typeof BookEdition>
-
-export const Author = z.object({
-  /** Open Library author id, e.g. "OL1406214A". */
-  key: z.string(),
-  name: z.string(),
-  bio: z.string().optional(),
-  birthDate: z.string().optional(),
-  deathDate: z.string().optional(),
-  photo: ImageRef.optional(),
-})
-export type Author = z.infer<typeof Author>
-
 /**
- * A book as a work (all editions together), like a movie: logs attach to
- * the work, editions are listed on its page.
+ * A book as a Google Books volume (a specific edition, so translations are
+ * separate books).
  */
 export const Book = z.object({
   type: z.literal("book"),
-  /** Numeric part of the Open Library work id (OL21464434W → 21464434). */
-  id: z.number().int(),
+  /** Google Books volume id. */
+  id: z.string(),
   title: z.string(),
   subtitle: z.string().optional(),
-  authors: z.array(z.object({ key: z.string(), name: z.string() })),
+  authors: z.array(z.string()),
+  publisher: z.string().optional(),
+  /** "2005", "2005-06" or "2005-06-14". */
+  publishedDate: z.string().optional(),
   year: z.number().int().optional(),
   description: z.string().optional(),
-  subjects: z.array(z.string()),
-  places: z.array(z.string()),
-  times: z.array(z.string()),
+  categories: z.array(z.string()),
   pages: z.number().int().optional(),
-  languages: z.array(z.string()),
-  editions: z.array(BookEdition),
-  editionCount: z.number().int(),
+  /** ISO 639-1, e.g. "pt". */
+  language: z.string().optional(),
+  isbn13: z.string().optional(),
+  isbn10: z.string().optional(),
   providerRating: ProviderRating.optional(),
-  shelves: z
-    .object({
-      wantToRead: z.number().int(),
-      reading: z.number().int(),
-      read: z.number().int(),
-    })
-    .optional(),
-  openLibraryUrl: z.string(),
+  /** Google Books page for the volume. */
+  infoLink: z.string().optional(),
   cover: ImageRef.optional(),
 })
 export type Book = z.infer<typeof Book>

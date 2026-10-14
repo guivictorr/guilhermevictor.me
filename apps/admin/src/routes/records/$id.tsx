@@ -24,11 +24,10 @@ import { ScrollRow } from "@/components/media/media-rail"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { CopySheet } from "@/components/records/copy-sheet"
 import {
-  CompaniesSection,
-  CreditsSection,
-  IdentifiersSection,
-  NotesSection,
   OtherVersionsSection,
+  PlayReleaseButton,
+  ReleaseNotes,
+  ReleaseReference,
   Tracklist,
   VideosSection,
   useOriginalYear,
@@ -106,6 +105,7 @@ function RecordPage() {
         poster={release.cover}
         backdrop={release.images.at(1)}
         backTo="/records"
+        titleAction={<PlayReleaseButton release={release} />}
         meta={joinDefined([artist, release.year, label?.name])}
         genres={[...release.genres, ...release.styles].slice(0, 5)}
         ratings={
@@ -151,11 +151,8 @@ function RecordPage() {
             label: "About",
             content: (
               <>
+                <ReleaseNotes release={release} />
                 <Tracklist release={release} />
-                <CompaniesSection release={release} />
-                <CreditsSection release={release} />
-                <NotesSection release={release} />
-                <IdentifiersSection release={release} />
                 <OtherVersionsSection release={release} />
                 <VideosSection release={release} />
                 {release.images.length > 1 ? (
@@ -174,6 +171,7 @@ function RecordPage() {
                     </ScrollRow>
                   </DetailSection>
                 ) : null}
+                <ReleaseReference release={release} />
               </>
             ),
           },

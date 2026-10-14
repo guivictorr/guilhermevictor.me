@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router"
-import type { ImageRef, MediaType, ProviderRating } from "@workspace/schemas"
+import type {
+  ImageRef,
+  MediaType,
+  ProviderRating,
+  WorkId,
+} from "@workspace/schemas"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
@@ -57,6 +62,7 @@ export function DetailHero({
   genres = [],
   ratings,
   actions,
+  titleAction,
   backTo,
 }: {
   type: MediaType
@@ -70,6 +76,8 @@ export function DetailHero({
   genres?: Array<string>
   ratings?: React.ReactNode
   actions?: React.ReactNode
+  /** Sits right after the title, e.g. a record's play button. */
+  titleAction?: React.ReactNode
   backTo: string
 }) {
   const backdropUrl = imageUrl(backdrop ?? poster, "backdrop")
@@ -110,9 +118,12 @@ export function DetailHero({
                 <Badge variant="secondary">{KINDS[type].label}</Badge>
               )}
             </div>
-            <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-4xl">
-              {title}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-4xl">
+                {title}
+              </h1>
+              {titleAction}
+            </div>
             {tagline ? (
               <p className="mt-1 text-sm text-muted-foreground italic">
                 {tagline}
@@ -147,6 +158,13 @@ export function DetailHero({
       </div>
     </section>
   )
+}
+
+const SOURCE_LABEL: Record<ProviderRating["source"], string> = {
+  tmdb: "TMDB",
+  igdb: "IGDB",
+  discogs: "Discogs",
+  googlebooks: "Google",
 }
 
 function RatingChip({
@@ -187,7 +205,7 @@ export function RatingsRow({
 }: {
   provider?: ProviderRating
   type: MediaType
-  id: number
+  id: WorkId
 }) {
   const { data: logs } = useQuery(logsQuery({ type, id }))
   const mine = logs?.find((log) => log.rating !== undefined)?.rating
@@ -198,11 +216,11 @@ export function RatingsRow({
       {provider ? (
         <RatingChip
           value={provider.value}
-          label={provider.source}
+          label={SOURCE_LABEL[provider.source]}
           title={
             provider.count
-              ? `${provider.count.toLocaleString()} ratings on ${provider.source.toUpperCase()}`
-              : provider.source.toUpperCase()
+              ? `${provider.count.toLocaleString()} ratings on ${SOURCE_LABEL[provider.source]}`
+              : SOURCE_LABEL[provider.source]
           }
         />
       ) : null}

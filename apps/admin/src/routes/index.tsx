@@ -1,6 +1,7 @@
+import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { Button, buttonVariants } from "@workspace/ui/components/button"
 import {
   Empty,
   EmptyContent,
@@ -12,6 +13,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import {
   ArchiveIcon,
+  DicesIcon,
   ChevronRightIcon,
   PlusIcon,
   SettingsIcon,
@@ -22,6 +24,12 @@ import { PageBody, PageHeader } from "@/components/page-header"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { MediaRail } from "@/components/media/media-rail"
+import {
+  RandomPickSheet,
+  useRandomPick,
+} from "@/components/media/random-pick-sheet"
+import { dailyPicks } from "@/lib/daily-picks"
+import { today } from "@/lib/format"
 import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
 import type { LibrarySection } from "@/lib/media-kinds"
 import {
@@ -63,7 +71,7 @@ function HomePage() {
       />
       <PageBody className="space-y-8">
         <Counts />
-        <UpNext />
+        <ForToday />
 
         {playing.length > 0 ? (
           <section>
@@ -175,13 +183,28 @@ function SectionTitle({
   )
 }
 
-function UpNext() {
+/** Deciding what to do: today's picks from the backlog, or let chance decide. */
+function ForToday() {
   const { data: backlog } = useQuery(backlogQuery())
+  const { surprise, sheetProps } = useRandomPick()
+  const picks = useMemo(
+    () => (backlog ? dailyPicks(backlog, today()) : []),
+    [backlog]
+  )
   if (!backlog?.length) return null
   return (
     <section>
-      <SectionTitle title="Up next" to="/backlog" />
-      <MediaRail items={backlog.slice(0, 12)} />
+      <SectionTitle title="For today" to="/backlog" />
+      <Button
+        size="lg"
+        className="mb-4 h-14 w-full rounded-2xl text-base"
+        onClick={() => surprise(backlog)}
+      >
+        <DicesIcon className="size-5" />
+        Surprise me
+      </Button>
+      <MediaRail items={picks} />
+      <RandomPickSheet {...sheetProps} />
     </section>
   )
 }

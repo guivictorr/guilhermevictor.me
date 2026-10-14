@@ -7,6 +7,7 @@ import type {
   MediaSummary,
   Release,
 } from "@workspace/schemas"
+import type { SearchFilters } from "@/lib/search-filters"
 import { getDiscogsEnv } from "./env.server"
 
 const API_URL = "https://api.discogs.com"
@@ -182,17 +183,35 @@ function splitTitle(raw: string) {
     : { artist: cleanName(raw.slice(0, index)), title: raw.slice(index + 3) }
 }
 
+/** Text and/or filters (artist, label, genre, style, year, country, format). */
 export async function searchDiscogs(
-  query: string
+  query: string | undefined,
+  filters: SearchFilters = {}
 ): Promise<Array<MediaSummary>> {
+  const format = filters.format === "all" ? undefined : (filters.format ?? "Vinyl")
+  const params: Record<string, string | undefined> = {
+    q: query,
+    type: "release",
+    format,
+    artist: filters.artist,
+    label: filters.label,
+    genre: filters.genre,
+    style: filters.style,
+    country: filters.country,
+    // Discogs filters one year; a range uses its start.
+    year: filters.from ? String(filters.from) : undefined,
+    per_page: "40",
+  }
   const data = await discogs<{ results: Array<DiscogsSearchResult> }>(
     "/database/search",
-    { q: query, type: "release", format: "Vinyl", per_page: "40" }
+    Object.fromEntries(
+      Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
+    )
   )
   return data.results.map((r) => {
     const { artist, title } = splitTitle(r.title)
-    // Every result is vinyl; what differs is the descriptors and color.
-    const format = (r.format ?? []).filter((f) => f !== "Vinyl")
+    // The format filter is shared by every result; show what differs.
+    const descriptors = (r.format ?? []).filter((f) => f !== format)
     const variant = (r.formats ?? [])
       .map((f) => f.text)
       .filter(Boolean)
@@ -208,7 +227,7 @@ export async function searchDiscogs(
         label: r.label?.[0] ? cleanName(r.label[0]) : undefined,
         catno: r.catno && r.catno !== "none" ? r.catno : undefined,
         country: r.country || undefined,
-        format: [...new Set(format)],
+        format: [...new Set(descriptors)],
         variant: variant || undefined,
       },
     }

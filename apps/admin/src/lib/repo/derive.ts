@@ -26,7 +26,7 @@ import type {
  * one home whatever the storage is.
  */
 
-export const itemKey = (type: string, id: number) => `${type}:${id}`
+export const itemKey = (type: string, id: string | number) => `${type}:${id}`
 
 const MEDIA_TYPES: Array<MediaType> = [
   "movie",

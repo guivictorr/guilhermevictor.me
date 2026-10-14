@@ -24,11 +24,13 @@ Goal: the PWA should feel like a **native app** on a phone. Project skills in
 | `DetailHero`, `DetailBody` (tabs + sidebar), `DetailSection`, `SideCard`, `DetailsCard`, `RatingsRow` | All detail pages                                                                                                       |
 | `LogSheet`, `LogHistory`, `use-log-sheet`                                                             | Logging any kind                                                                                                       |
 | `MediaCard` / `MediaGrid` / `MediaRail` / `ScrollRow`                                                 | Cards, grids, horizontal snap rows                                                                                     |
+| `StarRatingInput`                                                                                     | Rating: mouse hover previews, click sets; touch tap or drag across the stars (`touch-action: pan-y`)                   |
+| `RandomPickSheet` + `useRandomPick`                                                                   | "Surprise me" from any backlog pool (Home, Backlog)                                                                    |
+| `FilterSheet`                                                                                         | Search filters per kind                                                                                                |
 | `BacklogButton`, `CardBacklogBadge`                                                                   | Backlog toggle (detail) and poster-corner toggle/✓                                                                     |
 | `Poster`                                                                                              | Cover with kind-shaped aspect and typed fallback                                                                       |
 | `LibraryView`                                                                                         | Library grid + TanStack Table v9 (sort, filter, grid/table)                                                            |
 | `LibraryNav`                                                                                          | Kind chips at the top of library pages                                                                                 |
-| `BarChart`                                                                                            | Single-series bars with focusable tooltips (dataviz rules: one hue, no legend)                                         |
 | `YouTubeVideo`                                                                                        | Thumbnail until tapped (no iframe cost)                                                                                |
 | `BoardingPass`, `FlightMap`                                                                           | Flights                                                                                                                |
 | `form/form-hook.tsx`                                                                                  | TanStack Form `createFormHook` with field components (Date, Rating, Switch, Text, Textarea, Number, Select, Segmented) |
@@ -38,4 +40,5 @@ Goal: the PWA should feel like a **native app** on a phone. Project skills in
 The owner liked yourmovieprofile.com / yourgamerprofile.com detail pages (copied
 minus social features) and the discogs.com release page (tracklist → companies →
 credits → notes → identifiers → other versions → videos). They consider **Home,
-Search and Stats still too simple** and are collecting reference designs for them.
+Search still too simple** and are collecting reference designs; Stats was removed
+(2026-10-14) to be rebuilt.

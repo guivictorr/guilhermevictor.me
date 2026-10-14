@@ -1,4 +1,5 @@
 import type { Game, MediaSummary, TimeToBeat } from "@workspace/schemas"
+import type { SearchFilters } from "@/lib/search-filters"
 import { getIgdbEnv } from "./env.server"
 
 const API_URL = "https://api.igdb.com/v4"
@@ -105,15 +106,61 @@ const summary = (g: IgdbGameSummary): MediaSummary => ({
   overview: g.summary,
 })
 
-export async function searchIgdb(query: string): Promise<Array<MediaSummary>> {
+const SUMMARY_FIELDS = "name,summary,first_release_date,cover.image_id"
+
+/** Main games, remakes, remasters, expanded editions and ports. */
+const MAIN_GAME_TYPES = "(0,8,9,10,11)"
+
+const unix = (year: number, end = false) =>
+  Math.floor(Date.UTC(end ? year + 1 : year, 0, 1) / 1000) - (end ? 1 : 0)
+
+const IGDB_SORTS: Record<string, string> = {
+  popular: "total_rating_count desc",
+  rating: "total_rating desc",
+  newest: "first_release_date desc",
+}
+
+/**
+ * Search by text and/or filters. IGDB can't sort a text search, so `sort`
+ * only applies when browsing by filters.
+ */
+export async function searchIgdb(
+  query: string | undefined,
+  filters: SearchFilters = {}
+): Promise<Array<MediaSummary>> {
+  const where = ["version_parent = null"]
+  if (filters.extras !== "1") where.push(`game_type = ${MAIN_GAME_TYPES}`)
+  if (filters.platform) where.push(`platforms = (${Number(filters.platform)})`)
+  if (filters.genre) where.push(`genres = (${Number(filters.genre)})`)
+  if (filters.theme) where.push(`themes = (${Number(filters.theme)})`)
+  if (filters.mode) where.push(`game_modes = (${Number(filters.mode)})`)
+  if (filters.from) where.push(`first_release_date >= ${unix(filters.from)}`)
+  if (filters.to) where.push(`first_release_date <= ${unix(filters.to, true)}`)
+  if (filters.rating)
+    where.push(`total_rating >= ${filters.rating * 20} & total_rating_count > 5`)
+
+  const body = query
+    ? [`search ${quote(query)}`]
+    : (() => {
+        const sort = IGDB_SORTS[filters.sort ?? "popular"] ?? IGDB_SORTS.popular
+        // Unreleased games have no rating and would top a "newest" sort.
+        if (filters.sort === "newest")
+          where.push(`first_release_date <= ${Math.floor(Date.now() / 1000)}`)
+        if (filters.sort === "rating" && !filters.rating)
+          where.push("total_rating_count > 20")
+        return [`sort ${sort}`]
+      })()
   const games = await igdb<Array<IgdbGameSummary>>(
     "games",
-    `search ${quote(query)}; fields name,summary,first_release_date,cover.image_id; where version_parent = null; limit 30;`
+    [
+      ...body,
+      `fields ${SUMMARY_FIELDS}`,
+      `where ${where.join(" & ")}`,
+      "limit 40",
+    ].join("; ") + ";"
   )
   return games.map(summary)
 }
-
-const SUMMARY_FIELDS = "name,summary,first_release_date,cover.image_id"
 
 /**
  * Most popular games right now, by IGDB's own page-visit popularity

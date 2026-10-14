@@ -27,8 +27,9 @@ import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
  * column spec lands; schemas live in @workspace/schemas.
  */
 
-type FormProps<TLog> = {
-  mediaId: number
+type FormProps<TLog extends { mediaId: unknown }> = {
+  /** Provider id: a number, or a Google Books volume id for books. */
+  mediaId: TLog["mediaId"]
   initial?: TLog
   onSubmit: (input: LogInput) => Promise<void>
   submitLabel: string

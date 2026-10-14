@@ -20,7 +20,7 @@ about it. Until now the data lived in an Obsidian vault (one note per item).
 | Tables                | One table per kind (movies, shows, games, books, records = one row per copy) with provider `data` jsonb + query columns; one log table per kind; backlog is a flag on the work row; plays only on owned copies | Simple, separated entities; real FKs; easy SQL                                             |
 | Hosting               | Vercel Hobby + Neon free (São Paulo), Nitro build that also runs as a plain Node server                                                                                                                        | $0/month; a VPS later is `pnpm start` behind a proxy                                       |
 | Provider independence | Store trimmed provider details per archived work (en-US, full cast); provider first, stored copy as fallback; no user edits for now                                                                            | Pages keep working without TMDB/IGDB; search stays provider-dependent                      |
-| Images                | Hotlink provider CDNs (TMDB/IGDB/Open Library/Discogs); store ids/paths only                                                                                                                                   | No R2 for now; can backfill later from stored ids                                          |
+| Images                | Hotlink provider CDNs (TMDB/IGDB/Google Books/Discogs); store ids/paths only                                                                                                                                   | No R2 for now; can backfill later from stored ids                                          |
 | Ratings               | 5 stars **with halves**, stored 1–10                                                                                                                                                                           | Avoids a migration if half stars change                                                    |
 | Logs                  | Many logs per work, each with its own rating/date                                                                                                                                                              | Rewatches and changing opinions are part of the history                                    |
 | Dates                 | Optional on every log                                                                                                                                                                                          | Imported history has no dates ("Date unknown")                                             |
@@ -38,7 +38,7 @@ Done (frontend phase):
 
 - Movies, shows (+ seasons), games, books, records, flights — search, detail pages,
   logging, library (grid/table), backlog with "Surprise me", stats, JSON export/import
-- Discogs collection import, Discogs-style release pages, Open Library books
+- Discogs collection import, Discogs-style release pages, books
 - Flights with route map, boarding passes, timezone-aware durations
 - PWA: manifest, icons, hand-written service worker, native-feel pass
 - Obsidian import script → `References/.import/archive-import.json`
@@ -63,7 +63,7 @@ Next:
 Later ideas (agreed or discussed): Stremio addon (add/log from Stremio), MCP server
 for AI questions, Steam import for real hours played, barcode scanning (ISBN,
 vinyl), Discogs value per condition, AeroDataBox flight-number autofill, a
-Google Books key for missing book descriptions, home/search/stats redesign (owner is
+home/search redesign and a new Stats page (owner is
 collecting reference designs).
 
 ## Open questions

@@ -6,7 +6,7 @@
  *  - cover images (TMDB/IGDB/Discogs/Open Library): cache first, trimmed to a max entry count
  * Bump VERSION to drop old caches after changing this file.
  */
-const VERSION = "v4"
+const VERSION = "v5"
 const CACHES = {
   static: `static-${VERSION}`,
   pages: `pages-${VERSION}`,
@@ -18,7 +18,7 @@ const IMAGE_ORIGINS = [
   "https://image.tmdb.org",
   "https://images.igdb.com",
   "https://i.discogs.com",
-  "https://covers.openlibrary.org",
+  "https://books.google.com",
 ]
 const MAX_IMAGES = 800
 const NETWORK_TIMEOUT_MS = 4000

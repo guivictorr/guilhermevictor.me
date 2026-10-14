@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import type { LogEntry, MediaType } from "@workspace/schemas"
+import type { LogEntry, MediaType, WorkId } from "@workspace/schemas"
 import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { ChevronRightIcon, RotateCcwIcon } from "lucide-react"
@@ -30,7 +30,7 @@ export function LogHistory({
   emptyLabel = "No logs yet.",
 }: {
   type: MediaType
-  id: number
+  id: WorkId
   filter?: (log: LogEntry) => boolean
   onSelect: (log: LogEntry) => void
   emptyLabel?: string

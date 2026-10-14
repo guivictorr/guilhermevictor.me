@@ -1,10 +1,4 @@
-import {
-  BarChart3Icon,
-  BookmarkIcon,
-  HouseIcon,
-  LibraryIcon,
-  SearchIcon,
-} from "lucide-react"
+import { BookmarkIcon, HouseIcon, LibraryIcon, SearchIcon } from "lucide-react"
 import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
 
 /** Phone tab bar. "Library" covers every kind; pages switch kinds with chips. */
@@ -17,7 +11,6 @@ export const TAB_ITEMS = [
     match: LIBRARY_SECTIONS.map((section) => section.to),
   },
   { to: "/backlog", label: "Backlog", icon: BookmarkIcon, match: ["/backlog"] },
-  { to: "/stats", label: "Stats", icon: BarChart3Icon, match: ["/stats"] },
   { to: "/search", label: "Search", icon: SearchIcon, match: ["/search"] },
 ] as const
 
@@ -41,7 +34,6 @@ export const SIDEBAR_SECTIONS = [
   {
     items: [
       { to: "/backlog", label: "Backlog", icon: BookmarkIcon, exact: false },
-      { to: "/stats", label: "Stats", icon: BarChart3Icon, exact: false },
     ],
   },
 ] as const

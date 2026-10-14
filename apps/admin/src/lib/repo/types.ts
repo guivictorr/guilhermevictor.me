@@ -12,6 +12,7 @@ import type {
   LogEntry,
   LogInput,
   MediaType,
+  WorkId,
 } from "@workspace/schemas"
 import type { ProgressStatus } from "@/lib/status"
 
@@ -30,7 +31,7 @@ export type LibraryEntry = LibraryItem & {
 
 export type RecentLog = { log: LogEntry; item: LibraryItem }
 
-export type LogTarget = { type: MediaType; id: number }
+export type LogTarget = { type: MediaType; id: WorkId }
 
 /** `type:id` keys of everything logged / backlogged, for ✓ and bookmark badges. */
 export type ArchiveIndex = {

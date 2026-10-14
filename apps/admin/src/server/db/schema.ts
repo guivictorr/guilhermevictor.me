@@ -134,13 +134,18 @@ export const games = pgTable(
 export const books = pgTable(
   "books",
   {
-    /** Open Library work number (OL21464434W → 21464434). */
-    id: integer("id").primaryKey(),
+    /** Google Books volume id (an edition), e.g. "zyTCAlFPjgYC". */
+    id: text("id").primaryKey(),
     ...work,
     authors: textArray("authors"),
+    publisher: text("publisher"),
+    publishedDate: text("published_date"),
     pages: integer("pages"),
-    subjects: textArray("subjects"),
-    isbns: textArray("isbns"),
+    /** ISO 639-1. */
+    language: text("language"),
+    categories: textArray("categories"),
+    isbn13: text("isbn13"),
+    isbn10: text("isbn10"),
     data: jsonb("data").$type<Book>(),
   },
   (t) => [index("books_backlog_idx").on(t.backlogAddedAt)]
@@ -280,7 +285,7 @@ export const bookLogs = pgTable(
   "book_logs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    bookId: integer("book_id")
+    bookId: text("book_id")
       .notNull()
       .references(() => books.id, { onDelete: "cascade" }),
     status: text("status").notNull(),
@@ -352,43 +357,45 @@ export const flights = pgTable(
 export const allLogs = pgView("all_logs", {
   id: uuid("id").notNull(),
   type: text("type").notNull(),
-  workId: integer("work_id").notNull(),
+  /** Provider id as text (Google Books ids are strings). */
+  workId: text("work_id").notNull(),
   title: text("title").notNull(),
   logDate: date("log_date"),
   rating: smallint("rating"),
   createdAt: tz("created_at").notNull(),
 }).as(sql`
-  select l.id, 'movie' as type, l.movie_id as work_id, w.title, l.watched_at as log_date, l.rating, l.created_at
+  select l.id, 'movie' as type, l.movie_id::text as work_id, w.title, l.watched_at as log_date, l.rating, l.created_at
     from movie_logs l join movies w on w.id = l.movie_id
   union all
-  select l.id, 'show', l.show_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
+  select l.id, 'show', l.show_id::text, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
     from show_logs l join shows w on w.id = l.show_id
   union all
-  select l.id, 'game', l.game_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
+  select l.id, 'game', l.game_id::text, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
     from game_logs l join games w on w.id = l.game_id
   union all
   select l.id, 'book', l.book_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
     from book_logs l join books w on w.id = l.book_id
   union all
-  select l.id, 'record', w.release_id, w.title, l.played_at, l.rating, l.created_at
+  select l.id, 'record', w.release_id::text, w.title, l.played_at, l.rating, l.created_at
     from record_logs l join records w on w.id = l.record_id
 `)
 
 /** Everything in the backlog, any kind. */
 export const allBacklog = pgView("all_backlog", {
   type: text("type").notNull(),
-  workId: integer("work_id").notNull(),
+  /** Provider id as text (Google Books ids are strings). */
+  workId: text("work_id").notNull(),
   title: text("title").notNull(),
   year: integer("year"),
   backlogAddedAt: tz("backlog_added_at").notNull(),
 }).as(sql`
-  select 'movie' as type, id as work_id, title, year, backlog_added_at from movies where backlog_added_at is not null
+  select 'movie' as type, id::text as work_id, title, year, backlog_added_at from movies where backlog_added_at is not null
   union all
-  select 'show', id, title, year, backlog_added_at from shows where backlog_added_at is not null
+  select 'show', id::text, title, year, backlog_added_at from shows where backlog_added_at is not null
   union all
-  select 'game', id, title, year, backlog_added_at from games where backlog_added_at is not null
+  select 'game', id::text, title, year, backlog_added_at from games where backlog_added_at is not null
   union all
   select 'book', id, title, year, backlog_added_at from books where backlog_added_at is not null
   union all
-  select 'record', release_id, title, year, backlog_added_at from records where backlog_added_at is not null
+  select 'record', release_id::text, title, year, backlog_added_at from records where backlog_added_at is not null
 `)

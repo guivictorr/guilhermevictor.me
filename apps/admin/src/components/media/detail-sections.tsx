@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import type { CollectionRef, MediaType, Video } from "@workspace/schemas"
+import type {
+  CollectionRef,
+  MediaType,
+  Video,
+  WorkId,
+} from "@workspace/schemas"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { MediaRail } from "./media-rail"
 import { YouTubeVideo } from "./youtube"
@@ -75,7 +80,7 @@ export function LogsTabLabel({
   label = "My logs",
 }: {
   type: MediaType
-  id: number
+  id: WorkId
   label?: string
 }) {
   const { data } = useQuery(logsQuery({ type, id }))

@@ -107,7 +107,7 @@ export function LogSheet({
       {target.kind === "movie" ? (
         <MovieLogForm
           key={formKey}
-          mediaId={target.item.id}
+          mediaId={Number(target.item.id)}
           initial={editing as MovieLog | undefined}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}
@@ -115,7 +115,7 @@ export function LogSheet({
       ) : target.kind === "season" ? (
         <SeasonLogForm
           key={formKey}
-          mediaId={target.item.id}
+          mediaId={Number(target.item.id)}
           seasonNumber={target.seasonNumber}
           initial={editing as SeasonLog | undefined}
           onSubmit={handleSubmit}
@@ -124,7 +124,7 @@ export function LogSheet({
       ) : target.kind === "show" ? (
         <ShowLogForm
           key={formKey}
-          mediaId={target.item.id}
+          mediaId={Number(target.item.id)}
           initial={editing as ShowLog | undefined}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}
@@ -132,7 +132,7 @@ export function LogSheet({
       ) : target.kind === "book" ? (
         <BookLogForm
           key={formKey}
-          mediaId={target.item.id}
+          mediaId={String(target.item.id)}
           initial={editing as BookLog | undefined}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}
@@ -140,7 +140,7 @@ export function LogSheet({
       ) : target.kind === "record" ? (
         <RecordLogForm
           key={formKey}
-          mediaId={target.item.id}
+          mediaId={Number(target.item.id)}
           copies={target.copies}
           initial={editing as RecordLog | undefined}
           onSubmit={handleSubmit}
@@ -149,7 +149,7 @@ export function LogSheet({
       ) : (
         <GameLogForm
           key={formKey}
-          mediaId={target.item.id}
+          mediaId={Number(target.item.id)}
           platforms={target.platforms}
           initial={editing as GameLog | undefined}
           onSubmit={handleSubmit}

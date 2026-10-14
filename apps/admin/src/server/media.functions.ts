@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start"
 import { MediaType } from "@workspace/schemas"
 import { z } from "zod"
+import { SearchFilters, filtersFor } from "@/lib/search-filters"
 import { requireOwner } from "./auth.functions"
 import { cached } from "./cache.server"
 import { liveOrStored, seasonLiveOrStored } from "./details.server"
@@ -11,13 +12,14 @@ import {
   searchDiscogs,
 } from "./discogs.server"
 import { fetchPopularGames, searchIgdb } from "./igdb.server"
+import { fetchTrendingBooks, searchGoogleBooks } from "./googlebooks.server"
 import {
-  fetchAuthor,
-  fetchAuthorWorks,
-  fetchTrendingBooks,
-  searchOpenLibrary,
-} from "./openlibrary.server"
-import { fetchCollection, fetchTrendingTmdb, searchTmdb } from "./tmdb.server"
+  discoverTmdb,
+  fetchCollection,
+  fetchTrendingTmdb,
+  fetchWatchProviders,
+  searchTmdb,
+} from "./tmdb.server"
 
 /*
  * Provider API keys never leave the server: every provider call goes
@@ -28,23 +30,49 @@ import { fetchCollection, fetchTrendingTmdb, searchTmdb } from "./tmdb.server"
 
 const Id = z.object({ id: z.number().int().positive() })
 
+/** Text search, browse by filters, or both (see lib/search-filters.ts). */
 export const searchMedia = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(
-    z.object({ type: MediaType, query: z.string().trim().min(1).max(200) })
+    z.object({
+      type: MediaType,
+      query: z.string().trim().max(200),
+      filters: SearchFilters.default({}),
+    })
   )
   .handler(({ data }) => {
+    const query = data.query || undefined
+    const filters = filtersFor(data.type, data.filters)
     switch (data.type) {
       case "game":
-        return searchIgdb(data.query)
+        return searchIgdb(query, filters)
       case "record":
-        return searchDiscogs(data.query)
+        return searchDiscogs(query, filters)
       case "book":
-        return searchOpenLibrary(data.query)
+        return searchGoogleBooks({
+          query,
+          author: filters.author,
+          subject: filters.genre,
+          publisher: filters.publisher,
+          language: filters.lang,
+          orderBy: filters.sort === "newest" ? "newest" : undefined,
+        })
       default:
-        return searchTmdb(data.type, data.query)
+        return query
+          ? searchTmdb(data.type, query, filters)
+          : discoverTmdb(data.type, filters)
     }
   })
+
+/** Streaming services for the "Streaming on" filter (TMDB, your region). */
+export const getWatchProviders = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
+  .validator(z.object({ type: z.enum(["movie", "show"]) }))
+  .handler(({ data }) =>
+    cached(`providers:${data.type}`, 1000 * 60 * 60 * 24, () =>
+      fetchWatchProviders(data.type)
+    )
+  )
 
 export const getMovie = createServerFn({ method: "GET" })
   .middleware([requireOwner])
@@ -112,19 +140,8 @@ export const getMaster = createServerFn({ method: "GET" })
   .validator(Id)
   .handler(({ data }) => fetchMaster(data.id))
 
+/** Google Books volume ids are strings, e.g. "zyTCAlFPjgYC". */
 export const getBook = createServerFn({ method: "GET" })
   .middleware([requireOwner])
-  .validator(Id)
+  .validator(z.object({ id: z.string().regex(/^[\w-]{1,64}$/) }))
   .handler(({ data }) => liveOrStored("book", data.id))
-
-const AuthorKey = z.object({ key: z.string().regex(/^OL\d+A$/) })
-
-export const getAuthor = createServerFn({ method: "GET" })
-  .middleware([requireOwner])
-  .validator(AuthorKey)
-  .handler(({ data }) => fetchAuthor(data.key))
-
-export const getAuthorWorks = createServerFn({ method: "GET" })
-  .middleware([requireOwner])
-  .validator(AuthorKey)
-  .handler(({ data }) => fetchAuthorWorks(data.key))

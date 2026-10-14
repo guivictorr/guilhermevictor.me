@@ -32,15 +32,35 @@ All calls happen server-side (`apps/admin/src/server/*.server.ts`). Env vars in
 - No trending endpoint; public "last sold/median/high" prices aren't in the API.
 - Artist/label names may end in ` (2)` (disambiguation) — strip it.
 
-## Open Library — books (no key)
+## Google Books — books (`GOOGLE_BOOKS_KEY`, required)
 
-- `search.json` (title/author or `isbn=`), `/works/{id}.json`, `/works/{id}/editions.json`,
-  `/ratings.json`, `/bookshelves.json`, `/authors/{id}.json`, `/isbn/{isbn}.json`,
-  `/trending/weekly.json`. Covers: `covers.openlibrary.org/b/id/{id}-{S|M|L}.jpg`.
-- Data is sparse for many books (no description); Brazilian editions are often
-  missing. Language codes are MARC; mapped with `Intl.DisplayNames`.
-- Google Books fills missing descriptions only when `GOOGLE_BOOKS_KEY` is set —
-  keyless requests get HTTP 429.
+- Google Cloud project → enable **Books API** → API key. Keyless requests get
+  HTTP 429. ~1,000 requests/day on the free quota.
+- `GET /volumes?q=…` (search; `inauthor:`, `subject:`, `inpublisher:`, `isbn:`
+  operators, `langRestrict`, `orderBy=newest`, `printType=books`, up to 40 results)
+  and `GET /volumes/{id}`. A volume is an **edition** (translations are separate
+  volumes); ids are strings (`zyTCAlFPjgYC`), so book ids are strings everywhere.
+- Descriptions come as light HTML → `plainText()`. Categories like
+  "Fiction / Science Fiction / General" are split into parts.
+- Covers: `books.google.com/books/content?id={id}&printsec=frontcover&img=1&zoom=1&fife=w{width}`
+  returns any width up to ~800px without a key. Only volumes with `imageLinks`
+  get a cover (otherwise Google serves an "image not available" placeholder).
+- No trending endpoint: the search page shows newest fiction instead.
+
+## Search filters (`src/lib/search-filters.ts`)
+
+- TMDB: text search only supports a year, so other filters narrow the first 3
+  result pages (genre ids, original language, vote average). Without text,
+  `/discover/{movie|tv}` takes everything: genres, release date range,
+  `vote_average.gte` (+ `vote_count.gte=200`), runtime, original language,
+  `with_watch_providers` + `watch_region` (`TMDB_WATCH_REGION`, default `BR`),
+  show status, sort. Watch providers: `/watch/providers/{movie|tv}?watch_region=…`.
+- IGDB: `search` and `where` combine (platforms, genres, themes, game_modes,
+  first_release_date range, total_rating, `game_type` = main/remake/remaster/
+  expanded/port unless "include DLC"). `sort` only works without `search`.
+- Discogs `/database/search`: q, artist, label, genre, style, country, year,
+  format (Vinyl by default).
+- Genre/theme/mode/platform ids are stable and listed as constants.
 
 ## Airports & airlines (flights)
 

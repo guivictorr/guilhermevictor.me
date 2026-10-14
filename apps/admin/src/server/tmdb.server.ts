@@ -8,6 +8,7 @@ import type {
   Show,
   Video,
 } from "@workspace/schemas"
+import type { SearchFilters } from "@/lib/search-filters"
 import { getTmdbEnv } from "./env.server"
 
 const BASE_URL = "https://api.themoviedb.org/3"
@@ -34,14 +35,22 @@ async function tmdb<T>(
 
 // Raw payloads: only the fields we read.
 type TmdbNamed = { name: string }
-type TmdbMovieResult = {
+/** Fields search/discover results share, used to filter search results. */
+type TmdbResultFacets = {
+  genre_ids?: Array<number>
+  original_language?: string
+  vote_average?: number
+  vote_count?: number
+  popularity?: number
+}
+type TmdbMovieResult = TmdbResultFacets & {
   id: number
   title: string
   release_date?: string
   poster_path?: string | null
   overview?: string
 }
-type TmdbTvResult = {
+type TmdbTvResult = TmdbResultFacets & {
   id: number
   name: string
   first_air_date?: string
@@ -280,22 +289,159 @@ export async function fetchTrendingTmdb(
   return data.results.map(showSummary)
 }
 
+const RUNTIME_RANGES: Record<string, [number, number]> = {
+  short: [0, 89],
+  standard: [90, 150],
+  long: [151, 1000],
+}
+
+/** Search results don't support TMDB's filters; apply them to the page. */
+function matchesFacets(
+  r: TmdbResultFacets & { date?: string },
+  filters: SearchFilters
+) {
+  const year = yearOf(r.date)
+  if (filters.genre && !r.genre_ids?.includes(Number(filters.genre)))
+    return false
+  if (filters.lang && r.original_language !== filters.lang) return false
+  if (filters.rating && (r.vote_average ?? 0) / 2 < filters.rating) return false
+  if (filters.from && (!year || year < filters.from)) return false
+  if (filters.to && (!year || year > filters.to)) return false
+  return true
+}
+
+function sortResults<T extends TmdbResultFacets & { date?: string }>(
+  results: Array<T>,
+  sort?: string
+) {
+  const by: Record<string, (a: T, b: T) => number> = {
+    popular: (a, b) => (b.popularity ?? 0) - (a.popularity ?? 0),
+    rating: (a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0),
+    newest: (a, b) => (b.date ?? "").localeCompare(a.date ?? ""),
+    oldest: (a, b) => (a.date ?? "9").localeCompare(b.date ?? "9"),
+  }
+  const compare = sort ? by[sort] : undefined
+  return compare ? [...results].sort(compare) : results
+}
+
+/** Text search; filters narrow the first pages of results. */
 export async function searchTmdb(
   type: "movie" | "show",
-  query: string
+  query: string,
+  filters: SearchFilters = {}
 ): Promise<Array<MediaSummary>> {
+  const exactYear =
+    filters.from && filters.from === filters.to ? String(filters.from) : undefined
+  const filtering = Object.keys(filters).length > 0
+  // Filtering drops results, so look a bit deeper than the first page.
+  const pages = filtering ? [1, 2, 3] : [1]
   if (type === "movie") {
-    const data = await tmdb<{ results: Array<TmdbMovieResult> }>(
-      "/search/movie",
-      { query, include_adult: "false" }
+    const responses = await Promise.all(
+      pages.map((page) =>
+        tmdb<{ results: Array<TmdbMovieResult> }>("/search/movie", {
+          query,
+          include_adult: "false",
+          page: String(page),
+          ...(exactYear ? { primary_release_year: exactYear } : {}),
+        })
+      )
     )
-    return data.results.map(movieSummary)
+    const results = responses
+      .flatMap((r) => r.results)
+      .map((r) => ({ ...r, date: r.release_date }))
+      .filter((r) => matchesFacets(r, filters))
+    return sortResults(results, filters.sort).map(movieSummary)
   }
-  const data = await tmdb<{ results: Array<TmdbTvResult> }>("/search/tv", {
-    query,
+  const responses = await Promise.all(
+    pages.map((page) =>
+      tmdb<{ results: Array<TmdbTvResult> }>("/search/tv", {
+        query,
+        include_adult: "false",
+        page: String(page),
+        ...(exactYear ? { first_air_date_year: exactYear } : {}),
+      })
+    )
+  )
+  const results = responses
+    .flatMap((r) => r.results)
+    .map((r) => ({ ...r, date: r.first_air_date }))
+    .filter((r) => matchesFacets(r, filters))
+  return sortResults(results, filters.sort).map(showSummary)
+}
+
+const DISCOVER_SORT: Record<string, { movie: string; show: string }> = {
+  popular: { movie: "popularity.desc", show: "popularity.desc" },
+  rating: { movie: "vote_average.desc", show: "vote_average.desc" },
+  newest: {
+    movie: "primary_release_date.desc",
+    show: "first_air_date.desc",
+  },
+  oldest: { movie: "primary_release_date.asc", show: "first_air_date.asc" },
+}
+
+/** Browse by filters alone (no text): TMDB's discover endpoints. */
+export async function discoverTmdb(
+  type: "movie" | "show",
+  filters: SearchFilters
+): Promise<Array<MediaSummary>> {
+  const { TMDB_WATCH_REGION: region } = getTmdbEnv()
+  const date = type === "movie" ? "primary_release_date" : "first_air_date"
+  const sort = DISCOVER_SORT[filters.sort ?? "popular"] ?? DISCOVER_SORT.popular
+  const runtime = filters.runtime ? RUNTIME_RANGES[filters.runtime] : undefined
+  const params: Record<string, string | undefined> = {
     include_adult: "false",
+    sort_by: sort?.[type],
+    with_genres: filters.genre,
+    with_original_language: filters.lang,
+    [`${date}.gte`]: filters.from ? `${filters.from}-01-01` : undefined,
+    [`${date}.lte`]: filters.to ? `${filters.to}-12-31` : undefined,
+    "vote_average.gte": filters.rating ? String(filters.rating * 2) : undefined,
+    // Rating sorts/filters need enough votes to mean something.
+    "vote_count.gte":
+      filters.rating || filters.sort === "rating" ? "200" : undefined,
+    "with_runtime.gte": runtime ? String(runtime[0]) : undefined,
+    "with_runtime.lte": runtime ? String(runtime[1]) : undefined,
+    with_watch_providers: filters.provider,
+    watch_region: filters.provider ? region : undefined,
+    with_status: type === "show" ? filters.status : undefined,
+  }
+  const defined = Object.fromEntries(
+    Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
+  )
+  const pages = await Promise.all(
+    [1, 2].map((page) =>
+      tmdb<{ results: Array<TmdbMovieResult & TmdbTvResult> }>(
+        type === "movie" ? "/discover/movie" : "/discover/tv",
+        { ...defined, page: String(page) }
+      )
+    )
+  )
+  const results = pages.flatMap((p) => p.results)
+  return results.map((r) => (type === "movie" ? movieSummary(r) : showSummary(r)))
+}
+
+/** Streaming services in your region, most relevant first. */
+export async function fetchWatchProviders(
+  type: "movie" | "show"
+): Promise<Array<{ value: string; label: string }>> {
+  const { TMDB_WATCH_REGION: region } = getTmdbEnv()
+  const data = await tmdb<{
+    results: Array<{
+      provider_id: number
+      provider_name: string
+      display_priorities?: Record<string, number>
+    }>
+  }>(`/watch/providers/${type === "movie" ? "movie" : "tv"}`, {
+    watch_region: region,
   })
-  return data.results.map(showSummary)
+  return data.results
+    .sort(
+      (a, b) =>
+        (a.display_priorities?.[region] ?? 999) -
+        (b.display_priorities?.[region] ?? 999)
+    )
+    .slice(0, 40)
+    .map((p) => ({ value: String(p.provider_id), label: p.provider_name }))
 }
 
 export async function fetchMovie(id: number): Promise<Movie> {

@@ -31,13 +31,18 @@ const wanted = (kind: string) => !only || only.includes(kind)
 type Job = { label: string; run: () => Promise<boolean> }
 
 const db = getDb()
-const { rows: works } = await db.execute<{ type: MediaType; id: number }>(sql`
-  select 'movie' as type, id from movies
-  union all select 'show', id from shows
-  union all select 'game', id from games
+// Ids as text: Google Books ids are strings, the rest are numbers.
+const { rows } = await db.execute<{ type: MediaType; id: string }>(sql`
+  select 'movie' as type, id::text from movies
+  union all select 'show', id::text from shows
+  union all select 'game', id::text from games
   union all select 'book', id from books
-  union select 'record', release_id from records
+  union select 'record', release_id::text from records
 `)
+const works = rows.map((w) => ({
+  type: w.type,
+  id: w.type === "book" ? w.id : Number(w.id),
+}))
 const { rows: seasons } = await db.execute<{
   show_id: number
   season_number: number

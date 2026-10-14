@@ -8,6 +8,7 @@ import {
   LibraryItem,
   LogInput,
   MediaType,
+  WorkId,
 } from "@workspace/schemas"
 import { z } from "zod"
 import { mediaTypeOf } from "@/lib/repo/log-utils"
@@ -23,7 +24,7 @@ import { ensureDetails, ensureSeasonDetails } from "./details.server"
  */
 
 const Id = z.object({ id: z.uuid() })
-const Target = z.object({ type: MediaType, id: z.number().int() })
+const Target = z.object({ type: MediaType, id: WorkId })
 
 const ItemInput = LibraryItem.omit({ addedAt: true })
 

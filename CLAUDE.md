@@ -26,7 +26,6 @@ pnpm typecheck                             # all packages (turbo)
 pnpm lint
 pnpm --filter admin build
 pnpm --filter admin exec tsr generate      # regenerate routeTree.gen.ts after adding routes
-pnpm --filter admin import-obsidian ../../References   # vault → References/.import/
 pnpm --filter admin build-airports         # rebuild public/data/airports.json
 pnpm dlx shadcn@latest add <name> -c apps/admin        # UI components → packages/ui
 ```
@@ -39,7 +38,7 @@ Run `prettier --write`, `tsc --noEmit` and `pnpm lint` before calling work done
 ```
 apps/admin/          TanStack Start PWA (the only app so far)
   src/routes/        file-based routes (movies, shows/$id/seasons/$season, games, books,
-                     records, flights, search, backlog, stats, settings)
+                     records, flights, search, backlog, settings)
   src/server/        *.server.ts provider clients + media.functions.ts (createServerFn RPCs)
                      archive.server.ts (Postgres repo), archive.functions.ts, auth.server.ts,
                      auth.functions.ts (requireOwner), db/ (Drizzle schema + client)
@@ -49,7 +48,8 @@ apps/admin/          TanStack Start PWA (the only app so far)
   src/lib/           media-kinds.ts (kind registry), images, flight-math, airports, format…
   src/queries/       TanStack Query options/mutations (media.ts = providers, archive.ts = repo)
   src/components/    app components (detail-layout, log/, media/, records/, flights/, form/)
-  scripts/           import-obsidian.ts, seed.ts, backfill-details.ts, build-airports.mjs
+  scripts/           seed.ts, backfill-details.ts, build-airports.mjs; legacy/ = old
+                     Obsidian importer (excluded from tsc/lint until reworked)
   public/            sw.js (hand-written), manifest, icons, data/airports.json
 packages/schemas/    Zod schemas = the data contract (shared with the future API)
 packages/ui/         shadcn/ui on Base UI (import as @workspace/ui/components/*)

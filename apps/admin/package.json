@@ -13,7 +13,6 @@
     "typecheck": "tsc --noEmit",
     "generate-pwa-assets": "pwa-assets-generator",
     "build-airports": "node scripts/build-airports.mjs",
-    "import-obsidian": "tsx scripts/import-obsidian.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",

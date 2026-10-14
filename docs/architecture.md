@@ -6,7 +6,7 @@
 routes/*  ──►  queries/*  ──►  lib/repo (remoteRepository)  ──►  server/archive.functions.ts
    │                                                                └──► archive.server.ts ──► Postgres
    └──►  queries/media.ts  ──►  server/media.functions.ts (createServerFn)
-                                   └──► server/*.server.ts (TMDB, IGDB, Discogs, Open Library)
+                                   └──► server/*.server.ts (TMDB, IGDB, Discogs, Google Books)
 ```
 
 - **Provider data** (catalog info) is fetched only on the server through
@@ -34,7 +34,7 @@ routes/*  ──►  queries/*  ──►  lib/repo (remoteRepository)  ──�
 - **Env**: `vite.config.ts` copies non-`VITE_` vars from `.env` into `process.env`
   (dev/build); `pnpm start` loads `.env` with `--env-file-if-exists`;
   `server/env.server.ts` validates per provider (a missing key only breaks that
-  provider). `GOOGLE_BOOKS_KEY` is optional.
+  provider).
 
 ## Kind registry
 
@@ -57,14 +57,15 @@ Navigation, library chips, home tiles and stats iterate these.
    `tsr generate`.
 6. Log form in `components/log/log-forms.tsx` + case in `log-sheet.tsx`.
 7. Service worker: add the image origin to `IMAGE_ORIGINS` and bump `VERSION`.
-8. Importer: map the vault category in `scripts/import-obsidian.ts` if applicable.
+8. Search filters: add the kind's fields to `FILTER_FIELDS` in `lib/search-filters.ts`.
 
 ## Routes
 
 `/` home · `/search?type&q` · `/movies|shows|games|books|records|flights` (+ `/$id`)
-· `/shows/$id/seasons/$season` · `/backlog` · `/stats` · `/settings`.
+· `/shows/$id/seasons/$season` · `/backlog` · `/settings`. Search takes filters as
+URL params (`?type=movie&genre=878&provider=8&from=2020`), see `lib/search-filters.ts`.
 Library pages share `?view=grid|table` (defaults stripped from URLs).
-Mobile tab bar: Home · Library · Backlog · Stats · Search; Library pages switch kinds
+Mobile tab bar: Home · Library · Backlog · Search (Stats was removed to be rebuilt); Library pages switch kinds
 with chips (`LibraryNav`). Desktop: sidebar with a Library section.
 
 ## PWA

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
+import type { Flight } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
 import {
   Empty,
@@ -10,20 +11,23 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { PlaneTakeoffIcon, PlusIcon } from "lucide-react"
-import { useMemo, useState } from "react"
+import { PlaneTakeoffIcon, PlusIcon, RouteIcon } from "lucide-react"
+import { useMemo } from "react"
 import { BoardingPass } from "@/components/flights/boarding-pass"
 import { FlightMap } from "@/components/flights/flight-map"
-import { FlightSheet } from "@/components/flights/flight-sheet"
+import { FlightSheet, useFlightSheet } from "@/components/flights/flight-sheet"
 import { LibraryNav } from "@/components/library/library-nav"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { airportsQuery, countryName } from "@/lib/airports"
 import {
   EARTH_CIRCUMFERENCE_KM,
   MOON_DISTANCE_KM,
+  formatDuration,
   formatKm,
 } from "@/lib/flight-math"
 import { computeFlightStats } from "@/lib/flight-stats"
+import { groundMinutes, groupTrips } from "@/lib/flight-trips"
+import type { Trip } from "@/lib/flight-trips"
 import type { FlightStats } from "@/lib/flight-stats"
 import { flightsQuery } from "@/queries/archive"
 
@@ -35,7 +39,7 @@ export const Route = createFileRoute("/flights/")({
 function FlightsPage() {
   const { data: flights, isPending } = useQuery(flightsQuery())
   const { data: airports } = useQuery(airportsQuery())
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const sheet = useFlightSheet()
   const stats = useMemo(
     () => computeFlightStats(flights ?? [], airports),
     [flights, airports]
@@ -46,7 +50,7 @@ function FlightsPage() {
       <PageHeader
         title="Flights"
         actions={
-          <Button size="lg" onClick={() => setSheetOpen(true)}>
+          <Button size="lg" onClick={sheet.openNew}>
             <PlusIcon />
             <span className="max-sm:sr-only">Add flight</span>
           </Button>
@@ -69,7 +73,7 @@ function FlightsPage() {
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <Button size="lg" onClick={() => setSheetOpen(true)}>
+              <Button size="lg" onClick={sheet.openNew}>
                 <PlusIcon />
                 Add flight
               </Button>
@@ -80,11 +84,11 @@ function FlightsPage() {
             <Totals stats={stats} />
             <FlightMap routes={stats.routes} />
             <Highlights stats={stats} />
-            <FlightList stats={stats} />
+            <FlightList stats={stats} onAddConnection={sheet.openConnection} />
           </>
         )}
       </PageBody>
-      <FlightSheet open={sheetOpen} onOpenChange={setSheetOpen} />
+      <FlightSheet {...sheet.sheetProps} />
     </>
   )
 }
@@ -184,37 +188,108 @@ function Highlights({ stats }: { stats: FlightStats }) {
   )
 }
 
-function FlightList({ stats }: { stats: FlightStats }) {
-  const byYear = new Map<string, typeof stats.rows>()
-  for (const row of stats.rows) {
-    const year = row.flight.departure.slice(0, 4)
-    byYear.set(year, [...(byYear.get(year) ?? []), row])
+function FlightList({
+  stats,
+  onAddConnection,
+}: {
+  stats: FlightStats
+  onAddConnection: (flight: Flight) => void
+}) {
+  // A trip belongs to the year of its first leg.
+  const byYear = new Map<string, Array<Trip>>()
+  for (const trip of groupTrips(stats.rows)) {
+    const year = trip.legs[0]?.flight.departure.slice(0, 4) ?? ""
+    byYear.set(year, [...(byYear.get(year) ?? []), trip])
   }
   return (
     <div className="space-y-6">
-      {[...byYear.entries()].map(([year, rows]) => (
+      {[...byYear.entries()].map(([year, trips]) => (
         <section key={year}>
           <h2 className="mb-3 font-heading text-lg font-semibold">
             {year}{" "}
             <span className="font-normal text-muted-foreground tabular-nums">
-              {rows.length}
+              {trips.reduce((n, t) => n + t.legs.length, 0)}
             </span>
           </h2>
-          <ul className="grid gap-3 md:grid-cols-2">
-            {rows.map(({ flight, facts }) => (
-              <li key={flight.id}>
-                <Link
-                  to="/flights/$id"
-                  params={{ id: flight.id }}
-                  className="pressable block rounded-2xl"
-                >
-                  <BoardingPass flight={flight} facts={facts} compact />
-                </Link>
+          <ul className="grid items-start gap-3 md:grid-cols-2">
+            {trips.map((trip) => (
+              <li key={trip.key}>
+                <TripCard trip={trip} onAddConnection={onAddConnection} />
               </li>
             ))}
           </ul>
         </section>
       ))}
+    </div>
+  )
+}
+
+/** One flight, or every leg of a booking with the time on the ground between. */
+function TripCard({
+  trip,
+  onAddConnection,
+}: {
+  trip: Trip
+  onAddConnection: (flight: Flight) => void
+}) {
+  const last = trip.legs.at(-1)
+  if (!last) return null
+  const pass = ({ flight, facts }: (typeof trip.legs)[number]) => (
+    <Link
+      to="/flights/$id"
+      params={{ id: flight.id }}
+      className="pressable block rounded-2xl"
+    >
+      <BoardingPass flight={flight} facts={facts} compact />
+    </Link>
+  )
+  if (trip.legs.length === 1) return pass(last)
+
+  const route = [
+    trip.legs[0]?.flight.from,
+    ...trip.legs.map((leg) => leg.flight.to),
+  ].join(" → ")
+  return (
+    <div className="rounded-3xl border bg-muted/40 p-2">
+      <div className="flex items-center justify-between gap-2 px-2 pt-1 pb-2">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{route}</p>
+          <p className="text-xs text-muted-foreground">
+            Booking {trip.reservation} · {trip.legs.length} flights
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onAddConnection(last.flight)}
+        >
+          <PlusIcon />
+          Connection
+        </Button>
+      </div>
+      <ol className="space-y-1">
+        {trip.legs.map((leg, i) => {
+          const previous = trip.legs[i - 1]
+          const ground = previous
+            ? groundMinutes(previous.flight, leg.flight)
+            : undefined
+          return (
+            <li key={leg.flight.id}>
+              {previous ? (
+                <p className="flex items-center gap-1.5 px-3 py-1 text-xs text-muted-foreground">
+                  <RouteIcon className="size-3.5" />
+                  {ground === undefined
+                    ? `Then from ${leg.flight.from}`
+                    : ground < 24 * 60
+                      ? `${formatDuration(ground)} connection in ${leg.flight.from}`
+                      : `${Math.round(ground / (24 * 60))} days in ${leg.facts.from?.city ?? leg.flight.from}`}
+                </p>
+              ) : null}
+              {pass(leg)}
+            </li>
+          )
+        })}
+      </ol>
     </div>
   )
 }

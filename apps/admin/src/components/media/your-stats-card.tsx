@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import type { LogEntry, MediaType, TimeToBeat } from "@workspace/schemas"
+import type {
+  LogEntry,
+  MediaType,
+  TimeToBeat,
+  WorkId,
+} from "@workspace/schemas"
 import { SideCard } from "@/components/detail-layout"
 import { StarRating } from "@/components/star-rating"
 import { formatDate } from "@/lib/format"
@@ -38,7 +43,7 @@ function summarize(logs: Array<LogEntry>) {
 }
 
 /** Your relationship with this work, from your own logs. */
-export function YourStatsCard({ type, id }: { type: MediaType; id: number }) {
+export function YourStatsCard({ type, id }: { type: MediaType; id: WorkId }) {
   const { data: logs } = useQuery(logsQuery({ type, id }))
   if (!logs?.length) return null
   const s = summarize(logs)

@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils"
 import { StarIcon } from "lucide-react"
-import { useId } from "react"
+import { useId, useRef, useState } from "react"
 import { ALLOW_HALF_STARS, formatRating } from "@/lib/rating"
 
 const STARS = [1, 2, 3, 4, 5]
@@ -55,9 +55,10 @@ function StarGlyph({ fill, className }: { fill: number; className?: string }) {
 }
 
 /**
- * Tappable 5-star input. Each star is split in two hit areas when half
- * stars are enabled; tapping the current value again clears the rating.
- * Arrow keys adjust by one step for keyboard users.
+ * 5-star input on the 1–10 scale (half stars when enabled).
+ * Mouse: hover previews, click sets. Touch: tap or drag across the stars.
+ * Clicking/tapping the current value again clears it. Arrow keys step,
+ * Backspace clears.
  */
 export function StarRatingInput({
   value,
@@ -71,9 +72,17 @@ export function StarRatingInput({
   const fallbackId = useId()
   const step = ALLOW_HALF_STARS ? 1 : 2
   const current = value ?? 0
+  const [preview, setPreview] = useState<number>()
+  const drag = useRef<{ startValue?: number; moved: boolean }>(undefined)
 
-  const set = (next: number) =>
-    onChange(next === value || next <= 0 ? undefined : Math.min(next, 10))
+  /** The rating under the pointer, from its position across the stars. */
+  function valueAt(e: React.PointerEvent<HTMLElement>) {
+    const box = e.currentTarget.getBoundingClientRect()
+    const ratio = Math.min(Math.max((e.clientX - box.left) / box.width, 0), 1)
+    return Math.max(step, Math.ceil((ratio * 10) / step) * step)
+  }
+
+  const shown = preview ?? current
 
   return (
     <div className="flex items-center gap-3">
@@ -97,37 +106,49 @@ export function StarRatingInput({
             onChange(undefined)
           }
         }}
-        className="text-star flex rounded-md text-[2rem] outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        onPointerDown={(e) => {
+          if (e.pointerType === "mouse" && e.button !== 0) return
+          e.currentTarget.setPointerCapture(e.pointerId)
+          drag.current = { startValue: value, moved: false }
+          setPreview(valueAt(e))
+        }}
+        onPointerMove={(e) => {
+          // Mouse hover previews; a held pointer (touch drag) previews too.
+          if (e.pointerType !== "mouse" && !drag.current) return
+          const next = valueAt(e)
+          if (drag.current && next !== preview) drag.current.moved = true
+          setPreview(next)
+        }}
+        onPointerUp={(e) => {
+          if (!drag.current) return
+          const next = valueAt(e)
+          // A plain tap/click on the current value clears it.
+          const clear = !drag.current.moved && next === drag.current.startValue
+          drag.current = undefined
+          onChange(clear ? undefined : next)
+          if (e.pointerType !== "mouse") setPreview(undefined)
+        }}
+        onPointerCancel={() => {
+          drag.current = undefined
+          setPreview(undefined)
+        }}
+        onPointerLeave={(e) => {
+          if (e.pointerType === "mouse" && !drag.current) setPreview(undefined)
+        }}
+        // Vertical scrolling still works; horizontal moves rate.
+        style={{ touchAction: "pan-y" }}
+        className="text-star flex cursor-pointer rounded-md text-[2rem] outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        {STARS.map((star) => {
-          const fill = Math.min(Math.max(current - (star - 1) * 2, 0), 2) / 2
-          return (
-            <span key={star} className="relative px-0.5">
-              <StarGlyph fill={fill} />
-              <span className="absolute inset-0 flex">
-                {ALLOW_HALF_STARS ? (
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    aria-hidden
-                    className="h-full w-1/2"
-                    onClick={() => set(star * 2 - 1)}
-                  />
-                ) : null}
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  aria-hidden
-                  className="h-full flex-1"
-                  onClick={() => set(star * 2)}
-                />
-              </span>
-            </span>
-          )
-        })}
+        {STARS.map((star) => (
+          <span key={star} className="px-0.5">
+            <StarGlyph
+              fill={Math.min(Math.max(shown - (star - 1) * 2, 0), 2) / 2}
+            />
+          </span>
+        ))}
       </div>
       <span className="text-sm text-muted-foreground tabular-nums">
-        {value === undefined ? "Tap to rate" : `${value / 2} / 5`}
+        {shown === 0 ? "Tap to rate" : `${shown / 2} / 5`}
       </span>
     </div>
   )

@@ -2,12 +2,11 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { PencilIcon } from "lucide-react"
-import { useState } from "react"
+import { PencilIcon, PlusIcon } from "lucide-react"
 import { BackButton, FactList, SideCard } from "@/components/detail-layout"
 import { BoardingPass } from "@/components/flights/boarding-pass"
 import { FlightMap } from "@/components/flights/flight-map"
-import { FlightSheet } from "@/components/flights/flight-sheet"
+import { FlightSheet, useFlightSheet } from "@/components/flights/flight-sheet"
 import { NotFound } from "@/components/not-found"
 import { airportsQuery, countryName } from "@/lib/airports"
 import type { Airport } from "@/lib/airports"
@@ -30,7 +29,7 @@ function FlightPage() {
   const { id } = Route.useParams()
   const { data: flights, isPending } = useQuery(flightsQuery())
   const { data: airports } = useQuery(airportsQuery())
-  const [editing, setEditing] = useState(false)
+  const sheet = useFlightSheet()
 
   if (isPending)
     return (
@@ -54,10 +53,24 @@ function FlightPage() {
     <article className="pt-safe px-safe pb-8 md:px-8">
       <div className="flex items-center justify-between pt-3 md:pt-6">
         <BackButton fallback="/flights" />
-        <Button variant="outline" size="lg" onClick={() => setEditing(true)}>
-          <PencilIcon />
-          Edit
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => sheet.openConnection(flight)}
+          >
+            <PlusIcon />
+            Add connection
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => sheet.openEdit(flight)}
+          >
+            <PencilIcon />
+            Edit
+          </Button>
+        </div>
       </div>
 
       <h1 className="mt-5 font-heading text-2xl font-bold tracking-tight md:text-3xl">
@@ -126,7 +139,7 @@ function FlightPage() {
         </aside>
       </div>
 
-      <FlightSheet open={editing} onOpenChange={setEditing} editing={flight} />
+      <FlightSheet {...sheet.sheetProps} />
     </article>
   )
 }

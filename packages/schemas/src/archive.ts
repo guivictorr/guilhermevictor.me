@@ -51,7 +51,7 @@ export const GameRow = z.object({
 export type GameRow = z.infer<typeof GameRow>
 
 export const BookRow = z.object({
-  id: z.number().int(),
+  id: z.string(),
   ...work,
   data: Book.optional(),
 })

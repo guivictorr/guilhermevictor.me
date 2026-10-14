@@ -1,4 +1,8 @@
 /**
+ * LEGACY — kept for reference, not built or typechecked (scripts/legacy is
+ * excluded). It targets Open Library and the v1 export; the owner will
+ * rework it for Google Books and export v2.
+ *
  * Obsidian → Archive import.
  *
  * Reads the vault notes (one note per item, data in YAML frontmatter),

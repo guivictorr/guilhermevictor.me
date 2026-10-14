@@ -14,7 +14,6 @@ import { Route as BacklogRouteImport } from './routes/backlog'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as StatsRouteImport } from './routes/stats'
 import { Route as BooksIndexRouteImport } from './routes/books/index'
 import { Route as BooksIdRouteImport } from './routes/books/$id'
 import { Route as FlightsIndexRouteImport } from './routes/flights/index'
@@ -53,11 +52,6 @@ const SearchRoute = SearchRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StatsRoute = StatsRouteImport.update({
-  id: '/stats',
-  path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksIndexRoute = BooksIndexRouteImport.update({
@@ -137,7 +131,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
-  '/stats': typeof StatsRoute
   '/books/$id': typeof BooksIdRoute
   '/flights/$id': typeof FlightsIdRoute
   '/games/$id': typeof GamesIdRoute
@@ -159,7 +152,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
-  '/stats': typeof StatsRoute
   '/books/$id': typeof BooksIdRoute
   '/flights/$id': typeof FlightsIdRoute
   '/games/$id': typeof GamesIdRoute
@@ -182,7 +174,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
-  '/stats': typeof StatsRoute
   '/books/$id': typeof BooksIdRoute
   '/flights/$id': typeof FlightsIdRoute
   '/games/$id': typeof GamesIdRoute
@@ -206,7 +197,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/search'
     | '/settings'
-    | '/stats'
     | '/books/$id'
     | '/flights/$id'
     | '/games/$id'
@@ -228,7 +218,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/search'
     | '/settings'
-    | '/stats'
     | '/books/$id'
     | '/flights/$id'
     | '/games/$id'
@@ -250,7 +239,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/search'
     | '/settings'
-    | '/stats'
     | '/books/$id'
     | '/flights/$id'
     | '/games/$id'
@@ -273,7 +261,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
-  StatsRoute: typeof StatsRoute
   BooksIdRoute: typeof BooksIdRoute
   FlightsIdRoute: typeof FlightsIdRoute
   GamesIdRoute: typeof GamesIdRoute
@@ -325,13 +312,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/stats': {
-      id: '/stats'
-      path: '/stats'
-      fullPath: '/stats'
-      preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/books/': {
@@ -441,7 +421,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
-  StatsRoute: StatsRoute,
   BooksIdRoute: BooksIdRoute,
   FlightsIdRoute: FlightsIdRoute,
   GamesIdRoute: GamesIdRoute,

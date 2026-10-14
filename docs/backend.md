@@ -59,7 +59,7 @@ Rules:
 ## Stored provider details (`src/server/details.server.ts`)
 
 Goal: a work in the archive keeps a working page even if TMDB, IGDB, Discogs or
-Open Library is down or gone. Search and discovery still need the providers.
+Google Books is down or gone. Search and discovery still need the providers.
 
 - **When:** after logging, backlogging or adding a copy, the work's row gets
   `data` (and logged seasons get their episodes in `shows.seasons`). A provider

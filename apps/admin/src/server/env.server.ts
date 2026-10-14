@@ -3,6 +3,8 @@ import { z } from "zod"
 const TmdbEnv = z.object({
   TMDB_READ_TOKEN: z.string().min(1),
   TMDB_LANGUAGE: z.string().default("en-US"),
+  /** Region for "streaming on" filters (ISO 3166-1). */
+  TMDB_WATCH_REGION: z.string().length(2).default("BR"),
 })
 
 const IgdbEnv = z.object({
@@ -30,9 +32,9 @@ export const getTmdbEnv = () => readEnv(TmdbEnv)
 export const getIgdbEnv = () => readEnv(IgdbEnv)
 export const getDiscogsEnv = () => readEnv(DiscogsEnv)
 
-/** Optional: only used to fill missing book descriptions. */
-export const getGoogleBooksKey = () =>
-  process.env.GOOGLE_BOOKS_KEY?.trim() || undefined
+const GoogleBooksEnv = z.object({ GOOGLE_BOOKS_KEY: z.string().min(1) })
+
+export const getGoogleBooksEnv = () => readEnv(GoogleBooksEnv)
 
 const DatabaseEnv = z.object({ DATABASE_URL: z.url() })
 
