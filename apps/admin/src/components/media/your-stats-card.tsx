@@ -3,7 +3,7 @@ import type { LogEntry, MediaType, TimeToBeat } from "@workspace/schemas"
 import { SideCard } from "@/components/detail-layout"
 import { StarRating } from "@/components/star-rating"
 import { formatDate } from "@/lib/format"
-import { gameStatusLabel } from "@/lib/game-status"
+import { statusLabel } from "@/lib/status"
 import { logDate } from "@/lib/repo"
 import { logsQuery } from "@/queries/archive"
 
@@ -31,7 +31,9 @@ function summarize(logs: Array<LogEntry>) {
       logs.flatMap((l) => (l.kind === "season" ? [l.seasonNumber] : []))
     ).size,
     status:
-      latest?.kind === "game" ? gameStatusLabel(latest.status) : undefined,
+      latest?.kind === "game" || latest?.kind === "book"
+        ? statusLabel(latest.status)
+        : undefined,
   }
 }
 
@@ -43,7 +45,11 @@ export function YourStatsCard({ type, id }: { type: MediaType; id: number }) {
 
   const rows: Array<[string, React.ReactNode]> = [
     [
-      type === "game" || type === "record" ? "Times played" : "Times logged",
+      type === "game" || type === "record"
+        ? "Times played"
+        : type === "book"
+          ? "Times read"
+          : "Times logged",
       s.count,
     ],
     ...(type === "show" && s.seasons > 0

@@ -1,6 +1,7 @@
 import type {
   ArchiveExport,
   BacklogItem,
+  BookStatus,
   CollectionItem,
   CollectionItemDraft,
   CollectionItemInput,
@@ -10,6 +11,7 @@ import type {
   LogInput,
   MediaType,
 } from "@workspace/schemas"
+import type { ProgressStatus } from "@/lib/status"
 
 /** Item snapshot passed when logging, so the library can render offline from providers. */
 export type LibraryItemInput = Omit<LibraryItem, "addedAt">
@@ -20,8 +22,8 @@ export type LibraryEntry = LibraryItem & {
   lastLoggedAt?: string
   /** Rating from the most recent rated log. */
   rating?: number
-  /** Games only: status of the most recent log. */
-  status?: GameStatus
+  /** Games and books: status of the most recent log. */
+  status?: ProgressStatus
 }
 
 export type RecentLog = { log: LogEntry; item: LibraryItem }
@@ -61,6 +63,8 @@ export type ArchiveStats = {
   byType: Record<MediaType, TypeStats>
   /** Physical record copies (a release can be owned twice). */
   copies: number
+  /** Latest status per book. */
+  bookStatuses: Record<BookStatus, number>
   /** Latest status per game. */
   gameStatuses: Record<GameStatus, number>
   hoursPlayed: number

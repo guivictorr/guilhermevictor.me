@@ -14,6 +14,8 @@ import { Route as BacklogRouteImport } from './routes/backlog'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as BooksIndexRouteImport } from './routes/books/index'
+import { Route as BooksIdRouteImport } from './routes/books/$id'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
 import { Route as GamesIdRouteImport } from './routes/games/$id'
 import { Route as MoviesIndexRouteImport } from './routes/movies/index'
@@ -47,6 +49,16 @@ const SettingsRoute = SettingsRouteImport.update({
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
   path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BooksIndexRoute = BooksIndexRouteImport.update({
+  id: '/books/',
+  path: '/books/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BooksIdRoute = BooksIdRouteImport.update({
+  id: '/books/$id',
+  path: '/books/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesIndexRoute = GamesIndexRouteImport.update({
@@ -101,9 +113,11 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
+  '/books/$id': typeof BooksIdRoute
   '/games/$id': typeof GamesIdRoute
   '/movies/$id': typeof MoviesIdRoute
   '/records/$id': typeof RecordsIdRoute
+  '/books/': typeof BooksIndexRoute
   '/games/': typeof GamesIndexRoute
   '/movies/': typeof MoviesIndexRoute
   '/records/': typeof RecordsIndexRoute
@@ -117,9 +131,11 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
+  '/books/$id': typeof BooksIdRoute
   '/games/$id': typeof GamesIdRoute
   '/movies/$id': typeof MoviesIdRoute
   '/records/$id': typeof RecordsIdRoute
+  '/books': typeof BooksIndexRoute
   '/games': typeof GamesIndexRoute
   '/movies': typeof MoviesIndexRoute
   '/records': typeof RecordsIndexRoute
@@ -134,9 +150,11 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
+  '/books/$id': typeof BooksIdRoute
   '/games/$id': typeof GamesIdRoute
   '/movies/$id': typeof MoviesIdRoute
   '/records/$id': typeof RecordsIdRoute
+  '/books/': typeof BooksIndexRoute
   '/games/': typeof GamesIndexRoute
   '/movies/': typeof MoviesIndexRoute
   '/records/': typeof RecordsIndexRoute
@@ -152,9 +170,11 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/stats'
+    | '/books/$id'
     | '/games/$id'
     | '/movies/$id'
     | '/records/$id'
+    | '/books/'
     | '/games/'
     | '/movies/'
     | '/records/'
@@ -168,9 +188,11 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/stats'
+    | '/books/$id'
     | '/games/$id'
     | '/movies/$id'
     | '/records/$id'
+    | '/books'
     | '/games'
     | '/movies'
     | '/records'
@@ -184,9 +206,11 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/stats'
+    | '/books/$id'
     | '/games/$id'
     | '/movies/$id'
     | '/records/$id'
+    | '/books/'
     | '/games/'
     | '/movies/'
     | '/records/'
@@ -201,9 +225,11 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
+  BooksIdRoute: typeof BooksIdRoute
   GamesIdRoute: typeof GamesIdRoute
   MoviesIdRoute: typeof MoviesIdRoute
   RecordsIdRoute: typeof RecordsIdRoute
+  BooksIndexRoute: typeof BooksIndexRoute
   GamesIndexRoute: typeof GamesIndexRoute
   MoviesIndexRoute: typeof MoviesIndexRoute
   RecordsIndexRoute: typeof RecordsIndexRoute
@@ -247,6 +273,20 @@ declare module '@tanstack/react-router' {
       path: '/stats'
       fullPath: '/stats'
       preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/books/': {
+      id: '/books/'
+      path: '/books'
+      fullPath: '/books/'
+      preLoaderRoute: typeof BooksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/books/$id': {
+      id: '/books/$id'
+      path: '/books/$id'
+      fullPath: '/books/$id'
+      preLoaderRoute: typeof BooksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/': {
@@ -321,9 +361,11 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
+  BooksIdRoute: BooksIdRoute,
   GamesIdRoute: GamesIdRoute,
   MoviesIdRoute: MoviesIdRoute,
   RecordsIdRoute: RecordsIdRoute,
+  BooksIndexRoute: BooksIndexRoute,
   GamesIndexRoute: GamesIndexRoute,
   MoviesIndexRoute: MoviesIndexRoute,
   RecordsIndexRoute: RecordsIndexRoute,

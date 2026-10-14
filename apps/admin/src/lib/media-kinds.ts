@@ -1,6 +1,12 @@
 import type { MediaType } from "@workspace/schemas"
 import type { LucideIcon } from "lucide-react"
-import { ClapperboardIcon, Disc3Icon, Gamepad2Icon, TvIcon } from "lucide-react"
+import {
+  BookOpenIcon,
+  ClapperboardIcon,
+  Disc3Icon,
+  Gamepad2Icon,
+  TvIcon,
+} from "lucide-react"
 
 /**
  * Everything the UI needs to know about each archive kind, in one place.
@@ -12,7 +18,7 @@ export type KindConfig = {
   plural: string
   icon: LucideIcon
   /** Library route. */
-  to: "/movies" | "/shows" | "/games" | "/records"
+  to: "/movies" | "/shows" | "/games" | "/books" | "/records"
   /** Cover shape: posters are 2:3, album art is square. */
   aspect: "poster" | "square"
   provider: string
@@ -43,6 +49,14 @@ export const KINDS: Record<MediaType, KindConfig> = {
     aspect: "poster",
     provider: "IGDB",
   },
+  book: {
+    label: "Book",
+    plural: "Books",
+    icon: BookOpenIcon,
+    to: "/books",
+    aspect: "poster",
+    provider: "Open Library",
+  },
   record: {
     label: "Record",
     plural: "Records",
@@ -53,4 +67,10 @@ export const KINDS: Record<MediaType, KindConfig> = {
   },
 }
 
-export const KIND_ORDER: Array<MediaType> = ["movie", "show", "game", "record"]
+export const KIND_ORDER: Array<MediaType> = [
+  "movie",
+  "show",
+  "game",
+  "book",
+  "record",
+]

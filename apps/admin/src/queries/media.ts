@@ -2,6 +2,9 @@ import { queryOptions } from "@tanstack/react-query"
 import type { MediaType } from "@workspace/schemas"
 import {
   getCollection,
+  getAuthor,
+  getAuthorWorks,
+  getBook,
   getCollectionValue,
   getGame,
   getMaster,
@@ -25,6 +28,10 @@ export const mediaKeys = {
   season: (id: number, season: number) =>
     [...mediaKeys.all, "show", id, "season", season] as const,
   game: (id: number) => [...mediaKeys.all, "game", id] as const,
+  book: (id: number) => [...mediaKeys.all, "book", id] as const,
+  author: (key: string) => [...mediaKeys.all, "author", key] as const,
+  authorWorks: (key: string) =>
+    [...mediaKeys.all, "author", key, "works"] as const,
   master: (id: number) => [...mediaKeys.all, "master", id] as const,
   release: (id: number) => [...mediaKeys.all, "release", id] as const,
   collectionValue: () => [...mediaKeys.all, "collection-value"] as const,
@@ -101,5 +108,26 @@ export const masterQuery = (id: number) =>
   queryOptions({
     queryKey: mediaKeys.master(id),
     queryFn: () => getMaster({ data: { id } }),
+    staleTime: PROVIDER_STALE_TIME,
+  })
+
+export const bookQuery = (id: number) =>
+  queryOptions({
+    queryKey: mediaKeys.book(id),
+    queryFn: () => getBook({ data: { id } }),
+    staleTime: PROVIDER_STALE_TIME,
+  })
+
+export const authorQuery = (key: string) =>
+  queryOptions({
+    queryKey: mediaKeys.author(key),
+    queryFn: () => getAuthor({ data: { key } }),
+    staleTime: PROVIDER_STALE_TIME,
+  })
+
+export const authorWorksQuery = (key: string) =>
+  queryOptions({
+    queryKey: mediaKeys.authorWorks(key),
+    queryFn: () => getAuthorWorks({ data: { key } }),
     staleTime: PROVIDER_STALE_TIME,
   })

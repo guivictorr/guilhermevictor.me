@@ -38,13 +38,15 @@ import { searchQuery, trendingQuery } from "@/queries/media"
 
 const SearchParams = z.object({
   type: MediaType.catch("movie").default("movie"),
-  q: z.string().catch("").default(""),
+  // The router parses number-like values ("1984", ISBNs) as numbers.
+  q: z.coerce.string().catch("").default(""),
 })
 
 const TYPE_OPTIONS = [
   { value: "movie", label: "Movies" },
   { value: "show", label: "Shows" },
   { value: "game", label: "Games" },
+  { value: "book", label: "Books" },
   { value: "record", label: "Records" },
 ] as const
 
@@ -52,6 +54,7 @@ const PLACEHOLDER = {
   movie: "Search movies on TMDB",
   show: "Search shows on TMDB",
   game: "Search games on IGDB",
+  book: "Search books by title, author or ISBN",
   record: "Search vinyl on Discogs",
 }
 
@@ -197,6 +200,7 @@ const TRENDING_TITLE: Record<MediaType, string> = {
   movie: "Trending movies this week",
   show: "Trending shows this week",
   game: "Popular games right now",
+  book: "Trending books this week",
   record: "Recently added to your collection",
 }
 
@@ -232,7 +236,7 @@ function Trending({ type }: { type: MediaType }) {
       <SearchEmpty
         icon={<SearchIcon />}
         title="Find something to log"
-        description="Search by title. Results come from TMDB, IGDB and Discogs."
+        description="Search by title. Results come from TMDB, IGDB, Open Library and Discogs."
       />
     )
 

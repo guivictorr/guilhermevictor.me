@@ -12,6 +12,13 @@ import {
 } from "./discogs.server"
 import { fetchGame, fetchPopularGames, searchIgdb } from "./igdb.server"
 import {
+  fetchAuthor,
+  fetchAuthorWorks,
+  fetchBook,
+  fetchTrendingBooks,
+  searchOpenLibrary,
+} from "./openlibrary.server"
+import {
   fetchCollection,
   fetchMovie,
   fetchSeason,
@@ -21,7 +28,7 @@ import {
 } from "./tmdb.server"
 
 /*
- * Provider API keys never leave the server: every TMDB/IGDB/Discogs call goes
+ * Provider API keys never leave the server: every provider call goes
  * through these RPCs, which return our normalized schemas.
  */
 
@@ -37,6 +44,8 @@ export const searchMedia = createServerFn({ method: "GET" })
         return searchIgdb(data.query)
       case "record":
         return searchDiscogs(data.query)
+      case "book":
+        return searchOpenLibrary(data.query)
       default:
         return searchTmdb(data.type, data.query)
     }
@@ -75,9 +84,16 @@ export const getTrending = createServerFn({ method: "GET" })
     // Discogs has no trending endpoint; the UI shows your collection instead.
     if (data.type === "record") return Promise.resolve([])
     const type = data.type
-    return cached(`trending:${type}`, TRENDING_TTL, () =>
-      type === "game" ? fetchPopularGames() : fetchTrendingTmdb(type)
-    )
+    return cached(`trending:${type}`, TRENDING_TTL, () => {
+      switch (type) {
+        case "game":
+          return fetchPopularGames()
+        case "book":
+          return fetchTrendingBooks()
+        default:
+          return fetchTrendingTmdb(type)
+      }
+    })
   })
 
 export const getRelease = createServerFn({ method: "GET" })
@@ -96,3 +112,17 @@ export const getCollectionValue = createServerFn({ method: "GET" }).handler(
 export const getMaster = createServerFn({ method: "GET" })
   .validator(Id)
   .handler(({ data }) => fetchMaster(data.id))
+
+export const getBook = createServerFn({ method: "GET" })
+  .validator(Id)
+  .handler(({ data }) => fetchBook(data.id))
+
+const AuthorKey = z.object({ key: z.string().regex(/^OL\d+A$/) })
+
+export const getAuthor = createServerFn({ method: "GET" })
+  .validator(AuthorKey)
+  .handler(({ data }) => fetchAuthor(data.key))
+
+export const getAuthorWorks = createServerFn({ method: "GET" })
+  .validator(AuthorKey)
+  .handler(({ data }) => fetchAuthorWorks(data.key))

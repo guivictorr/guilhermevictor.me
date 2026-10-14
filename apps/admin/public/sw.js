@@ -3,10 +3,10 @@
  * TanStack Start's multi-environment build). Online-first by design:
  *  - pages + server functions: network first, cached copy when offline
  *  - hashed build assets: cache first (immutable)
- *  - TMDB/IGDB/Discogs images: cache first, trimmed to a max entry count
+ *  - cover images (TMDB/IGDB/Discogs/Open Library): cache first, trimmed to a max entry count
  * Bump VERSION to drop old caches after changing this file.
  */
-const VERSION = "v2"
+const VERSION = "v3"
 const CACHES = {
   static: `static-${VERSION}`,
   pages: `pages-${VERSION}`,
@@ -18,6 +18,7 @@ const IMAGE_ORIGINS = [
   "https://image.tmdb.org",
   "https://images.igdb.com",
   "https://i.discogs.com",
+  "https://covers.openlibrary.org",
 ]
 const MAX_IMAGES = 800
 const NETWORK_TIMEOUT_MS = 4000

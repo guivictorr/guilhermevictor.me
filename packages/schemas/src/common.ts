@@ -1,15 +1,16 @@
 import { z } from "zod"
 
-export const MediaType = z.enum(["movie", "show", "game", "record"])
+export const MediaType = z.enum(["movie", "show", "game", "book", "record"])
 export type MediaType = z.infer<typeof MediaType>
 
-export const ImageProvider = z.enum(["tmdb", "igdb", "discogs"])
+export const ImageProvider = z.enum(["tmdb", "igdb", "discogs", "openlibrary"])
 export type ImageProvider = z.infer<typeof ImageProvider>
 
 /**
  * TMDB/IGDB: we store only the provider path/id and build URLs at render
  * time so we can pick a size per context. Discogs URLs are signed, so
- * `path` holds the full URL there.
+ * `path` holds the full URL there. Open Library: the numeric cover id,
+ * or "author:<id>" for author photos.
  */
 export const ImageRef = z.object({
   provider: ImageProvider,

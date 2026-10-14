@@ -1,6 +1,7 @@
 import {
   ArchiveExport,
   BacklogItem,
+  BookStatus,
   CollectionItem,
   GameStatus,
   LibraryItem,
@@ -81,11 +82,18 @@ function write(data: Stored) {
 }
 
 const itemKey = (type: string, id: number) => `${type}:${id}`
-const MEDIA_TYPES: Array<MediaType> = ["movie", "show", "game", "record"]
+const MEDIA_TYPES: Array<MediaType> = [
+  "movie",
+  "show",
+  "game",
+  "book",
+  "record",
+]
 const zeroCounts = (): Record<MediaType, number> => ({
   movie: 0,
   show: 0,
   game: 0,
+  book: 0,
   record: 0,
 })
 
@@ -112,7 +120,10 @@ export const localRepository: ArchiveRepository = {
             logCount: itemLogs.length,
             lastLoggedAt: logDate(latest),
             rating: itemLogs.find((l) => l.rating !== undefined)?.rating,
-            status: latest.kind === "game" ? latest.status : undefined,
+            status:
+              latest.kind === "game" || latest.kind === "book"
+                ? latest.status
+                : undefined,
           },
         ]
       })
@@ -246,6 +257,7 @@ export const localRepository: ArchiveRepository = {
       movie: emptyTypeStats(),
       show: emptyTypeStats(),
       game: emptyTypeStats(),
+      book: emptyTypeStats(),
       record: emptyTypeStats(),
     }
     const gameStatuses = Object.fromEntries(
@@ -279,13 +291,19 @@ export const localRepository: ArchiveRepository = {
       }
     }
 
-    // Each game counts once, by the status of its most recent log.
-    const latestGameLogs = new Map<number, LogEntry>()
-    for (const log of [...logs].sort(compareLogsDesc))
-      if (log.kind === "game" && !latestGameLogs.has(log.mediaId))
-        latestGameLogs.set(log.mediaId, log)
-    for (const log of latestGameLogs.values())
+    // Each game/book counts once, by the status of its most recent log.
+    const bookStatuses = Object.fromEntries(
+      BookStatus.options.map((s) => [s, 0])
+    ) as ArchiveStats["bookStatuses"]
+    const latest = new Map<string, LogEntry>()
+    for (const log of [...logs].sort(compareLogsDesc)) {
+      const key = itemKey(mediaTypeOf(log), log.mediaId)
+      if (!latest.has(key)) latest.set(key, log)
+    }
+    for (const log of latest.values()) {
       if (log.kind === "game") gameStatuses[log.status]++
+      if (log.kind === "book") bookStatuses[log.status]++
+    }
 
     for (const type of MEDIA_TYPES) {
       const ratings = byType[type].ratings
@@ -299,6 +317,7 @@ export const localRepository: ArchiveRepository = {
       byType,
       copies: collection.length,
       gameStatuses,
+      bookStatuses,
       hoursPlayed,
       logsByYear: [...years.entries()]
         .sort(([a], [b]) => a - b)

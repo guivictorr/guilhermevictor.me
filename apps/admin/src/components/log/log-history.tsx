@@ -3,6 +3,7 @@ import type { LogEntry, MediaType } from "@workspace/schemas"
 import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { ChevronRightIcon, RotateCcwIcon } from "lucide-react"
+import { BOOK_FORMAT_OPTIONS, BOOK_STATUS_OPTIONS } from "@/lib/book-status"
 import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
 import { StarRating } from "@/components/star-rating"
 import { formatDate, joinDefined } from "@/lib/format"
@@ -93,6 +94,28 @@ function LogBadges({ log }: { log: LogEntry }) {
         <Badge variant="secondary">{status}</Badge>
         {meta ? (
           <span className="text-xs text-muted-foreground">{meta}</span>
+        ) : null}
+      </>
+    )
+  }
+  if (log.kind === "book") {
+    const status = BOOK_STATUS_OPTIONS.find(
+      (o) => o.value === log.status
+    )?.label
+    const format = BOOK_FORMAT_OPTIONS.find(
+      (o) => o.value === log.format
+    )?.label
+    return (
+      <>
+        <Badge variant="secondary">{status}</Badge>
+        {format ? (
+          <span className="text-xs text-muted-foreground">{format}</span>
+        ) : null}
+        {log.reread ? (
+          <Badge variant="outline">
+            <RotateCcwIcon />
+            Re-read
+          </Badge>
         ) : null}
       </>
     )

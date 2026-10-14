@@ -56,7 +56,7 @@ import {
   SearchIcon,
 } from "lucide-react"
 import { useMemo, useState } from "react"
-import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
+import { statusLabel } from "@/lib/status"
 import {
   MediaCard,
   MediaGrid,
@@ -119,10 +119,8 @@ const columns = helper.columns([
     header: "Status",
     enableSorting: false,
     cell: (info) => {
-      const status = GAME_STATUS_OPTIONS.find(
-        (o) => o.value === info.getValue()
-      )
-      return status ? <Badge variant="secondary">{status.label}</Badge> : null
+      const label = statusLabel(info.getValue())
+      return label ? <Badge variant="secondary">{label}</Badge> : null
     },
   }),
   helper.accessor("logCount", {
@@ -196,6 +194,7 @@ export function LibraryView({
   })
   const rows = table.getRowModel().rows
   const kind = KINDS[type]
+  const hasStatus = type === "game" || type === "book"
   const one = kind.label.toLowerCase()
   const noun = kind.plural.toLowerCase()
   const Icon = kind.icon
@@ -304,7 +303,7 @@ export function LibraryView({
               {table.getHeaderGroups().map((group) => (
                 <TableRow key={group.id} className="hover:bg-transparent">
                   {group.headers
-                    .filter((h) => type === "game" || h.column.id !== "status")
+                    .filter((h) => hasStatus || h.column.id !== "status")
                     .map((header) => {
                       const sorted = header.column.getIsSorted()
                       return (
@@ -337,7 +336,7 @@ export function LibraryView({
                 <TableRow key={row.id}>
                   {row
                     .getAllCells()
-                    .filter((c) => type === "game" || c.column.id !== "status")
+                    .filter((c) => hasStatus || c.column.id !== "status")
                     .map((cell) => (
                       <TableCell
                         key={cell.id}
@@ -355,9 +354,7 @@ export function LibraryView({
         <MediaGrid>
           {rows.map((row) => {
             const entry = row.original
-            const status = GAME_STATUS_OPTIONS.find(
-              (o) => o.value === entry.status
-            )
+            const status = statusLabel(entry.status)
             return (
               // Skip rendering offscreen cards in large libraries.
               <div
@@ -374,9 +371,7 @@ export function LibraryView({
                           className="text-[0.6875rem]"
                         />
                       ) : null}
-                      {status && !entry.rating ? (
-                        <span>{status.label}</span>
-                      ) : null}
+                      {status && !entry.rating ? <span>{status}</span> : null}
                     </>
                   }
                 />

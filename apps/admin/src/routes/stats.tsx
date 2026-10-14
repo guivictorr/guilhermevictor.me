@@ -6,6 +6,7 @@ import { useState } from "react"
 import { BarChart } from "@/components/charts/bar-chart"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { SegmentedControl } from "@/components/segmented-control"
+import { BOOK_STATUS_OPTIONS } from "@/lib/book-status"
 import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
 import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
 import type { ArchiveStats } from "@/lib/repo"
@@ -23,6 +24,7 @@ const SCOPE_OPTIONS: ReadonlyArray<{ value: RatingScope; label: string }> = [
   { value: "movie", label: "Movies" },
   { value: "show", label: "Shows" },
   { value: "game", label: "Games" },
+  { value: "book", label: "Books" },
   { value: "record", label: "Records" },
 ]
 
@@ -42,7 +44,16 @@ function StatsPage() {
           <>
             <Totals stats={stats} />
             <RatingDistribution stats={stats} />
-            <GameStatuses stats={stats} />
+            <StatusCard
+              title="Games by status"
+              counts={stats.gameStatuses}
+              options={GAME_STATUS_OPTIONS}
+            />
+            <StatusCard
+              title="Books by status"
+              counts={stats.bookStatuses}
+              options={BOOK_STATUS_OPTIONS}
+            />
             <LogsByYear stats={stats} />
           </>
         )}
@@ -166,16 +177,24 @@ function RatingDistribution({ stats }: { stats: ArchiveStats }) {
   )
 }
 
-function GameStatuses({ stats }: { stats: ArchiveStats }) {
-  const total = Object.values(stats.gameStatuses).reduce((a, b) => a + b, 0)
+function StatusCard({
+  title,
+  counts,
+  options,
+}: {
+  title: string
+  counts: Record<string, number>
+  options: ReadonlyArray<{ value: string; label: string }>
+}) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0)
   if (total === 0) return null
   return (
-    <Card title="Games by status">
+    <Card title={title}>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {GAME_STATUS_OPTIONS.map(({ value, label }) => (
+        {options.map(({ value, label }) => (
           <li key={value} className="rounded-lg bg-muted/50 p-3">
             <div className="text-2xl font-semibold tabular-nums">
-              {stats.gameStatuses[value]}
+              {counts[value] ?? 0}
             </div>
             <div className="text-xs text-muted-foreground">{label}</div>
           </li>
@@ -192,11 +211,11 @@ function LogsByYear({ stats }: { stats: ArchiveStats }) {
       <BarChart
         label="Number of logs per year"
         bars={stats.logsByYear.map((y) => {
-          const total = y.movie + y.show + y.game + y.record
+          const total = y.movie + y.show + y.game + y.book + y.record
           return {
             label: String(y.year),
             value: total,
-            detail: `${y.year}: ${y.movie} movies · ${y.show} seasons · ${y.game} games · ${y.record} plays`,
+            detail: `${y.year}: ${y.movie} movies · ${y.show} seasons · ${y.game} games · ${y.book} books · ${y.record} plays`,
           }
         })}
       />

@@ -29,3 +29,7 @@ function readEnv<T extends z.ZodType>(schema: T): z.infer<T> {
 export const getTmdbEnv = () => readEnv(TmdbEnv)
 export const getIgdbEnv = () => readEnv(IgdbEnv)
 export const getDiscogsEnv = () => readEnv(DiscogsEnv)
+
+/** Optional: only used to fill missing book descriptions. */
+export const getGoogleBooksKey = () =>
+  process.env.GOOGLE_BOOKS_KEY?.trim() || undefined

@@ -2,10 +2,12 @@ import {
   GameLogInput,
   MovieLogInput,
   RecordLogInput,
+  BookLogInput,
   SeasonLogInput,
   ShowLogInput,
 } from "@workspace/schemas"
 import type {
+  BookLog,
   GameLog,
   LogInput,
   MovieLog,
@@ -17,6 +19,7 @@ import { FieldGroup } from "@workspace/ui/components/field"
 import type { z } from "zod"
 import { useAppForm } from "@/components/form/form-hook"
 import { today } from "@/lib/format"
+import { BOOK_FORMAT_OPTIONS, BOOK_STATUS_OPTIONS } from "@/lib/book-status"
 import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
 
 /*
@@ -247,6 +250,71 @@ export function GameLogForm({
       <form.AppField name="rating">{(f) => <f.RatingField />}</form.AppField>
       <form.AppField name="notes">
         {(f) => <f.TextareaField label="Notes" />}
+      </form.AppField>
+      <form.AppForm>
+        <form.SubmitButton>{submitLabel}</form.SubmitButton>
+      </form.AppForm>
+    </FormShell>
+  )
+}
+
+export function BookLogForm({
+  mediaId,
+  initial,
+  onSubmit,
+  submitLabel,
+}: FormProps<BookLog>) {
+  const defaultValues: z.input<typeof BookLogInput> = {
+    kind: "book",
+    mediaId,
+    status: initial?.status ?? "reading",
+    format: initial?.format,
+    startedAt: initial ? initial.startedAt : today(),
+    finishedAt: initial?.finishedAt,
+    rating: initial?.rating,
+    reread: initial?.reread ?? false,
+    notes: initial?.notes,
+  }
+  const form = useAppForm({
+    defaultValues,
+    validators: { onSubmit: BookLogInput },
+    onSubmit: ({ value }) => onSubmit(BookLogInput.parse(value)),
+  })
+
+  return (
+    <FormShell onSubmit={form.handleSubmit}>
+      <form.AppField name="status">
+        {(f) => (
+          <f.SegmentedField label="Status" options={BOOK_STATUS_OPTIONS} />
+        )}
+      </form.AppField>
+      <form.AppField name="format">
+        {(f) => (
+          <f.SelectField
+            label="Format"
+            options={BOOK_FORMAT_OPTIONS}
+            placeholder="Physical, e-book…"
+          />
+        )}
+      </form.AppField>
+      <div className="grid grid-cols-2 gap-3">
+        <form.AppField name="startedAt">
+          {(f) => <f.DateField label="Started" optional max={today()} />}
+        </form.AppField>
+        <form.AppField name="finishedAt">
+          {(f) => <f.DateField label="Finished" optional max={today()} />}
+        </form.AppField>
+      </div>
+      <form.AppField name="rating">{(f) => <f.RatingField />}</form.AppField>
+      <form.AppField name="reread">
+        {(f) => (
+          <f.SwitchField label="Re-read" description="I've read this before" />
+        )}
+      </form.AppField>
+      <form.AppField name="notes">
+        {(f) => (
+          <f.TextareaField label="Notes" placeholder="Thoughts, quotes…" />
+        )}
       </form.AppField>
       <form.AppForm>
         <form.SubmitButton>{submitLabel}</form.SubmitButton>

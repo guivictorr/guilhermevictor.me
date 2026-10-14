@@ -1,4 +1,5 @@
 import type {
+  BookLog,
   GameLog,
   LogEntry,
   LogInput,
@@ -11,6 +12,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 import {
+  BookLogForm,
   GameLogForm,
   MovieLogForm,
   RecordLogForm,
@@ -32,6 +34,7 @@ export type LogTargetContext =
   | { kind: "game"; item: LibraryItemInput; platforms: Array<string> }
   | { kind: "record"; item: LibraryItemInput }
   | { kind: "show"; item: LibraryItemInput }
+  | { kind: "book"; item: LibraryItemInput }
 
 /** Create/edit a log in a responsive sheet. */
 export function LogSheet({
@@ -118,6 +121,14 @@ export function LogSheet({
           key={formKey}
           mediaId={target.item.id}
           initial={editing as ShowLog | undefined}
+          onSubmit={handleSubmit}
+          submitLabel={submitLabel}
+        />
+      ) : target.kind === "book" ? (
+        <BookLogForm
+          key={formKey}
+          mediaId={target.item.id}
+          initial={editing as BookLog | undefined}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}
         />

@@ -83,6 +83,24 @@ const gameLogFields = z.object({
   notes: optionalText,
 })
 
+export const BookStatus = z.enum(["reading", "finished", "abandoned"])
+export type BookStatus = z.infer<typeof BookStatus>
+
+export const BookFormat = z.enum(["physical", "ebook", "audiobook"])
+export type BookFormat = z.infer<typeof BookFormat>
+
+const bookLogFields = z.object({
+  kind: z.literal("book"),
+  mediaId: z.number().int(),
+  status: BookStatus,
+  format: BookFormat.optional(),
+  startedAt: IsoDate.optional(),
+  finishedAt: IsoDate.optional(),
+  rating: Rating.optional(),
+  reread: z.boolean(),
+  notes: optionalText,
+})
+
 /** A listening session for a record. */
 const recordLogFields = z.object({
   kind: z.literal("record"),
@@ -95,6 +113,8 @@ const recordLogFields = z.object({
 export const MovieLogInput = movieLogFields
 export const RecordLogInput = recordLogFields
 export const ShowLogInput = finishAfterStart(showLogFields)
+export const BookLogInput = finishAfterStart(bookLogFields)
+export type BookLogInput = z.infer<typeof BookLogInput>
 export type ShowLogInput = z.infer<typeof ShowLogInput>
 export type RecordLogInput = z.infer<typeof RecordLogInput>
 export const SeasonLogInput = finishAfterStart(seasonLogFields)
@@ -109,12 +129,15 @@ export const LogInput = z.union([
   GameLogInput,
   RecordLogInput,
   ShowLogInput,
+  BookLogInput,
 ])
 export type LogInput = z.infer<typeof LogInput>
 
 export const MovieLog = movieLogFields.extend(stored)
 export const SeasonLog = finishAfterStart(seasonLogFields.extend(stored))
 export const ShowLog = finishAfterStart(showLogFields.extend(stored))
+export const BookLog = finishAfterStart(bookLogFields.extend(stored))
+export type BookLog = z.infer<typeof BookLog>
 export type ShowLog = z.infer<typeof ShowLog>
 export const GameLog = finishAfterStart(gameLogFields.extend(stored))
 export const RecordLog = recordLogFields.extend(stored)
@@ -128,6 +151,7 @@ export const LogEntry = z.union([
   ShowLog,
   SeasonLog,
   GameLog,
+  BookLog,
   RecordLog,
 ])
 export type LogEntry = z.infer<typeof LogEntry>

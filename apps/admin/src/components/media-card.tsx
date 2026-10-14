@@ -17,6 +17,7 @@ const DETAIL_ROUTE = {
   movie: "/movies/$id",
   show: "/shows/$id",
   game: "/games/$id",
+  book: "/books/$id",
   record: "/records/$id",
 } as const satisfies Record<CardMedia["type"], string>
 
