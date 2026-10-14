@@ -1,8 +1,9 @@
 # UI
 
-Goal: the PWA should feel like a **native app** on a phone. Project skills in
-`.claude/skills` (Emil Kowalski): use `mobile-native`, `emil-design-eng`, `animate`,
-`break-ui`, `review-animations` when touching UI.
+Goal: the PWA should feel like a **native app** on a phone. This file is the
+implementation reference. **The visual identity and design rules (color, type, shape,
+motion, components) live in [design.md](design.md)**; read it, and the skills it lists,
+before touching UI.
 
 ## Native-feel rules (already applied — keep them)
 
@@ -34,11 +35,3 @@ Goal: the PWA should feel like a **native app** on a phone. Project skills in
 | `YouTubeVideo`                                                                                        | Thumbnail until tapped (no iframe cost)                                                                                |
 | `BoardingPass`, `FlightMap`                                                                           | Flights                                                                                                                |
 | `form/form-hook.tsx`                                                                                  | TanStack Form `createFormHook` with field components (Date, Rating, Switch, Text, Textarea, Number, Select, Segmented) |
-
-## Design references
-
-The owner liked yourmovieprofile.com / yourgamerprofile.com detail pages (copied
-minus social features) and the discogs.com release page (tracklist → companies →
-credits → notes → identifiers → other versions → videos). They consider **Home,
-Search still too simple** and are collecting reference designs; Stats was removed
-(2026-10-14) to be rebuilt.
