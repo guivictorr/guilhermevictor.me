@@ -1,12 +1,12 @@
-# Backend: database, auth, API, hosting
+# Backend: database, auth, hosting
 
-The admin app is also the backend: TanStack Start server functions and server
-routes talk to Postgres through Drizzle. No separate API service to run.
+The admin app is also the backend: TanStack Start server functions talk to
+Postgres through Drizzle. No separate API service to run, and no public API
+(API keys were removed until a client needs one).
 
 ```
 browser ── server fns (session cookie) ──► archive.functions.ts ──► archive.server.ts (pgRepository) ──► Postgres
-website ── GET /api/v1/* (API key) ─────► routes/api/v1/$.ts ──────┘
-           /api/auth/*  ────────────────► Better Auth (GitHub, passkeys, API keys, sessions)
+           /api/auth/*  ────────────────► Better Auth (GitHub, passkeys, sessions)
 ```
 
 ## Local development
@@ -15,39 +15,72 @@ website ── GET /api/v1/* (API key) ─────► routes/api/v1/$.ts ─
 docker compose up -d                       # Postgres 17 on localhost:5433
 cp apps/admin/.env.example apps/admin/.env # then fill the auth values
 pnpm --filter admin db:migrate             # apply drizzle/ migrations
-pnpm --filter admin db:seed ../../References/.import/archive-import.json
 pnpm dev
+pnpm --filter admin db:studio              # browse the tables (local.drizzle.studio)
 ```
 
-`db:seed` refuses to overwrite a non-empty archive unless you pass `--replace`.
 Sign-in locally needs a GitHub OAuth app whose callback is
 `http://localhost:3000/api/auth/callback/github` (separate from production's).
 
 Other scripts: `db:generate` (new migration after editing `src/server/db/schema.ts`),
-`db:studio` (Drizzle Studio), `build` + `start` (production server on Node).
+`db:seed <export.json>` (load a v2 export; `--replace` to overwrite),
+`db:backfill-details` (fill in provider details; `--refresh`, `--type=movie,show`),
+`build` + `start` (production server on Node).
 
-## Database (`src/server/db/`)
+## Database (`src/server/db/schema.ts`)
 
-| Table              | Holds                                                                         |
-| ------------------ | ----------------------------------------------------------------------------- |
-| `library_items`    | Logged works (PK `type, id`); snapshot of title/poster/genres                 |
-| `logs`             | One row per log; kind-specific fields are nullable columns; FK → library item |
-| `backlog_items`    | Same snapshot shape as library items                                          |
-| `collection_items` | Record copies; `discogs_instance_id` unique (idempotent Discogs import)       |
-| `flights`          | Local times as `timestamp` without time zone                                  |
-| auth tables        | `user`, `session`, `account`, `verification`, `passkey`, `apikey`             |
+One table per kind of work, one log table per kind, and flights:
 
-- `logs.log_date` is a generated column (`coalesce(watched, played, finished,
-started)`), so "newest first, undated last" is plain SQL ordering.
-- Check constraints: ratings 1–10, `season_number` only on season logs, log
-  kind ↔ media type, price amount and currency together.
-- Deleting the last log of a work deletes its library item; deleting a library
-  item cascades to its logs.
-- Auth tables are generated: `pnpm dlx auth@1.7.7 generate --config <file
-exporting auth> --output src/server/db/auth-schema.ts`, then `db:generate`.
-- Rows are mapped back to `@workspace/schemas` types and validated on the way
-  out (`archive.server.ts`), so the export format is unchanged. A DB export
-  round-trips the Obsidian import with zero differences.
+| Table                                                              | Holds                                                                                                                                                                                     |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `movies`, `shows`, `games`, `books`                                | One row per work in the archive, PK = provider id. `data` (jsonb) = provider details; columns copied from it for SQL (runtime, directors, imdb_id, developers, steam_id, authors, isbns…) |
+| `records`                                                          | One row **per physical copy** (uuid), or per wanted release (backlog, no copy fields). `release_id` = Discogs release; copy fields (conditions, price, store…); release columns + `data`  |
+| `movie_logs`, `show_logs`, `game_logs`, `book_logs`, `record_logs` | One row per log, FK to its work (cascade). `show_logs.season_number` null = whole show. `record_logs.record_id` = the copy played                                                         |
+| `flights`                                                          | Local times as `timestamp` without time zone                                                                                                                                              |
+| views `all_logs`, `all_backlog`                                    | Every log / every backlog entry across kinds, for SQL                                                                                                                                     |
+| `user`, `session`, `account`, `verification`, `passkey`            | Better Auth (generated: `pnpm dlx auth@1.7.7 generate`)                                                                                                                                   |
+
+Rules:
+
+- **A work row exists while it's in the archive**: it has logs, it's in the
+  backlog (`backlog_added_at` set), or (records) it's a copy you own. Logging
+  clears the backlog flag; deleting the last log of a non-backlogged work, or
+  removing a never-logged work from the backlog, deletes the row.
+- **Records**: wanting a release adds a row with `backlog_added_at`; buying it
+  turns that row into the copy. A second copy is a second row. **Plays can only
+  be logged on a copy you own**; deleting a copy deletes its plays.
+- Columns like `title`, `year`, `poster`, `genres` come from the snapshot the UI
+  sends when you log/backlog, and are overwritten from `data` once fetched.
+- Check constraints: ratings 1–10, game/book statuses, price amount and currency
+  together.
+- Rows are mapped back to `@workspace/schemas` types (`archive.ts`, `log.ts`) and
+  validated on the way out (`archive.server.ts`).
+
+## Stored provider details (`src/server/details.server.ts`)
+
+Goal: a work in the archive keeps a working page even if TMDB, IGDB, Discogs or
+Open Library is down or gone. Search and discovery still need the providers.
+
+- **When:** after logging, backlogging or adding a copy, the work's row gets
+  `data` (and logged seasons get their episodes in `shows.seasons`). A provider
+  failure never fails the write; the next page visit or the backfill fills it in.
+- **What:** the provider type (`Movie`, `Show`, `Game`, `Book`, `Release`) with the
+  replaceable parts removed: recommendations, similar, videos, screenshots
+  (except the backdrop), other book editions, Discogs marketplace numbers. Full
+  cast and crew are kept (the page shows 24 with "Show all"). Image paths are
+  kept; the images stay on the provider CDNs. English (`TMDB_LANGUAGE`) only.
+- **Reads:** detail RPCs try the provider first (full live data), refresh the
+  stored copy if it's missing or older than a day, and fall back to it on any
+  provider error.
+- **Export:** `data` is part of each exported row, so an export is self-contained.
+
+## Export format (v2)
+
+`ArchiveExport` = `{ version: 2, exportedAt, movies, shows, games, books, records,
+logs, flights }`: one array per work table (with `data`), all logs as one array
+(`LogEntry` union), flights. Settings → Import and `db:seed` **replace** the
+archive (never your account). v1 files (pre-database, and what the Obsidian
+importer still writes) are rejected until the importer moves to v2.
 
 ## Auth (`src/server/auth.server.ts`)
 
@@ -62,35 +95,6 @@ exporting auth> --output src/server/db/auth-schema.ts`, then `db:generate`.
 - Sessions last 90 days and refresh daily while used. Signing out clears the
   service worker's page/data caches.
 
-## Website API (`src/routes/api/v1/$.ts`)
-
-Read-only. Create a key in Settings → API keys (shown once, stored hashed), then
-call it **server-side** from the website:
-
-```ts
-const res = await fetch(
-  "https://archive.guilhermevictor.me/api/v1/recent?limit=10",
-  {
-    headers: { Authorization: `Bearer ${process.env.ARCHIVE_API_KEY}` },
-    next: { revalidate: 3600 },
-  }
-)
-```
-
-| Endpoint                     | Returns                                               |
-| ---------------------------- | ----------------------------------------------------- |
-| `GET /api/v1/library?type=…` | `LibraryEntry[]` for movie/show/game/book/record      |
-| `GET /api/v1/recent?limit=N` | `{ log, item }[]`, newest first (default 20, max 100) |
-| `GET /api/v1/backlog`        | `BacklogItem[]`                                       |
-| `GET /api/v1/stats`          | `ArchiveStats`                                        |
-| `GET /api/v1/collection`     | `CollectionItem[]`                                    |
-| `GET /api/v1/flights`        | `Flight[]`                                            |
-| `GET /api/v1/export`         | The full `ArchiveExport`                              |
-
-Errors: 401 (missing/invalid key), 400 (bad query), 404 (unknown endpoint).
-Key rate limiting is off (the plugin's default of 10 requests a day would break
-the site); cache on the website side instead.
-
 ## Hosting (plan: $0/month)
 
 - **Vercel Hobby** runs the app. Nitro detects Vercel at build time; anywhere
@@ -102,14 +106,14 @@ the site); cache on the website side instead.
 Deploy checklist (owner's accounts):
 
 1. Neon: create the project (Postgres 17+). Run `DATABASE_URL=<neon url>
-pnpm --filter admin db:migrate`, then `db:seed`.
+pnpm --filter admin db:migrate`.
 2. GitHub OAuth app for production with callback
    `https://archive.guilhermevictor.me/api/auth/callback/github`.
 3. Vercel: import the repo with root directory `apps/admin` and the env vars
    from `.env.example` (`BETTER_AUTH_URL=https://archive.guilhermevictor.me`,
    a fresh `BETTER_AUTH_SECRET`). Set the function region to `gru1`.
 4. Add the domain `archive.guilhermevictor.me` in Vercel (CNAME at the DNS host).
-5. Sign in with GitHub, add a passkey, create the website's API key.
+5. Sign in with GitHub, then add a passkey in Settings.
 6. Backups: add `DATABASE_URL` as a GitHub Actions secret.
 
 ## Backups
@@ -118,4 +122,4 @@ pnpm --filter admin db:migrate`, then `db:seed`.
 workflow artifact for 90 days. It skips itself until the `DATABASE_URL` secret
 exists. To restore:
 `pg_restore --clean --if-exists --no-owner -d "$DATABASE_URL" archive.dump`.
-The JSON export (Settings → Export or `/api/v1/export`) is the portable copy.
+The JSON export (Settings → Export) is the portable copy.

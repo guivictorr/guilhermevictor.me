@@ -7,10 +7,10 @@ import {
   FieldDescription,
   FieldLabel,
 } from "@workspace/ui/components/field"
-import { FingerprintIcon, KeyRoundIcon, LogOutIcon, XIcon } from "lucide-react"
+import { FingerprintIcon, LogOutIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
-import { formatDate, joinDefined } from "@/lib/format"
+import { formatDate } from "@/lib/format"
 import { viewerQuery } from "@/queries/auth"
 
 /** Throws Better Auth's `{ error }` results so Query/mutations see failures. */
@@ -28,7 +28,6 @@ async function unwrap<T>(
 
 const authKeys = {
   passkeys: ["auth", "passkeys"] as const,
-  apiKeys: ["auth", "api-keys"] as const,
 }
 
 const shortDate = (date: Date | string) =>
@@ -72,7 +71,6 @@ export function AccountSettings() {
         </Button>
       </Field>
       <Passkeys />
-      <ApiKeys />
     </>
   )
 }
@@ -127,83 +125,6 @@ function Passkeys() {
         }))}
         onRemove={(id) => remove.mutate(id)}
         removeLabel="Remove passkey"
-      />
-    </Field>
-  )
-}
-
-function ApiKeys() {
-  const queryClient = useQueryClient()
-  const keys = useQuery({
-    queryKey: authKeys.apiKeys,
-    queryFn: () => unwrap(authClient.apiKey.list()),
-  })
-  const refresh = () =>
-    queryClient.invalidateQueries({ queryKey: authKeys.apiKeys })
-  const create = useMutation({
-    mutationFn: (name: string) => unwrap(authClient.apiKey.create({ name })),
-    onSuccess: async (created) => {
-      await refresh()
-      // The full key is only available now; it's stored hashed.
-      await navigator.clipboard.writeText(created.key).catch(() => undefined)
-      toast.success("API key created and copied", {
-        description: `${created.key}\nSave it now, it won't be shown again.`,
-        duration: Infinity,
-        action: {
-          label: "Copy",
-          onClick: () => void navigator.clipboard.writeText(created.key),
-        },
-      })
-    },
-    onError: fail("Couldn't create the key"),
-  })
-  const remove = useMutation({
-    mutationFn: (keyId: string) => unwrap(authClient.apiKey.delete({ keyId })),
-    onSuccess: refresh,
-    onError: fail("Couldn't revoke the key"),
-  })
-
-  function handleCreate() {
-    const name = window.prompt("Name this key (e.g. Website)", "Website")
-    if (name?.trim()) create.mutate(name.trim().slice(0, 32))
-  }
-
-  return (
-    <Field>
-      <div className="flex items-center gap-4">
-        <FieldContent>
-          <FieldLabel>API keys</FieldLabel>
-          <FieldDescription>
-            Read-only access to /api/v1 for your website. Use them only on a
-            server.
-          </FieldDescription>
-        </FieldContent>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleCreate}
-          disabled={create.isPending}
-        >
-          <KeyRoundIcon />
-          New
-        </Button>
-      </div>
-      <CredentialList
-        items={(keys.data?.apiKeys ?? []).map((k) => ({
-          id: k.id,
-          name: k.name ?? "API key",
-          detail: joinDefined([
-            k.start ? `${k.start}…` : undefined,
-            `Created ${shortDate(k.createdAt)}`,
-          ]),
-        }))}
-        onRemove={(id) => {
-          if (
-            window.confirm("Revoke this key? Anything using it stops working.")
-          )
-            remove.mutate(id)
-        }}
-        removeLabel="Revoke key"
       />
     </Field>
   )

@@ -102,10 +102,13 @@ const bookLogFields = z.object({
   notes: optionalText,
 })
 
-/** A listening session for a record. */
+/** A listening session of a copy you own. */
 const recordLogFields = z.object({
   kind: z.literal("record"),
+  /** Discogs release id. */
   mediaId: z.number().int(),
+  /** The copy you played (a row in `records`). */
+  copyId: z.uuid(),
   playedAt: IsoDate.optional(),
   rating: Rating.optional(),
   notes: optionalText,
@@ -177,14 +180,17 @@ export type LibraryItem = z.infer<typeof LibraryItem>
 export const BacklogItem = LibraryItem
 export type BacklogItem = z.infer<typeof BacklogItem>
 
-export const ArchiveExport = z.object({
+/**
+ * Export format v1 (before the database). Still read for data left in the
+ * browser and produced by the Obsidian importer until it moves to v2.
+ */
+export const LegacyArchiveExport = z.object({
   version: z.literal(1),
   exportedAt: IsoDateTime,
   items: z.array(LibraryItem),
   logs: z.array(LogEntry),
-  // Optional so exports made before the backlog existed still import.
   backlog: z.array(BacklogItem).default([]),
   collection: z.array(CollectionItem).default([]),
   flights: z.array(Flight).default([]),
 })
-export type ArchiveExport = z.infer<typeof ArchiveExport>
+export type LegacyArchiveExport = z.infer<typeof LegacyArchiveExport>

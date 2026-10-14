@@ -7,8 +7,10 @@ data must stay fully owned and portable (export/import as JSON at any time).
 
 Current phase: **backend done locally**. The admin PWA stores everything in Postgres
 (Drizzle) through server functions, with Better Auth (GitHub + passkeys, single
-user) and a read-only `/api/v1` for the personal website (API keys). **Next: deploy**
-(Vercel + Neon, see `docs/backend.md`). Details in `docs/`.
+user). One table per kind (movies, shows, games, books, records = one row per copy)
+with the provider details in a `data` column, one log table per kind, flights.
+The DB starts empty (the Obsidian importer must move to export v2 first).
+**Next: deploy** (Vercel + Neon, see `docs/backend.md`). Details in `docs/`.
 
 ## Commands
 
@@ -16,7 +18,9 @@ user) and a read-only `/api/v1` for the personal website (API keys). **Next: dep
 pnpm install
 docker compose up -d                       # local Postgres on :5433
 pnpm --filter admin db:migrate             # apply migrations (db:generate after schema edits)
-pnpm --filter admin db:seed <export.json>  # load an export / the Obsidian import (--replace)
+pnpm --filter admin db:seed <export.json>  # load a v2 export (--replace to overwrite)
+pnpm --filter admin db:studio              # browse the tables in the browser
+pnpm --filter admin db:backfill-details    # store provider details for works missing them
 pnpm dev                                   # admin app on http://localhost:3000 (LAN too)
 pnpm typecheck                             # all packages (turbo)
 pnpm lint
@@ -39,13 +43,13 @@ apps/admin/          TanStack Start PWA (the only app so far)
   src/server/        *.server.ts provider clients + media.functions.ts (createServerFn RPCs)
                      archive.server.ts (Postgres repo), archive.functions.ts, auth.server.ts,
                      auth.functions.ts (requireOwner), db/ (Drizzle schema + client)
-  src/routes/api/    auth/$ (Better Auth handler), v1/$ (read-only API for the website)
+  src/routes/api/    auth/$ (Better Auth handler)
   src/lib/repo/      ArchiveRepository interface, remoteRepository, derive.ts (stats/library)
   drizzle/           SQL migrations (generated)
   src/lib/           media-kinds.ts (kind registry), images, flight-math, airports, format…
   src/queries/       TanStack Query options/mutations (media.ts = providers, archive.ts = repo)
   src/components/    app components (detail-layout, log/, media/, records/, flights/, form/)
-  scripts/           import-obsidian.ts, seed.ts, build-airports.mjs
+  scripts/           import-obsidian.ts, seed.ts, backfill-details.ts, build-airports.mjs
   public/            sw.js (hand-written), manifest, icons, data/airports.json
 packages/schemas/    Zod schemas = the data contract (shared with the future API)
 packages/ui/         shadcn/ui on Base UI (import as @workspace/ui/components/*)
@@ -74,6 +78,8 @@ docs/                project documentation (start at docs/README.md)
   needs handling — follow the errors. See `docs/architecture.md#adding-a-kind`.
 - UI talks to data only through `src/queries/*` → `repo` → server functions. Every
   server function must use the `requireOwner` middleware (route guards are only UX).
+- Detail RPCs go through `liveOrStored()` (details.server.ts): provider first, stored
+  copy as fallback. Works entering the archive get `ensureDetails()`.
 - Provider responses are normalized at the edge into `@workspace/schemas` types;
   images are stored as `{ provider, path }`, never full URLs (except Discogs, whose
   URLs are signed).
@@ -99,5 +105,5 @@ Signed-in testing without GitHub: run your server with env overrides
 (`DATABASE_URL`, `BETTER_AUTH_*`, `OWNER_EMAIL`), create a user + session with
 `auth.$context` → `internalAdapter.createSession()`, and send the cookie
 `better-auth.session_token=<token>.<base64 HMAC-SHA256(secret, token)>`.
-`auth.api.createApiKey({ body: { userId } })` makes an API key. Delete test
-users/keys and re-seed (`--replace`) afterwards.
+Afterwards delete only the test user (`where email = '<test email>'`) and the
+archive rows the test created; the owner's real account lives in the same DB.

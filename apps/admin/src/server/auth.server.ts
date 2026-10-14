@@ -1,4 +1,3 @@
-import { apiKey } from "@better-auth/api-key"
 import { passkey } from "@better-auth/passkey"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
@@ -10,8 +9,7 @@ import { getAuthEnv } from "./env.server"
 
 /*
  * Single-user auth: GitHub to get in the first time, then passkeys.
- * Only OWNER_EMAIL may ever create an account. API keys (for the personal
- * website) belong to the owner and only unlock the read-only /api/v1 routes.
+ * Only OWNER_EMAIL may ever create an account.
  */
 
 function createAuth() {
@@ -48,11 +46,6 @@ function createAuth() {
     },
     plugins: [
       passkey({ rpName: "Archive" }),
-      apiKey({
-        defaultPrefix: "arc_",
-        // The default (10 requests/day) would break the website.
-        rateLimit: { enabled: false },
-      }),
       // Must stay last: writes Better Auth's cookies through Start.
       tanstackStartCookies(),
     ],

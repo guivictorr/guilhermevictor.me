@@ -208,6 +208,7 @@ const showSummary = (r: TmdbTvResult): MediaSummary => ({
   overview: text(r.overview),
 })
 
+/** Full cast and every key-job crew member; the page shows a preview. */
 function movieCredits(credits: TmdbMovie["credits"]): Credits {
   // One entry per person, merging jobs ("Director, Screenplay").
   const crew = new Map<
@@ -222,7 +223,7 @@ function movieCredits(credits: TmdbMovie["credits"]): Credits {
   }
 
   return {
-    cast: (credits?.cast ?? []).slice(0, 24).map((c) => ({
+    cast: (credits?.cast ?? []).map((c) => ({
       id: c.id,
       name: c.name,
       role: text(c.character),
@@ -230,7 +231,6 @@ function movieCredits(credits: TmdbMovie["credits"]): Credits {
     })),
     crew: [...crew.values()]
       .sort((a, b) => jobRank(a.jobs) - jobRank(b.jobs))
-      .slice(0, 16)
       .map(({ member, jobs }) => ({
         id: member.id,
         name: member.name,
@@ -242,7 +242,7 @@ function movieCredits(credits: TmdbMovie["credits"]): Credits {
 
 function showCredits(credits: TmdbShow["aggregate_credits"]): Credits {
   return {
-    cast: (credits?.cast ?? []).slice(0, 24).map((c) => ({
+    cast: (credits?.cast ?? []).map((c) => ({
       id: c.id,
       name: c.name,
       role: text(c.roles?.[0]?.character),
@@ -257,7 +257,6 @@ function showCredits(credits: TmdbShow["aggregate_credits"]): Credits {
       }))
       .filter(({ jobs }) => jobs.length > 0)
       .sort((a, b) => jobRank(a.jobs) - jobRank(b.jobs))
-      .slice(0, 16)
       .map(({ member, jobs }) => ({
         id: member.id,
         name: member.name,

@@ -32,7 +32,12 @@ export type LogTargetContext =
       seasonName: string
     }
   | { kind: "game"; item: LibraryItemInput; platforms: Array<string> }
-  | { kind: "record"; item: LibraryItemInput }
+  | {
+      kind: "record"
+      item: LibraryItemInput
+      /** Your copies of this release (plays are logged on one). */
+      copies: Array<{ value: string; label: string }>
+    }
   | { kind: "show"; item: LibraryItemInput }
   | { kind: "book"; item: LibraryItemInput }
 
@@ -136,6 +141,7 @@ export function LogSheet({
         <RecordLogForm
           key={formKey}
           mediaId={target.item.id}
+          copies={target.copies}
           initial={editing as RecordLog | undefined}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}

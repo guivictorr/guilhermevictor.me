@@ -69,6 +69,7 @@ type IgdbGame = IgdbGameSummary & {
   screenshots?: Array<IgdbImage>
   videos?: Array<{ video_id: string; name?: string }>
   similar_games?: Array<IgdbGameSummary>
+  external_games?: Array<{ uid?: string; external_game_source?: number }>
   involved_companies?: Array<{
     developer: boolean
     publisher: boolean
@@ -167,7 +168,28 @@ const GAME_FIELDS = [
   "involved_companies.developer",
   "involved_companies.publisher",
   "involved_companies.company.name",
+  "external_games.uid",
+  "external_games.external_game_source",
 ].join(",")
+
+/** IGDB `external_game_sources` ids worth keeping for matching elsewhere. */
+const EXTERNAL_SOURCES: Partial<Record<number, string>> = {
+  1: "steam",
+  3: "giantbomb",
+  5: "gog",
+  11: "microsoft",
+  26: "epic",
+  36: "playstation",
+}
+
+function externalIds(games: IgdbGame["external_games"]) {
+  const ids: Record<string, string> = {}
+  for (const g of games ?? []) {
+    const source = EXTERNAL_SOURCES[g.external_game_source ?? -1]
+    if (source && g.uid) ids[source] ??= g.uid
+  }
+  return ids
+}
 
 /** Time to beat is a separate endpoint and often missing; never fail the page over it. */
 async function fetchTimeToBeat(id: number): Promise<TimeToBeat | undefined> {
@@ -220,6 +242,7 @@ export async function fetchGame(id: number): Promise<Game | undefined> {
           }
         : undefined,
     timeToBeat,
+    externalIds: externalIds(g.external_games),
     videos: (g.videos ?? []).slice(0, 8).map((v) => ({
       key: v.video_id,
       name: v.name ?? "Video",

@@ -172,6 +172,8 @@ export const Game = z.object({
   publishers: z.array(z.string()),
   providerRating: ProviderRating.optional(),
   timeToBeat: TimeToBeat.optional(),
+  /** Store ids (e.g. `{ steam: "292030" }`), for matching games elsewhere. */
+  externalIds: z.record(z.string(), z.string()).default({}),
   videos: z.array(Video),
   similar: z.array(MediaSummary),
   cover: ImageRef.optional(),

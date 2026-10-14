@@ -1,37 +1,29 @@
-import { notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { MediaType } from "@workspace/schemas"
 import { z } from "zod"
 import { requireOwner } from "./auth.functions"
 import { cached } from "./cache.server"
+import { liveOrStored, seasonLiveOrStored } from "./details.server"
 import {
   fetchCollectionValue,
   fetchDiscogsCollection,
   fetchMaster,
-  fetchRelease,
   searchDiscogs,
 } from "./discogs.server"
-import { fetchGame, fetchPopularGames, searchIgdb } from "./igdb.server"
+import { fetchPopularGames, searchIgdb } from "./igdb.server"
 import {
   fetchAuthor,
   fetchAuthorWorks,
-  fetchBook,
   fetchTrendingBooks,
   searchOpenLibrary,
 } from "./openlibrary.server"
-import {
-  fetchCollection,
-  fetchMovie,
-  fetchSeason,
-  fetchShow,
-  fetchTrendingTmdb,
-  searchTmdb,
-} from "./tmdb.server"
+import { fetchCollection, fetchTrendingTmdb, searchTmdb } from "./tmdb.server"
 
 /*
  * Provider API keys never leave the server: every provider call goes
  * through these RPCs, which return our normalized schemas. They require the
- * owner's session so nobody else can spend the provider quotas.
+ * owner's session so nobody else can spend the provider quotas. Detail RPCs
+ * fall back to the copy stored in the archive when a provider fails.
  */
 
 const Id = z.object({ id: z.number().int().positive() })
@@ -57,26 +49,22 @@ export const searchMedia = createServerFn({ method: "GET" })
 export const getMovie = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(Id)
-  .handler(({ data }) => fetchMovie(data.id))
+  .handler(({ data }) => liveOrStored("movie", data.id))
 
 export const getShow = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(Id)
-  .handler(({ data }) => fetchShow(data.id))
+  .handler(({ data }) => liveOrStored("show", data.id))
 
 export const getSeason = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(Id.extend({ season: z.number().int().min(0) }))
-  .handler(({ data }) => fetchSeason(data.id, data.season))
+  .handler(({ data }) => seasonLiveOrStored(data.id, data.season))
 
 export const getGame = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(Id)
-  .handler(async ({ data }) => {
-    const game = await fetchGame(data.id)
-    if (!game) throw notFound()
-    return game
-  })
+  .handler(({ data }) => liveOrStored("game", data.id))
 
 export const getCollection = createServerFn({ method: "GET" })
   .middleware([requireOwner])
@@ -108,7 +96,7 @@ export const getTrending = createServerFn({ method: "GET" })
 export const getRelease = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(Id)
-  .handler(({ data }) => fetchRelease(data.id))
+  .handler(({ data }) => liveOrStored("record", data.id))
 
 /** Reads your whole Discogs collection; the client merges it locally. */
 export const importDiscogsCollection = createServerFn({ method: "POST" })
@@ -127,7 +115,7 @@ export const getMaster = createServerFn({ method: "GET" })
 export const getBook = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(Id)
-  .handler(({ data }) => fetchBook(data.id))
+  .handler(({ data }) => liveOrStored("book", data.id))
 
 const AuthorKey = z.object({ key: z.string().regex(/^OL\d+A$/) })
 

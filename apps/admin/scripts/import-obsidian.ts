@@ -3,8 +3,8 @@
  *
  * Reads the vault notes (one note per item, data in YAML frontmatter),
  * matches them to TMDB / IGDB / Open Library / Discogs ids and writes an
- * ArchiveExport JSON: load it in Settings → Import now, seed the database
- * with it later.
+ * JSON file in the legacy v1 export format. TODO: it must produce the v2
+ * format (one array per table) before it can be imported again.
  *
  *   pnpm --filter admin import-obsidian ../../References
  *
@@ -26,7 +26,7 @@
 import { existsSync } from "node:fs"
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises"
 import path from "node:path"
-import { ArchiveExport } from "@workspace/schemas"
+import { LegacyArchiveExport } from "@workspace/schemas"
 import type {
   BacklogItem,
   CollectionItem,
@@ -845,7 +845,7 @@ async function main() {
   )
 
   // Validate against the app's schema so the file is guaranteed to import.
-  const data = ArchiveExport.parse({
+  const data = LegacyArchiveExport.parse({
     version: 1,
     exportedAt: now,
     items: [...items.entries()]
@@ -872,7 +872,7 @@ function toIso(date?: string) {
   return d ? `${d}T12:00:00.000Z` : now
 }
 
-function renderReport(rows: Array<ReportRow>, data: ArchiveExport) {
+function renderReport(rows: Array<ReportRow>, data: LegacyArchiveExport) {
   const order = ["error", "unmatched", "low", "medium", "skipped"]
   const needsReview = rows.filter((r) => order.includes(r.result))
   const counts = new Map<string, number>()

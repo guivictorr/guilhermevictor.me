@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { ArchiveExport } from "@workspace/schemas"
+import { ArchiveExport, LegacyArchiveExport } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
 import {
   Field,
@@ -24,6 +24,13 @@ import {
 } from "@/lib/repo/legacy-local"
 import { useClearArchive, useImportArchive } from "@/queries/archive"
 
+const countWorks = (data: ArchiveExport) =>
+  data.movies.length +
+  data.shows.length +
+  data.games.length +
+  data.books.length +
+  data.records.length
+
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings · Archive" }] }),
   component: SettingsPage,
@@ -45,11 +52,11 @@ function SettingsPage() {
     const data = await repo.exportAll()
     download(data)
     toast.success("Export ready", {
-      description: `${data.logs.length} logs, ${data.items.length} items`,
+      description: `${data.logs.length} logs, ${countWorks(data)} works`,
     })
   }
 
-  function download(data: ArchiveExport, name = "archive") {
+  function download(data: { exportedAt: string }, name = "archive") {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     })
@@ -63,7 +70,12 @@ function SettingsPage() {
 
   async function handleImport(file: File) {
     try {
-      const data = ArchiveExport.parse(JSON.parse(await file.text()))
+      const raw: unknown = JSON.parse(await file.text())
+      if (LegacyArchiveExport.safeParse(raw).success)
+        throw new Error(
+          "This is an old (v1) export. Only exports from the current version can be imported."
+        )
+      const data = ArchiveExport.parse(raw)
       await importArchive.mutateAsync(data)
       toast.success("Archive imported", {
         description: `${data.logs.length} logs`,
@@ -87,7 +99,7 @@ function SettingsPage() {
   }
 
   // Data from before the server existed, still in this browser.
-  const [legacy, setLegacy] = useState<ArchiveExport>()
+  const [legacy, setLegacy] = useState<LegacyArchiveExport>()
   useEffect(() => setLegacy(readLegacyLocalData()), [])
 
   return (

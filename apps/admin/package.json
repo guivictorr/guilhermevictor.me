@@ -18,10 +18,10 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
-    "start": "node --env-file-if-exists=.env .output/server/index.mjs"
+    "start": "node --env-file-if-exists=.env .output/server/index.mjs",
+    "db:backfill-details": "tsx scripts/backfill-details.ts"
   },
   "dependencies": {
-    "@better-auth/api-key": "1.7.7",
     "@better-auth/passkey": "1.7.7",
     "@better-auth/utils": "0.4.2",
     "@tailwindcss/vite": "^4",

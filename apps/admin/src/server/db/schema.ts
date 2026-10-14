@@ -1,17 +1,23 @@
-import type { ImageRef } from "@workspace/schemas"
+import type {
+  Book,
+  Game,
+  ImageRef,
+  Movie,
+  Release,
+  Season,
+  Show,
+} from "@workspace/schemas"
 import { sql } from "drizzle-orm"
 import {
   boolean,
   check,
   date,
-  foreignKey,
   index,
   integer,
   jsonb,
   numeric,
-  pgEnum,
   pgTable,
-  primaryKey,
+  pgView,
   real,
   smallint,
   text,
@@ -22,141 +28,147 @@ import {
 export * from "./auth-schema"
 
 /*
- * Archive tables. They mirror `@workspace/schemas` (the export format); rows
- * are mapped back to those Zod types in `archive.server.ts`. Provider ids are
- * integers (TMDB/IGDB/Discogs ids, Open Library work number).
+ * One table per kind of work, one log table per kind, plus flights.
+ *
+ * A work row exists while the work is in your archive: it has logs, it's in
+ * the backlog (`backlog_added_at`), or (records) it's a copy you own. `data`
+ * is the provider's details so pages work when the provider is down; the
+ * other columns are copied out of it (or from the snapshot sent when you
+ * logged it) so plain SQL can query them. Rows map to `@workspace/schemas`
+ * (archive.ts) in `archive.server.ts`.
  */
 
-export const mediaType = pgEnum("media_type", [
-  "movie",
-  "show",
-  "game",
-  "book",
-  "record",
-])
-export const logKind = pgEnum("log_kind", [
-  "movie",
-  "show",
-  "season",
-  "game",
-  "book",
-  "record",
-])
-
-const timestamps = {
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-}
-
-/** Snapshot of a work, saved when it's first logged (library) or backlogged. */
-const snapshot = {
-  type: mediaType("type").notNull(),
-  id: integer("id").notNull(),
-  title: text("title").notNull(),
-  subtitle: text("subtitle"),
-  year: integer("year"),
-  poster: jsonb("poster").$type<ImageRef>(),
-  genres: text("genres")
+const tz = (name: string) => timestamp(name, { withTimezone: true })
+const textArray = (name: string) =>
+  text(name)
     .array()
     .notNull()
-    .default(sql`'{}'`),
-  addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+    .default(sql`'{}'`)
+
+/** Columns every work table has. */
+const work = {
+  title: text("title").notNull(),
+  year: integer("year"),
+  genres: textArray("genres"),
+  poster: jsonb("poster").$type<ImageRef>(),
+  /** Set while the work is in the backlog. */
+  backlogAddedAt: tz("backlog_added_at"),
+  addedAt: tz("added_at").notNull().defaultNow(),
+  /** When `data` was last fetched from the provider. */
+  fetchedAt: tz("fetched_at"),
 }
 
-/** Logged works. A row exists only while the work has at least one log. */
-export const libraryItems = pgTable("library_items", snapshot, (t) => [
-  primaryKey({ columns: [t.type, t.id] }),
-])
+const logTimestamps = {
+  createdAt: tz("created_at").notNull().defaultNow(),
+  updatedAt: tz("updated_at").notNull().defaultNow(),
+}
 
-export const backlogItems = pgTable("backlog_items", snapshot, (t) => [
-  primaryKey({ columns: [t.type, t.id] }),
-])
+const rating = () => smallint("rating")
+const ratingCheck = (name: string, column: unknown) =>
+  check(name, sql`${column} between 1 and 10`)
 
-/**
- * One experience of a work. Kind-specific fields are nullable columns
- * (instead of JSON) so the data stays easy to query with plain SQL.
- */
-export const logs = pgTable(
-  "logs",
+// --- works -------------------------------------------------------------------
+
+export const movies = pgTable(
+  "movies",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    kind: logKind("kind").notNull(),
-    /** `season` and `show` logs belong to a show. */
-    mediaType: mediaType("media_type").notNull(),
-    mediaId: integer("media_id").notNull(),
-    seasonNumber: integer("season_number"),
-    rating: smallint("rating"),
-    notes: text("notes"),
-    /** movie */
-    watchedAt: date("watched_at"),
-    /** record */
-    playedAt: date("played_at"),
-    startedAt: date("started_at"),
-    finishedAt: date("finished_at"),
-    /** movie, show, season */
-    rewatch: boolean("rewatch"),
-    /** book */
-    reread: boolean("reread"),
-    /** game: playing/finished/completed/paused/abandoned; book: reading/finished/abandoned */
-    status: text("status"),
-    /** game */
-    platform: text("platform"),
-    hoursPlayed: real("hours_played"),
-    /** book: physical/ebook/audiobook */
-    format: text("format"),
-    /** watched/played, else finished, else started (same as `logDate()`). */
-    logDate: date("log_date").generatedAlwaysAs(
-      sql`coalesce(watched_at, played_at, finished_at, started_at)`
-    ),
-    ...timestamps,
+    /** TMDB movie id. */
+    id: integer("id").primaryKey(),
+    ...work,
+    originalTitle: text("original_title"),
+    releaseDate: text("release_date"),
+    /** Minutes. */
+    runtime: integer("runtime"),
+    directors: textArray("directors"),
+    imdbId: text("imdb_id"),
+    data: jsonb("data").$type<Movie>(),
   },
-  (t) => [
-    index("logs_media_idx").on(t.mediaType, t.mediaId),
-    index("logs_date_idx").on(t.logDate),
-    foreignKey({
-      columns: [t.mediaType, t.mediaId],
-      foreignColumns: [libraryItems.type, libraryItems.id],
-    }).onDelete("cascade"),
-    check("logs_rating_range", sql`${t.rating} between 1 and 10`),
-    check(
-      "logs_media_type_matches_kind",
-      sql`${t.mediaType}::text = case ${t.kind} when 'season' then 'show' else ${t.kind}::text end`
-    ),
-    check(
-      "logs_season_number",
-      sql`(${t.kind} = 'season') = (${t.seasonNumber} is not null)`
-    ),
-  ]
+  (t) => [index("movies_backlog_idx").on(t.backlogAddedAt)]
 )
 
-/** A physical copy of a record (Discogs release) you own. */
-export const collectionItems = pgTable(
-  "collection_items",
+export const shows = pgTable(
+  "shows",
+  {
+    /** TMDB tv id. */
+    id: integer("id").primaryKey(),
+    ...work,
+    originalTitle: text("original_title"),
+    firstAirDate: text("first_air_date"),
+    lastAirDate: text("last_air_date"),
+    status: text("status"),
+    creators: textArray("creators"),
+    networks: textArray("networks"),
+    imdbId: text("imdb_id"),
+    data: jsonb("data").$type<Show>(),
+    /** Episodes of the seasons you logged, by season number. */
+    seasons: jsonb("seasons")
+      .$type<Record<string, Season>>()
+      .notNull()
+      .default({}),
+  },
+  (t) => [index("shows_backlog_idx").on(t.backlogAddedAt)]
+)
+
+export const games = pgTable(
+  "games",
+  {
+    /** IGDB game id. */
+    id: integer("id").primaryKey(),
+    ...work,
+    releaseDate: text("release_date"),
+    developers: textArray("developers"),
+    publishers: textArray("publishers"),
+    platforms: textArray("platforms"),
+    steamId: text("steam_id"),
+    /** Store ids: steam, gog, epic, microsoft, playstation, giantbomb. */
+    externalIds: jsonb("external_ids")
+      .$type<Record<string, string>>()
+      .notNull()
+      .default({}),
+    data: jsonb("data").$type<Game>(),
+  },
+  (t) => [index("games_backlog_idx").on(t.backlogAddedAt)]
+)
+
+export const books = pgTable(
+  "books",
+  {
+    /** Open Library work number (OL21464434W → 21464434). */
+    id: integer("id").primaryKey(),
+    ...work,
+    authors: textArray("authors"),
+    pages: integer("pages"),
+    subjects: textArray("subjects"),
+    isbns: textArray("isbns"),
+    data: jsonb("data").$type<Book>(),
+  },
+  (t) => [index("books_backlog_idx").on(t.backlogAddedAt)]
+)
+
+/**
+ * One row per physical copy you own, or per release you want (backlog,
+ * no copy fields). Two copies of the same pressing are two rows.
+ */
+export const records = pgTable(
+  "records",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    /** Discogs release id. */
     releaseId: integer("release_id").notNull(),
+    masterId: integer("master_id"),
     title: text("title").notNull(),
+    /** Display line, e.g. "Rita Lee & Roberto De Carvalho". */
     artist: text("artist").notNull(),
+    artists: textArray("artists"),
     year: integer("year"),
-    format: text("format"),
     label: text("label"),
     catno: text("catno"),
-    genres: text("genres")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
-    styles: text("styles")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
+    format: text("format"),
+    genres: textArray("genres"),
+    styles: textArray("styles"),
+    barcodes: textArray("barcodes"),
     cover: jsonb("cover").$type<ImageRef>(),
-    rating: smallint("rating"),
-    folder: text("folder"),
-    discogsInstanceId: integer("discogs_instance_id").unique(),
+    // The copy itself.
     mediaCondition: text("media_condition"),
     sleeveCondition: text("sleeve_condition"),
     variant: text("variant"),
@@ -169,22 +181,144 @@ export const collectionItems = pgTable(
     priceCurrency: text("price_currency"),
     store: text("store"),
     notes: text("notes"),
-    addedAt: timestamp("added_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    /** Your Discogs rating at import time. */
+    rating: rating(),
+    folder: text("folder"),
+    /** Set when imported from Discogs; makes re-imports idempotent. */
+    discogsInstanceId: integer("discogs_instance_id").unique(),
+    backlogAddedAt: tz("backlog_added_at"),
+    addedAt: tz("added_at").notNull().defaultNow(),
+    updatedAt: tz("updated_at").notNull().defaultNow(),
+    fetchedAt: tz("fetched_at"),
+    data: jsonb("data").$type<Release>(),
   },
   (t) => [
-    index("collection_release_idx").on(t.releaseId),
-    check("collection_rating_range", sql`${t.rating} between 1 and 10`),
+    index("records_release_idx").on(t.releaseId),
+    ratingCheck("records_rating", t.rating),
     check(
-      "collection_price_complete",
+      "records_price",
       sql`(${t.priceAmount} is null) = (${t.priceCurrency} is null)`
     ),
   ]
 )
+
+// --- logs --------------------------------------------------------------------
+
+export const movieLogs = pgTable(
+  "movie_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    movieId: integer("movie_id")
+      .notNull()
+      .references(() => movies.id, { onDelete: "cascade" }),
+    watchedAt: date("watched_at"),
+    rewatch: boolean("rewatch").notNull().default(false),
+    rating: rating(),
+    notes: text("notes"),
+    ...logTimestamps,
+  },
+  (t) => [
+    index("movie_logs_movie_idx").on(t.movieId),
+    ratingCheck("movie_logs_rating", t.rating),
+  ]
+)
+
+/** A season (`season_number`) or the whole show (`season_number` null). */
+export const showLogs = pgTable(
+  "show_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    showId: integer("show_id")
+      .notNull()
+      .references(() => shows.id, { onDelete: "cascade" }),
+    seasonNumber: integer("season_number"),
+    startedAt: date("started_at"),
+    finishedAt: date("finished_at"),
+    rewatch: boolean("rewatch").notNull().default(false),
+    rating: rating(),
+    notes: text("notes"),
+    ...logTimestamps,
+  },
+  (t) => [
+    index("show_logs_show_idx").on(t.showId),
+    ratingCheck("show_logs_rating", t.rating),
+  ]
+)
+
+export const gameLogs = pgTable(
+  "game_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    gameId: integer("game_id")
+      .notNull()
+      .references(() => games.id, { onDelete: "cascade" }),
+    /** playing, finished (main story), completed (100%), paused, abandoned. */
+    status: text("status").notNull(),
+    platform: text("platform"),
+    hoursPlayed: real("hours_played"),
+    startedAt: date("started_at"),
+    finishedAt: date("finished_at"),
+    rating: rating(),
+    notes: text("notes"),
+    ...logTimestamps,
+  },
+  (t) => [
+    index("game_logs_game_idx").on(t.gameId),
+    ratingCheck("game_logs_rating", t.rating),
+    check(
+      "game_logs_status",
+      sql`${t.status} in ('playing', 'finished', 'completed', 'paused', 'abandoned')`
+    ),
+  ]
+)
+
+export const bookLogs = pgTable(
+  "book_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bookId: integer("book_id")
+      .notNull()
+      .references(() => books.id, { onDelete: "cascade" }),
+    status: text("status").notNull(),
+    /** physical, ebook, audiobook. */
+    format: text("format"),
+    reread: boolean("reread").notNull().default(false),
+    startedAt: date("started_at"),
+    finishedAt: date("finished_at"),
+    rating: rating(),
+    notes: text("notes"),
+    ...logTimestamps,
+  },
+  (t) => [
+    index("book_logs_book_idx").on(t.bookId),
+    ratingCheck("book_logs_rating", t.rating),
+    check(
+      "book_logs_status",
+      sql`${t.status} in ('reading', 'finished', 'abandoned')`
+    ),
+  ]
+)
+
+/** A play of a copy you own. Deleting the copy deletes its plays. */
+export const recordLogs = pgTable(
+  "record_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    recordId: uuid("record_id")
+      .notNull()
+      .references(() => records.id, { onDelete: "cascade" }),
+    playedAt: date("played_at"),
+    rating: rating(),
+    notes: text("notes"),
+    ...logTimestamps,
+  },
+  (t) => [
+    index("record_logs_record_idx").on(t.recordId),
+    ratingCheck("record_logs_rating", t.rating),
+  ]
+)
+
+// --- flights -----------------------------------------------------------------
 
 /** Flights. Times are local to each airport (no offset), like a boarding pass. */
 export const flights = pgTable(
@@ -203,7 +337,54 @@ export const flights = pgTable(
     cabin: text("cabin"),
     reservation: text("reservation"),
     notes: text("notes"),
-    ...timestamps,
+    ...logTimestamps,
   },
   (t) => [index("flights_departure_idx").on(t.departure)]
 )
+
+// --- views (for SQL; the app reads the tables) --------------------------------
+
+/** Every log of every kind, with the date it's "about". */
+export const allLogs = pgView("all_logs", {
+  id: uuid("id").notNull(),
+  type: text("type").notNull(),
+  workId: integer("work_id").notNull(),
+  title: text("title").notNull(),
+  logDate: date("log_date"),
+  rating: smallint("rating"),
+  createdAt: tz("created_at").notNull(),
+}).as(sql`
+  select l.id, 'movie' as type, l.movie_id as work_id, w.title, l.watched_at as log_date, l.rating, l.created_at
+    from movie_logs l join movies w on w.id = l.movie_id
+  union all
+  select l.id, 'show', l.show_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
+    from show_logs l join shows w on w.id = l.show_id
+  union all
+  select l.id, 'game', l.game_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
+    from game_logs l join games w on w.id = l.game_id
+  union all
+  select l.id, 'book', l.book_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
+    from book_logs l join books w on w.id = l.book_id
+  union all
+  select l.id, 'record', w.release_id, w.title, l.played_at, l.rating, l.created_at
+    from record_logs l join records w on w.id = l.record_id
+`)
+
+/** Everything in the backlog, any kind. */
+export const allBacklog = pgView("all_backlog", {
+  type: text("type").notNull(),
+  workId: integer("work_id").notNull(),
+  title: text("title").notNull(),
+  year: integer("year"),
+  backlogAddedAt: tz("backlog_added_at").notNull(),
+}).as(sql`
+  select 'movie' as type, id as work_id, title, year, backlog_added_at from movies where backlog_added_at is not null
+  union all
+  select 'show', id, title, year, backlog_added_at from shows where backlog_added_at is not null
+  union all
+  select 'game', id, title, year, backlog_added_at from games where backlog_added_at is not null
+  union all
+  select 'book', id, title, year, backlog_added_at from books where backlog_added_at is not null
+  union all
+  select 'record', release_id, title, year, backlog_added_at from records where backlog_added_at is not null
+`)

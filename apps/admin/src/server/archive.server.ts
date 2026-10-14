@@ -1,146 +1,532 @@
 import {
   ArchiveExport,
-  BacklogItem,
+  BookRow,
   CollectionItem,
   Flight,
+  GameRow,
   LibraryItem,
   LogEntry,
+  MovieRow,
+  RecordRow,
+  ShowRow,
 } from "@workspace/schemas"
 import type {
+  BacklogItem,
+  CollectionItemDraft,
   CollectionItemInput,
   FlightInput,
   LogInput,
   MediaType,
 } from "@workspace/schemas"
-import { and, desc, eq, inArray, sql } from "drizzle-orm"
-import type { SQL } from "drizzle-orm"
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm"
 import {
   deriveIndex,
   deriveLibrary,
+  deriveRecent,
   deriveStats,
-  migrateExport,
 } from "@/lib/repo/derive"
-import { mediaTypeOf } from "@/lib/repo/log-utils"
-import type { ArchiveRepository, LibraryItemInput } from "@/lib/repo/types"
+import { compareLogsDesc, mediaTypeOf } from "@/lib/repo/log-utils"
+import type {
+  ArchiveRepository,
+  CollectionSnapshot,
+  LibraryItemInput,
+} from "@/lib/repo/types"
 import { getDb } from "./db/client.server"
 import type { Db } from "./db/client.server"
 import {
-  backlogItems,
-  collectionItems,
+  bookLogs,
+  books,
   flights,
-  libraryItems,
-  logs,
+  gameLogs,
+  games,
+  movieLogs,
+  movies,
+  recordLogs,
+  records,
+  showLogs,
+  shows,
 } from "./db/schema"
+import {
+  bookColumns,
+  gameColumns,
+  movieColumns,
+  recordColumns,
+  showColumns,
+} from "./details.server"
 
 /*
- * The archive in Postgres. Rows are mapped back to the `@workspace/schemas`
- * types (and validated) on the way out, so the API, the export file and the
- * UI all see exactly the shapes the frontend was built against.
+ * The archive in Postgres: one table per kind of work (movies, shows,
+ * games, books, records), one log table per kind, and flights. Rows are
+ * mapped back to the `@workspace/schemas` types the UI was built against,
+ * and validated on the way out.
  */
 
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0]
+type Conn = Db | Tx
 
-// --- row → domain -----------------------------------------------------------
+// --- small helpers ------------------------------------------------------------
 
 /** Drops SQL nulls (our schemas use optional fields, not null). */
-function compact(row: Record<string, unknown>) {
+function compact<T extends Record<string, unknown>>(row: T) {
   return Object.fromEntries(Object.entries(row).filter(([, v]) => v !== null))
 }
 
 const iso = (date: Date) => date.toISOString()
+const isoOrUndefined = (date: Date | null) => (date ? iso(date) : undefined)
+const dateOrNull = (value?: string) => (value ? new Date(value) : null)
 
-function toItem(row: typeof libraryItems.$inferSelect): LibraryItem {
-  return LibraryItem.parse({ ...compact(row), addedAt: iso(row.addedAt) })
+/** "2024-06-13 08:07:00" (Postgres) → "2024-06-13T08:07" (boarding-pass local time). */
+const toLocal = (value: string) => value.replace(" ", "T").replace(/:00$/, "")
+
+const NUMERIC_KINDS = ["movie", "show", "game", "book"] as const
+type NumericKind = (typeof NUMERIC_KINDS)[number]
+
+const now = () => new Date()
+
+// --- works: rows → library/backlog items ------------------------------------
+
+type WorkRow = {
+  id: number
+  title: string
+  year: number | null
+  genres: Array<string>
+  poster: LibraryItem["poster"] | null
+  addedAt: Date
+  backlogAddedAt: Date | null
 }
 
-function toLog(row: typeof logs.$inferSelect): LogEntry {
-  const { mediaType: _type, logDate: _date, ...fields } = row
-  return LogEntry.parse({
-    ...compact(fields),
-    createdAt: iso(row.createdAt),
-    updatedAt: iso(row.updatedAt),
+function itemOf(type: MediaType, row: WorkRow, subtitle?: string): LibraryItem {
+  return LibraryItem.parse({
+    type,
+    id: row.id,
+    title: row.title,
+    subtitle: subtitle || undefined,
+    year: row.year ?? undefined,
+    poster: row.poster ?? undefined,
+    genres: row.genres,
+    addedAt: iso(row.addedAt),
   })
 }
 
-function toCopy(row: typeof collectionItems.$inferSelect): CollectionItem {
-  const { priceAmount, priceCurrency, ...fields } = row
-  return CollectionItem.parse({
-    ...compact(fields),
+type RecordDbRow = typeof records.$inferSelect
+
+/** A release as a library/backlog item (records list one per release). */
+function recordItem(row: RecordDbRow, addedAt = row.addedAt): LibraryItem {
+  return LibraryItem.parse({
     type: "record",
+    id: row.releaseId,
+    title: row.title,
+    subtitle: row.artist || undefined,
+    year: row.year ?? undefined,
+    poster: row.cover ?? undefined,
+    genres: row.genres,
+    addedAt: iso(addedAt),
+  })
+}
+
+async function workItems(
+  db: Conn,
+  type: MediaType
+): Promise<Array<LibraryItem>> {
+  switch (type) {
+    case "movie":
+      return (await db.select().from(movies)).map((r) => itemOf(type, r))
+    case "show":
+      return (await db.select().from(shows)).map((r) => itemOf(type, r))
+    case "game":
+      return (await db.select().from(games)).map((r) => itemOf(type, r))
+    case "book":
+      return (await db.select().from(books)).map((r) =>
+        itemOf(type, r, r.authors.join(", "))
+      )
+    case "record": {
+      const rows = await db.select().from(records)
+      const byRelease = new Map<number, LibraryItem>()
+      for (const row of rows)
+        if (!byRelease.has(row.releaseId))
+          byRelease.set(row.releaseId, recordItem(row))
+      return [...byRelease.values()]
+    }
+  }
+}
+
+const allWorkItems = async (db: Conn) =>
+  (
+    await Promise.all(
+      (["movie", "show", "game", "book", "record"] as const).map((t) =>
+        workItems(db, t)
+      )
+    )
+  ).flat()
+
+/** Insert values for a new work row from the snapshot the UI sends. */
+function snapshotValues(item: LibraryItemInput) {
+  return {
+    id: item.id,
+    title: item.title,
+    year: item.year ?? null,
+    genres: item.genres,
+    poster: item.poster ?? null,
+  }
+}
+
+// --- logs: rows ↔ LogEntry ----------------------------------------------------
+
+const logCommon = (row: {
+  id: string
+  rating: number | null
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+}) => ({
+  id: row.id,
+  rating: row.rating,
+  notes: row.notes,
+  createdAt: iso(row.createdAt),
+  updatedAt: iso(row.updatedAt),
+})
+
+const movieLogEntry = (row: typeof movieLogs.$inferSelect): LogEntry =>
+  LogEntry.parse(
+    compact({
+      kind: "movie",
+      mediaId: row.movieId,
+      watchedAt: row.watchedAt,
+      rewatch: row.rewatch,
+      ...logCommon(row),
+    })
+  )
+
+const showLogEntry = (row: typeof showLogs.$inferSelect): LogEntry =>
+  LogEntry.parse(
+    compact({
+      kind: row.seasonNumber === null ? "show" : "season",
+      mediaId: row.showId,
+      seasonNumber: row.seasonNumber,
+      startedAt: row.startedAt,
+      finishedAt: row.finishedAt,
+      rewatch: row.rewatch,
+      ...logCommon(row),
+    })
+  )
+
+const gameLogEntry = (row: typeof gameLogs.$inferSelect): LogEntry =>
+  LogEntry.parse(
+    compact({
+      kind: "game",
+      mediaId: row.gameId,
+      status: row.status,
+      platform: row.platform,
+      hoursPlayed: row.hoursPlayed,
+      startedAt: row.startedAt,
+      finishedAt: row.finishedAt,
+      ...logCommon(row),
+    })
+  )
+
+const bookLogEntry = (row: typeof bookLogs.$inferSelect): LogEntry =>
+  LogEntry.parse(
+    compact({
+      kind: "book",
+      mediaId: row.bookId,
+      status: row.status,
+      format: row.format,
+      reread: row.reread,
+      startedAt: row.startedAt,
+      finishedAt: row.finishedAt,
+      ...logCommon(row),
+    })
+  )
+
+const recordLogEntry = (
+  row: typeof recordLogs.$inferSelect,
+  releaseId: number
+): LogEntry =>
+  LogEntry.parse(
+    compact({
+      kind: "record",
+      mediaId: releaseId,
+      copyId: row.recordId,
+      playedAt: row.playedAt,
+      ...logCommon(row),
+    })
+  )
+
+/** Logs of one kind, optionally of one work. */
+async function selectLogs(
+  db: Conn,
+  type: MediaType,
+  id?: number
+): Promise<Array<LogEntry>> {
+  switch (type) {
+    case "movie":
+      return (
+        await db
+          .select()
+          .from(movieLogs)
+          .where(id === undefined ? undefined : eq(movieLogs.movieId, id))
+      ).map(movieLogEntry)
+    case "show":
+      return (
+        await db
+          .select()
+          .from(showLogs)
+          .where(id === undefined ? undefined : eq(showLogs.showId, id))
+      ).map(showLogEntry)
+    case "game":
+      return (
+        await db
+          .select()
+          .from(gameLogs)
+          .where(id === undefined ? undefined : eq(gameLogs.gameId, id))
+      ).map(gameLogEntry)
+    case "book":
+      return (
+        await db
+          .select()
+          .from(bookLogs)
+          .where(id === undefined ? undefined : eq(bookLogs.bookId, id))
+      ).map(bookLogEntry)
+    case "record":
+      return (
+        await db
+          .select({ log: recordLogs, releaseId: records.releaseId })
+          .from(recordLogs)
+          .innerJoin(records, eq(records.id, recordLogs.recordId))
+          .where(id === undefined ? undefined : eq(records.releaseId, id))
+      ).map((r) => recordLogEntry(r.log, r.releaseId))
+  }
+}
+
+const allLogs = async (db: Conn) =>
+  (
+    await Promise.all(
+      (["movie", "show", "game", "book", "record"] as const).map((t) =>
+        selectLogs(db, t)
+      )
+    )
+  ).flat()
+
+const logFields = (input: { rating?: number; notes?: string }) => ({
+  rating: input.rating ?? null,
+  notes: input.notes ?? null,
+})
+
+/** Plays only go on copies you own. */
+async function assertOwnedCopy(db: Conn, copyId: string, releaseId: number) {
+  const [copy] = await db
+    .select({ id: records.id })
+    .from(records)
+    .where(
+      and(
+        eq(records.id, copyId),
+        eq(records.releaseId, releaseId),
+        isNull(records.backlogAddedAt)
+      )
+    )
+  if (!copy) throw new Error("Plays can only be logged on a copy you own")
+}
+
+/** Inserts (no `id`) or updates (`id`) a log in its kind's table. */
+async function writeLog(
+  db: Conn,
+  input: LogInput,
+  id?: string
+): Promise<LogEntry | undefined> {
+  const updatedAt = now()
+  switch (input.kind) {
+    case "movie": {
+      const values = {
+        movieId: input.mediaId,
+        watchedAt: input.watchedAt ?? null,
+        rewatch: input.rewatch,
+        ...logFields(input),
+      }
+      const [row] = id
+        ? await db
+            .update(movieLogs)
+            .set({ ...values, updatedAt })
+            .where(eq(movieLogs.id, id))
+            .returning()
+        : await db.insert(movieLogs).values(values).returning()
+      return row && movieLogEntry(row)
+    }
+    case "show":
+    case "season": {
+      const values = {
+        showId: input.mediaId,
+        seasonNumber: input.kind === "season" ? input.seasonNumber : null,
+        startedAt: input.startedAt ?? null,
+        finishedAt: input.finishedAt ?? null,
+        rewatch: input.rewatch,
+        ...logFields(input),
+      }
+      const [row] = id
+        ? await db
+            .update(showLogs)
+            .set({ ...values, updatedAt })
+            .where(eq(showLogs.id, id))
+            .returning()
+        : await db.insert(showLogs).values(values).returning()
+      return row && showLogEntry(row)
+    }
+    case "game": {
+      const values = {
+        gameId: input.mediaId,
+        status: input.status,
+        platform: input.platform ?? null,
+        hoursPlayed: input.hoursPlayed ?? null,
+        startedAt: input.startedAt ?? null,
+        finishedAt: input.finishedAt ?? null,
+        ...logFields(input),
+      }
+      const [row] = id
+        ? await db
+            .update(gameLogs)
+            .set({ ...values, updatedAt })
+            .where(eq(gameLogs.id, id))
+            .returning()
+        : await db.insert(gameLogs).values(values).returning()
+      return row && gameLogEntry(row)
+    }
+    case "book": {
+      const values = {
+        bookId: input.mediaId,
+        status: input.status,
+        format: input.format ?? null,
+        reread: input.reread,
+        startedAt: input.startedAt ?? null,
+        finishedAt: input.finishedAt ?? null,
+        ...logFields(input),
+      }
+      const [row] = id
+        ? await db
+            .update(bookLogs)
+            .set({ ...values, updatedAt })
+            .where(eq(bookLogs.id, id))
+            .returning()
+        : await db.insert(bookLogs).values(values).returning()
+      return row && bookLogEntry(row)
+    }
+    case "record": {
+      await assertOwnedCopy(db, input.copyId, input.mediaId)
+      const values = {
+        recordId: input.copyId,
+        playedAt: input.playedAt ?? null,
+        ...logFields(input),
+      }
+      const [row] = id
+        ? await db
+            .update(recordLogs)
+            .set({ ...values, updatedAt })
+            .where(eq(recordLogs.id, id))
+            .returning()
+        : await db.insert(recordLogs).values(values).returning()
+      return row && recordLogEntry(row, input.mediaId)
+    }
+  }
+}
+
+/** Creates the work row if needed and takes it out of the backlog. */
+async function upsertLoggedWork(
+  db: Conn,
+  type: NumericKind,
+  item: LibraryItemInput
+) {
+  const values = snapshotValues(item)
+  const set = { backlogAddedAt: null }
+  switch (type) {
+    case "movie":
+      await db
+        .insert(movies)
+        .values(values)
+        .onConflictDoUpdate({ target: movies.id, set })
+      return
+    case "show":
+      await db
+        .insert(shows)
+        .values(values)
+        .onConflictDoUpdate({ target: shows.id, set })
+      return
+    case "game":
+      await db
+        .insert(games)
+        .values(values)
+        .onConflictDoUpdate({ target: games.id, set })
+      return
+    case "book":
+      await db
+        .insert(books)
+        .values({
+          ...values,
+          authors: item.subtitle ? item.subtitle.split(", ") : [],
+        })
+        .onConflictDoUpdate({ target: books.id, set })
+  }
+}
+
+/** Deletes a work row once it has no logs and isn't in the backlog. */
+async function pruneWork(db: Conn, type: NumericKind, id: number) {
+  switch (type) {
+    case "movie":
+      await db.execute(sql`delete from movies w where w.id = ${id}
+        and w.backlog_added_at is null
+        and not exists (select 1 from movie_logs l where l.movie_id = w.id)`)
+      return
+    case "show":
+      await db.execute(sql`delete from shows w where w.id = ${id}
+        and w.backlog_added_at is null
+        and not exists (select 1 from show_logs l where l.show_id = w.id)`)
+      return
+    case "game":
+      await db.execute(sql`delete from games w where w.id = ${id}
+        and w.backlog_added_at is null
+        and not exists (select 1 from game_logs l where l.game_id = w.id)`)
+      return
+    case "book":
+      await db.execute(sql`delete from books w where w.id = ${id}
+        and w.backlog_added_at is null
+        and not exists (select 1 from book_logs l where l.book_id = w.id)`)
+  }
+}
+
+// --- records: rows ↔ collection items ----------------------------------------
+
+function toCopy(row: RecordDbRow): CollectionItem {
+  return CollectionItem.parse({
+    ...compact({
+      id: row.id,
+      releaseId: row.releaseId,
+      title: row.title,
+      artist: row.artist,
+      year: row.year,
+      format: row.format,
+      label: row.label,
+      catno: row.catno,
+      cover: row.cover,
+      rating: row.rating,
+      folder: row.folder,
+      discogsInstanceId: row.discogsInstanceId,
+      mediaCondition: row.mediaCondition,
+      sleeveCondition: row.sleeveCondition,
+      variant: row.variant,
+      acquiredAt: row.acquiredAt,
+      store: row.store,
+      notes: row.notes,
+    }),
+    type: "record",
+    genres: row.genres,
+    styles: row.styles,
     price:
-      priceAmount !== null && priceCurrency !== null
-        ? { amount: priceAmount, currency: priceCurrency }
+      row.priceAmount !== null && row.priceCurrency !== null
+        ? { amount: row.priceAmount, currency: row.priceCurrency }
         : undefined,
     addedAt: iso(row.addedAt),
     updatedAt: iso(row.updatedAt),
   })
 }
 
-/** "2024-06-13 08:07:00" (Postgres) → "2024-06-13T08:07" (boarding-pass local time). */
-const toLocal = (value: string) => value.replace(" ", "T").replace(/:00$/, "")
-
-function toFlight(row: typeof flights.$inferSelect): Flight {
-  return Flight.parse({
-    ...compact(row),
-    departure: toLocal(row.departure),
-    arrival: row.arrival === null ? undefined : toLocal(row.arrival),
-    createdAt: iso(row.createdAt),
-    updatedAt: iso(row.updatedAt),
-  })
-}
-
-// --- domain → row -----------------------------------------------------------
-
-/** Every kind-specific field, so writes can null out the ones a kind lacks. */
-type AnyLogFields = Partial<{
-  seasonNumber: number
-  watchedAt: string
-  playedAt: string
-  startedAt: string
-  finishedAt: string
-  rewatch: boolean
-  reread: boolean
-  status: string
-  platform: string
-  hoursPlayed: number
-  format: string
-}>
-
-function logValues(input: LogInput) {
-  const f: AnyLogFields = input
-  return {
-    kind: input.kind,
-    mediaType: mediaTypeOf(input),
-    mediaId: input.mediaId,
-    seasonNumber: f.seasonNumber ?? null,
-    rating: input.rating ?? null,
-    notes: input.notes ?? null,
-    watchedAt: f.watchedAt ?? null,
-    playedAt: f.playedAt ?? null,
-    startedAt: f.startedAt ?? null,
-    finishedAt: f.finishedAt ?? null,
-    rewatch: f.rewatch ?? null,
-    reread: f.reread ?? null,
-    status: f.status ?? null,
-    platform: f.platform ?? null,
-    hoursPlayed: f.hoursPlayed ?? null,
-    format: f.format ?? null,
-  }
-}
-
-function itemValues(item: LibraryItemInput) {
-  return {
-    type: item.type,
-    id: item.id,
-    title: item.title,
-    subtitle: item.subtitle ?? null,
-    year: item.year ?? null,
-    poster: item.poster ?? null,
-    genres: item.genres,
-  }
-}
-
-/** Editable copy fields; all of them, so cleared inputs actually clear. */
+/** Copy fields; all of them, so cleared inputs actually clear. */
 function copyInputValues(input: CollectionItemInput) {
   return {
     mediaCondition: input.mediaCondition ?? null,
@@ -154,25 +540,46 @@ function copyInputValues(input: CollectionItemInput) {
   }
 }
 
-function copyValues(item: Omit<CollectionItem, "updatedAt" | "type">) {
+function releaseSnapshotValues(snapshot: Omit<CollectionSnapshot, "type">) {
   return {
-    ...copyInputValues(item),
-    id: item.id,
-    releaseId: item.releaseId,
-    title: item.title,
-    artist: item.artist,
-    year: item.year ?? null,
-    format: item.format ?? null,
-    label: item.label ?? null,
-    catno: item.catno ?? null,
-    genres: item.genres,
-    styles: item.styles,
-    cover: item.cover ?? null,
-    rating: item.rating ?? null,
-    folder: item.folder ?? null,
-    discogsInstanceId: item.discogsInstanceId ?? null,
-    addedAt: new Date(item.addedAt),
+    releaseId: snapshot.releaseId,
+    title: snapshot.title,
+    artist: snapshot.artist,
+    year: snapshot.year ?? null,
+    format: snapshot.format ?? null,
+    label: snapshot.label ?? null,
+    catno: snapshot.catno ?? null,
+    genres: snapshot.genres,
+    styles: snapshot.styles,
+    cover: snapshot.cover ?? null,
   }
+}
+
+function draftValues(draft: Omit<CollectionItemDraft, "type">) {
+  return {
+    ...releaseSnapshotValues(draft),
+    ...copyInputValues(draft),
+    rating: draft.rating ?? null,
+    folder: draft.folder ?? null,
+    discogsInstanceId: draft.discogsInstanceId ?? null,
+    addedAt: new Date(draft.addedAt),
+  }
+}
+
+const ownedCopies = isNull(records.backlogAddedAt)
+const wantedRelease = (releaseId: number) =>
+  and(eq(records.releaseId, releaseId), isNotNull(records.backlogAddedAt))
+
+// --- flights ------------------------------------------------------------------
+
+function toFlight(row: typeof flights.$inferSelect): Flight {
+  return Flight.parse({
+    ...compact(row),
+    departure: toLocal(row.departure),
+    arrival: row.arrival === null ? undefined : toLocal(row.arrival),
+    createdAt: iso(row.createdAt),
+    updatedAt: iso(row.updatedAt),
+  })
 }
 
 function flightValues(input: FlightInput) {
@@ -192,203 +599,325 @@ function flightValues(input: FlightInput) {
   }
 }
 
-// --- queries ----------------------------------------------------------------
+// --- export / import ----------------------------------------------------------
 
-/** Same order as `compareLogsDesc`: newest log date first, undated last. */
-const logOrder = [
-  sql`${logs.logDate} desc nulls last`,
-  desc(logs.createdAt),
-] satisfies Array<SQL>
+const workExport = (row: WorkRow & { fetchedAt: Date | null }) => ({
+  id: row.id,
+  title: row.title,
+  year: row.year ?? undefined,
+  poster: row.poster ?? undefined,
+  genres: row.genres,
+  backlogAddedAt: isoOrUndefined(row.backlogAddedAt),
+  addedAt: iso(row.addedAt),
+  fetchedAt: isoOrUndefined(row.fetchedAt),
+})
 
-const isWork = (type: MediaType, id: number) =>
-  and(eq(logs.mediaType, type), eq(logs.mediaId, id))
-
-const inBacklog = (type: MediaType, id: number) =>
-  and(eq(backlogItems.type, type), eq(backlogItems.id, id))
+const workImport = (row: {
+  id: number
+  title: string
+  year?: number
+  poster?: LibraryItem["poster"]
+  genres: Array<string>
+  backlogAddedAt?: string
+  addedAt: string
+  fetchedAt?: string
+}) => ({
+  id: row.id,
+  title: row.title,
+  year: row.year ?? null,
+  poster: row.poster ?? null,
+  genres: row.genres,
+  backlogAddedAt: dateOrNull(row.backlogAddedAt),
+  addedAt: new Date(row.addedAt),
+  fetchedAt: dateOrNull(row.fetchedAt),
+})
 
 async function insertChunks<T>(
   rows: Array<T>,
   insert: (chunk: Array<T>) => Promise<unknown>
 ) {
   // Stays well under Postgres' 65k bind-parameter limit.
-  for (let i = 0; i < rows.length; i += 500)
-    await insert(rows.slice(i, i + 500))
+  for (let i = 0; i < rows.length; i += 200)
+    await insert(rows.slice(i, i + 200))
 }
 
 async function wipeArchive(tx: Tx) {
-  // Logs go with their items (FK cascade). Auth tables are never touched.
-  await tx.delete(libraryItems)
-  await tx.delete(backlogItems)
-  await tx.delete(collectionItems)
+  // Logs go with their works (FK cascade). Auth tables are never touched.
+  await tx.delete(movies)
+  await tx.delete(shows)
+  await tx.delete(games)
+  await tx.delete(books)
+  await tx.delete(records)
   await tx.delete(flights)
 }
+
+// --- the repository ------------------------------------------------------------
 
 export const pgRepository: ArchiveRepository = {
   async listLibrary(type) {
     const db = getDb()
-    const [items, typeLogs] = await Promise.all([
-      db.select().from(libraryItems).where(eq(libraryItems.type, type)),
-      db.select().from(logs).where(eq(logs.mediaType, type)),
+    const [items, logs] = await Promise.all([
+      workItems(db, type),
+      selectLogs(db, type),
     ])
-    return deriveLibrary(items.map(toItem), typeLogs.map(toLog))
+    return deriveLibrary(items, logs)
   },
 
   async listLogs({ type, id }) {
-    const rows = await getDb()
-      .select()
-      .from(logs)
-      .where(isWork(type, id))
-      .orderBy(...logOrder)
-    return rows.map(toLog)
+    return (await selectLogs(getDb(), type, id)).sort(compareLogsDesc)
   },
 
   async listRecent(limit) {
-    const rows = await getDb()
-      .select()
-      .from(logs)
-      .innerJoin(
-        libraryItems,
-        and(
-          eq(libraryItems.type, logs.mediaType),
-          eq(libraryItems.id, logs.mediaId)
-        )
-      )
-      .orderBy(...logOrder)
-      .limit(limit)
-    return rows.map((row) => ({
-      log: toLog(row.logs),
-      item: toItem(row.library_items),
-    }))
+    const db = getDb()
+    const [items, logs] = await Promise.all([allWorkItems(db), allLogs(db)])
+    return deriveRecent(items, logs, limit)
   },
 
   async addLog(input, item) {
     const type = mediaTypeOf(input)
     return getDb().transaction(async (tx) => {
-      // Refresh the snapshot on every log so titles/posters stay current.
-      const { type: _type, id: _id, ...snapshot } = itemValues(item)
-      await tx
-        .insert(libraryItems)
-        .values(itemValues(item))
-        .onConflictDoUpdate({
-          target: [libraryItems.type, libraryItems.id],
-          set: snapshot,
-        })
-      const [row] = await tx.insert(logs).values(logValues(input)).returning()
-      // Watched/played it: it's no longer "later".
-      await tx.delete(backlogItems).where(inBacklog(type, input.mediaId))
-      if (!row) throw new Error("Log was not saved")
-      return toLog(row)
+      if (type !== "record") await upsertLoggedWork(tx, type, item)
+      const log = await writeLog(tx, input)
+      if (!log) throw new Error("Log was not saved")
+      return log
     })
   },
 
   async updateLog(id, input) {
-    const [row] = await getDb()
-      .update(logs)
-      .set({ ...logValues(input), updatedAt: new Date() })
-      .where(eq(logs.id, id))
-      .returning()
-    if (!row) throw new Error("Log not found")
-    return toLog(row)
+    const log = await writeLog(getDb(), input, id)
+    if (!log) throw new Error("Log not found")
+    return log
   },
 
   async deleteLog(id) {
     await getDb().transaction(async (tx) => {
-      const [log] = await tx.delete(logs).where(eq(logs.id, id)).returning()
-      if (!log) return
-      // Drop the item once its last log is gone; the library only shows logged works.
-      const [remaining] = await tx
-        .select({ id: logs.id })
-        .from(logs)
-        .where(isWork(log.mediaType, log.mediaId))
-        .limit(1)
-      if (!remaining)
-        await tx
-          .delete(libraryItems)
-          .where(
-            and(
-              eq(libraryItems.type, log.mediaType),
-              eq(libraryItems.id, log.mediaId)
-            )
-          )
+      const [movie] = await tx
+        .delete(movieLogs)
+        .where(eq(movieLogs.id, id))
+        .returning()
+      if (movie) return pruneWork(tx, "movie", movie.movieId)
+      const [show] = await tx
+        .delete(showLogs)
+        .where(eq(showLogs.id, id))
+        .returning()
+      if (show) {
+        // Forget the season's episodes once it has no logs left.
+        if (show.seasonNumber !== null)
+          await tx.execute(sql`update shows set seasons = seasons - ${String(show.seasonNumber)}::text
+            where id = ${show.showId} and not exists (
+              select 1 from show_logs where show_id = ${show.showId} and season_number = ${show.seasonNumber})`)
+        return pruneWork(tx, "show", show.showId)
+      }
+      const [game] = await tx
+        .delete(gameLogs)
+        .where(eq(gameLogs.id, id))
+        .returning()
+      if (game) return pruneWork(tx, "game", game.gameId)
+      const [book] = await tx
+        .delete(bookLogs)
+        .where(eq(bookLogs.id, id))
+        .returning()
+      if (book) return pruneWork(tx, "book", book.bookId)
+      // A play: the copy stays, you still own it.
+      await tx.delete(recordLogs).where(eq(recordLogs.id, id))
     })
   },
 
   async listBacklog() {
-    const rows = await getDb()
-      .select()
-      .from(backlogItems)
-      .orderBy(desc(backlogItems.addedAt))
-    return rows.map((row) => BacklogItem.parse(toItem(row)))
+    const db = getDb()
+    const flagged = <T extends WorkRow>(
+      type: MediaType,
+      rows: Array<T>,
+      subtitle?: (r: T) => string
+    ) =>
+      rows.flatMap((r) =>
+        r.backlogAddedAt
+          ? [
+              {
+                ...itemOf(type, r, subtitle?.(r)),
+                addedAt: iso(r.backlogAddedAt),
+              },
+            ]
+          : []
+      )
+    const [m, s, g, b, r] = await Promise.all([
+      db.select().from(movies).where(isNotNull(movies.backlogAddedAt)),
+      db.select().from(shows).where(isNotNull(shows.backlogAddedAt)),
+      db.select().from(games).where(isNotNull(games.backlogAddedAt)),
+      db.select().from(books).where(isNotNull(books.backlogAddedAt)),
+      db.select().from(records).where(isNotNull(records.backlogAddedAt)),
+    ])
+    const items: Array<BacklogItem> = [
+      ...flagged("movie", m),
+      ...flagged("show", s),
+      ...flagged("game", g),
+      ...flagged("book", b, (row) => row.authors.join(", ")),
+      ...r.flatMap((row) =>
+        row.backlogAddedAt ? [recordItem(row, row.backlogAddedAt)] : []
+      ),
+    ]
+    return items.sort((x, y) => y.addedAt.localeCompare(x.addedAt))
   },
 
   async addToBacklog(item) {
-    await getDb()
-      .insert(backlogItems)
-      .values(itemValues(item))
-      .onConflictDoNothing()
+    const db = getDb()
+    const backlogAddedAt = now()
+    // Keep the original date if it's already there.
+    const keep = (
+      table: typeof movies | typeof shows | typeof games | typeof books
+    ) => ({
+      backlogAddedAt: sql`coalesce(${table.backlogAddedAt}, ${backlogAddedAt})`,
+    })
+    const values = { ...snapshotValues(item), backlogAddedAt }
+    switch (item.type) {
+      case "movie":
+        await db
+          .insert(movies)
+          .values(values)
+          .onConflictDoUpdate({ target: movies.id, set: keep(movies) })
+        return
+      case "show":
+        await db
+          .insert(shows)
+          .values(values)
+          .onConflictDoUpdate({ target: shows.id, set: keep(shows) })
+        return
+      case "game":
+        await db
+          .insert(games)
+          .values(values)
+          .onConflictDoUpdate({ target: games.id, set: keep(games) })
+        return
+      case "book":
+        await db
+          .insert(books)
+          .values({
+            ...values,
+            authors: item.subtitle ? item.subtitle.split(", ") : [],
+          })
+          .onConflictDoUpdate({ target: books.id, set: keep(books) })
+        return
+      case "record": {
+        // A want: a row with no copy fields. Nothing to do if you have it.
+        const [existing] = await db
+          .select({ id: records.id })
+          .from(records)
+          .where(eq(records.releaseId, item.id))
+          .limit(1)
+        if (existing) return
+        await db.insert(records).values({
+          releaseId: item.id,
+          title: item.title,
+          artist: item.subtitle ?? "",
+          year: item.year ?? null,
+          genres: item.genres,
+          cover: item.poster ?? null,
+          backlogAddedAt,
+        })
+      }
+    }
   },
 
   async removeFromBacklog({ type, id }) {
-    await getDb().delete(backlogItems).where(inBacklog(type, id))
+    await getDb().transaction(async (tx) => {
+      switch (type) {
+        case "movie":
+          await tx
+            .update(movies)
+            .set({ backlogAddedAt: null })
+            .where(eq(movies.id, id))
+          return pruneWork(tx, type, id)
+        case "show":
+          await tx
+            .update(shows)
+            .set({ backlogAddedAt: null })
+            .where(eq(shows.id, id))
+          return pruneWork(tx, type, id)
+        case "game":
+          await tx
+            .update(games)
+            .set({ backlogAddedAt: null })
+            .where(eq(games.id, id))
+          return pruneWork(tx, type, id)
+        case "book":
+          await tx
+            .update(books)
+            .set({ backlogAddedAt: null })
+            .where(eq(books.id, id))
+          return pruneWork(tx, type, id)
+        case "record":
+          await tx.delete(records).where(wantedRelease(id))
+      }
+    })
   },
 
   async getIndex() {
     const db = getDb()
-    const [logged, backlog, owned] = await Promise.all([
+    const [logs, backlog, owned] = await Promise.all([
+      allLogs(db),
+      this.listBacklog(),
       db
-        .selectDistinct({ kind: logs.mediaType, mediaId: logs.mediaId })
-        .from(logs),
-      db
-        .select({ type: backlogItems.type, id: backlogItems.id })
-        .from(backlogItems),
-      db
-        .selectDistinct({ releaseId: collectionItems.releaseId })
-        .from(collectionItems),
+        .selectDistinct({ releaseId: records.releaseId })
+        .from(records)
+        .where(ownedCopies),
     ])
-    return deriveIndex({ logs: logged, backlog, collection: owned })
+    return deriveIndex({ logs, backlog, collection: owned })
   },
 
   async getStats() {
     const db = getDb()
-    const [items, allLogs, backlog, collection] = await Promise.all([
-      db.select({ type: libraryItems.type }).from(libraryItems),
-      db.select().from(logs),
-      db.select({ type: backlogItems.type }).from(backlogItems),
-      db.select({ releaseId: collectionItems.releaseId }).from(collectionItems),
+    const [logs, backlog, owned] = await Promise.all([
+      allLogs(db),
+      this.listBacklog(),
+      db
+        .select({ releaseId: records.releaseId })
+        .from(records)
+        .where(ownedCopies),
     ])
+    // A work counts once it has a log.
+    const logged = new Map(
+      logs.map((l) => [
+        `${mediaTypeOf(l)}:${l.mediaId}`,
+        { type: mediaTypeOf(l) },
+      ])
+    )
     return deriveStats({
-      items,
-      logs: allLogs.map(toLog),
+      items: [...logged.values()],
+      logs,
       backlog,
-      collection,
+      collection: owned,
     })
   },
 
   async listCollection() {
     const rows = await getDb()
       .select()
-      .from(collectionItems)
-      .orderBy(desc(collectionItems.addedAt))
+      .from(records)
+      .where(ownedCopies)
+      .orderBy(desc(records.addedAt))
     return rows.map(toCopy)
   },
 
   async addCollectionItem(snapshot, input) {
     return getDb().transaction(async (tx) => {
-      const [row] = await tx
-        .insert(collectionItems)
-        .values({
-          ...copyValues({
-            ...snapshot,
-            ...input,
-            id: crypto.randomUUID(),
-            addedAt: new Date().toISOString(),
-          }),
-        })
-        .returning()
-      // Owning it now: it's no longer on the want list.
-      await tx
-        .delete(backlogItems)
-        .where(inBacklog("record", snapshot.releaseId))
+      // Buying something you wanted turns the want into the copy.
+      const [wanted] = await tx
+        .select({ id: records.id })
+        .from(records)
+        .where(wantedRelease(snapshot.releaseId))
+        .limit(1)
+      const values = {
+        ...releaseSnapshotValues(snapshot),
+        ...copyInputValues(input),
+        backlogAddedAt: null,
+      }
+      const [row] = wanted
+        ? await tx
+            .update(records)
+            .set({ ...values, addedAt: now(), updatedAt: now() })
+            .where(eq(records.id, wanted.id))
+            .returning()
+        : await tx.insert(records).values(values).returning()
       if (!row) throw new Error("Copy was not saved")
       return toCopy(row)
     })
@@ -396,36 +925,36 @@ export const pgRepository: ArchiveRepository = {
 
   async updateCollectionItem(id, input) {
     const [row] = await getDb()
-      .update(collectionItems)
-      .set({ ...copyInputValues(input), updatedAt: new Date() })
-      .where(eq(collectionItems.id, id))
+      .update(records)
+      .set({ ...copyInputValues(input), updatedAt: now() })
+      .where(and(eq(records.id, id), ownedCopies))
       .returning()
     if (!row) throw new Error("Copy not found")
     return toCopy(row)
   },
 
   async deleteCollectionItem(id) {
-    await getDb().delete(collectionItems).where(eq(collectionItems.id, id))
+    await getDb().delete(records).where(eq(records.id, id))
   },
 
   async importCollection(drafts) {
     return getDb().transaction(async (tx) => {
       // Idempotent: the unique Discogs instance id skips copies seen before.
-      const added = await tx
-        .insert(collectionItems)
-        .values(
-          drafts.map((d) => copyValues({ ...d, id: crypto.randomUUID() }))
-        )
-        .onConflictDoNothing({ target: collectionItems.discogsInstanceId })
-        .returning({ id: collectionItems.id })
+      const added = drafts.length
+        ? await tx
+            .insert(records)
+            .values(drafts.map(draftValues))
+            .onConflictDoNothing({ target: records.discogsInstanceId })
+            .returning({ id: records.id })
+        : []
       const releaseIds = [...new Set(drafts.map((d) => d.releaseId))]
-      if (releaseIds.length > 0)
+      if (releaseIds.length)
         await tx
-          .delete(backlogItems)
+          .delete(records)
           .where(
             and(
-              eq(backlogItems.type, "record"),
-              inArray(backlogItems.id, releaseIds)
+              inArray(records.releaseId, releaseIds),
+              isNotNull(records.backlogAddedAt)
             )
           )
       return { added: added.length, skipped: drafts.length - added.length }
@@ -452,7 +981,7 @@ export const pgRepository: ArchiveRepository = {
   async updateFlight(id, input) {
     const [row] = await getDb()
       .update(flights)
-      .set({ ...flightValues(input), updatedAt: new Date() })
+      .set({ ...flightValues(input), updatedAt: now() })
       .where(eq(flights.id, id))
       .returning()
     if (!row) throw new Error("Flight not found")
@@ -465,67 +994,111 @@ export const pgRepository: ArchiveRepository = {
 
   async exportAll() {
     const db = getDb()
-    const [items, allLogs, backlog, collection, allFlights] = await Promise.all(
-      [
-        db.select().from(libraryItems),
-        db
-          .select()
-          .from(logs)
-          .orderBy(...logOrder),
-        db.select().from(backlogItems),
-        db.select().from(collectionItems),
-        db.select().from(flights).orderBy(desc(flights.departure)),
-      ]
-    )
-    return {
-      version: 1,
+    const [m, s, g, b, r, logs, f] = await Promise.all([
+      db.select().from(movies),
+      db.select().from(shows),
+      db.select().from(games),
+      db.select().from(books),
+      db.select().from(records),
+      allLogs(db),
+      db.select().from(flights).orderBy(desc(flights.departure)),
+    ])
+    return ArchiveExport.parse({
+      version: 2,
       exportedAt: new Date().toISOString(),
-      items: items.map(toItem),
-      logs: allLogs.map(toLog),
-      backlog: backlog.map(toItem),
-      collection: collection.map(toCopy),
-      flights: allFlights.map(toFlight),
-    }
+      movies: m.map((row) =>
+        MovieRow.parse({ ...workExport(row), data: row.data ?? undefined })
+      ),
+      shows: s.map((row) =>
+        ShowRow.parse({
+          ...workExport(row),
+          data: row.data ?? undefined,
+          seasons: Object.values(row.seasons),
+        })
+      ),
+      games: g.map((row) =>
+        GameRow.parse({ ...workExport(row), data: row.data ?? undefined })
+      ),
+      books: b.map((row) =>
+        BookRow.parse({
+          ...workExport(row),
+          subtitle: row.authors.join(", ") || undefined,
+          data: row.data ?? undefined,
+        })
+      ),
+      records: r.map((row) =>
+        RecordRow.parse({
+          ...toCopy(row),
+          backlogAddedAt: isoOrUndefined(row.backlogAddedAt),
+          fetchedAt: isoOrUndefined(row.fetchedAt),
+          data: row.data ?? undefined,
+        })
+      ),
+      logs: logs.sort(compareLogsDesc),
+      flights: f.map(toFlight),
+    })
   },
 
   async importAll(input) {
-    const data = ArchiveExport.parse(migrateExport(input))
+    const data = ArchiveExport.parse(input)
     await getDb().transaction(async (tx) => {
       await wipeArchive(tx)
-      await insertChunks(data.items, (chunk) =>
-        tx.insert(libraryItems).values(
-          chunk.map((item) => ({
-            ...itemValues(item),
-            addedAt: new Date(item.addedAt),
+      await insertChunks(data.movies, (chunk) =>
+        tx.insert(movies).values(
+          chunk.map((row) => ({
+            ...workImport(row),
+            ...(row.data ? movieColumns(row.data) : {}),
           }))
         )
       )
-      await insertChunks(data.logs, (chunk) =>
-        tx.insert(logs).values(
-          chunk.map((log) => ({
-            ...logValues(log),
-            id: log.id,
-            createdAt: new Date(log.createdAt),
-            updatedAt: new Date(log.updatedAt),
+      await insertChunks(data.shows, (chunk) =>
+        tx.insert(shows).values(
+          chunk.map((row) => ({
+            ...workImport(row),
+            ...(row.data ? showColumns(row.data) : {}),
+            seasons: Object.fromEntries(
+              row.seasons.map((x) => [String(x.seasonNumber), x])
+            ),
           }))
         )
       )
-      await insertChunks(data.backlog, (chunk) =>
-        tx.insert(backlogItems).values(
-          chunk.map((item) => ({
-            ...itemValues(item),
-            addedAt: new Date(item.addedAt),
+      await insertChunks(data.games, (chunk) =>
+        tx.insert(games).values(
+          chunk.map((row) => ({
+            ...workImport(row),
+            ...(row.data ? gameColumns(row.data) : {}),
           }))
         )
       )
-      await insertChunks(data.collection, (chunk) =>
-        tx.insert(collectionItems).values(
-          chunk.map((copy) => ({
-            ...copyValues(copy),
-            updatedAt: new Date(copy.updatedAt),
+      await insertChunks(data.books, (chunk) =>
+        tx.insert(books).values(
+          chunk.map((row) => ({
+            ...workImport(row),
+            authors: row.subtitle ? row.subtitle.split(", ") : [],
+            ...(row.data ? bookColumns(row.data) : {}),
           }))
         )
       )
+      await insertChunks(data.records, (chunk) =>
+        tx.insert(records).values(
+          chunk.map((row) => ({
+            ...draftValues(row),
+            id: row.id,
+            backlogAddedAt: dateOrNull(row.backlogAddedAt),
+            updatedAt: new Date(row.updatedAt),
+            fetchedAt: dateOrNull(row.fetchedAt),
+            ...(row.data ? recordColumns(row.data) : {}),
+          }))
+        )
+      )
+      for (const log of data.logs) {
+        const written = await writeLog(tx, log)
+        if (!written) throw new Error(`Log ${log.id} was not imported`)
+        // Keep the original ids and timestamps.
+        await tx.execute(sql`update ${sql.identifier(logTable(log))}
+          set id = ${log.id}, created_at = ${log.createdAt}, updated_at = ${log.updatedAt}
+          where id = ${written.id}`)
+      }
       await insertChunks(data.flights, (chunk) =>
         tx.insert(flights).values(
           chunk.map((flight) => ({
@@ -542,4 +1115,20 @@ export const pgRepository: ArchiveRepository = {
   async clear() {
     await getDb().transaction(wipeArchive)
   },
+}
+
+function logTable(log: LogEntry) {
+  switch (log.kind) {
+    case "movie":
+      return "movie_logs"
+    case "show":
+    case "season":
+      return "show_logs"
+    case "game":
+      return "game_logs"
+    case "book":
+      return "book_logs"
+    case "record":
+      return "record_logs"
+  }
 }

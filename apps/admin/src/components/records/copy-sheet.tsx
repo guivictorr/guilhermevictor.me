@@ -64,6 +64,10 @@ export function CopySheet({
 
   async function handleDelete() {
     if (!editing) return
+    if (
+      !window.confirm("Remove this copy? Plays logged on it are deleted too.")
+    )
+      return
     await remove.mutateAsync(editing.id)
     onOpenChange(false)
     toast("Copy removed from collection", { description: snapshot.title })

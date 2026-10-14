@@ -20,7 +20,7 @@ routes/*  ──►  queries/*  ──►  lib/repo (remoteRepository)  ──�
   entries, stats, index) are pure functions in `lib/repo/derive.ts`; `migrateExport()`
   upgrades old export shapes (e.g. game status `dropped` → `abandoned`). Data from the
   old localStorage era (`archive:v1`) can be downloaded from Settings. See
-  `docs/backend.md` for the DB, auth and `/api/v1`.
+  `docs/backend.md` for the DB and auth.
 - **Queries**: `queryOptions` factories. Provider data has a long `staleTime`;
   detail routes prefetch it in loaders (`ensureQueryData`) so pages SSR with data.
   Repo queries aren't prefetched in loaders (pages show skeletons first) and every

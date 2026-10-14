@@ -27,7 +27,6 @@ import { Route as RecordsIndexRouteImport } from './routes/records/index'
 import { Route as RecordsIdRouteImport } from './routes/records/$id'
 import { Route as ShowsIndexRouteImport } from './routes/shows/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ShowsIdIndexRouteImport } from './routes/shows/$id/index'
 import { Route as ShowsIdSeasonsSeasonRouteImport } from './routes/shows/$id/seasons/$season'
 
@@ -121,11 +120,6 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
-  id: '/api/v1/$',
-  path: '/api/v1/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShowsIdIndexRoute = ShowsIdIndexRouteImport.update({
   id: '/shows/$id/',
   path: '/shows/$id/',
@@ -156,7 +150,6 @@ export interface FileRoutesByFullPath {
   '/records/': typeof RecordsIndexRoute
   '/shows/': typeof ShowsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/v1/$': typeof ApiV1SplatRoute
   '/shows/$id/': typeof ShowsIdIndexRoute
   '/shows/$id/seasons/$season': typeof ShowsIdSeasonsSeasonRoute
 }
@@ -179,7 +172,6 @@ export interface FileRoutesByTo {
   '/records': typeof RecordsIndexRoute
   '/shows': typeof ShowsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/v1/$': typeof ApiV1SplatRoute
   '/shows/$id': typeof ShowsIdIndexRoute
   '/shows/$id/seasons/$season': typeof ShowsIdSeasonsSeasonRoute
 }
@@ -203,7 +195,6 @@ export interface FileRoutesById {
   '/records/': typeof RecordsIndexRoute
   '/shows/': typeof ShowsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/v1/$': typeof ApiV1SplatRoute
   '/shows/$id/': typeof ShowsIdIndexRoute
   '/shows/$id/seasons/$season': typeof ShowsIdSeasonsSeasonRoute
 }
@@ -228,7 +219,6 @@ export interface FileRouteTypes {
     | '/records/'
     | '/shows/'
     | '/api/auth/$'
-    | '/api/v1/$'
     | '/shows/$id/'
     | '/shows/$id/seasons/$season'
   fileRoutesByTo: FileRoutesByTo
@@ -251,7 +241,6 @@ export interface FileRouteTypes {
     | '/records'
     | '/shows'
     | '/api/auth/$'
-    | '/api/v1/$'
     | '/shows/$id'
     | '/shows/$id/seasons/$season'
   id:
@@ -274,7 +263,6 @@ export interface FileRouteTypes {
     | '/records/'
     | '/shows/'
     | '/api/auth/$'
-    | '/api/v1/$'
     | '/shows/$id/'
     | '/shows/$id/seasons/$season'
   fileRoutesById: FileRoutesById
@@ -298,7 +286,6 @@ export interface RootRouteChildren {
   RecordsIndexRoute: typeof RecordsIndexRoute
   ShowsIndexRoute: typeof ShowsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiV1SplatRoute: typeof ApiV1SplatRoute
   ShowsIdIndexRoute: typeof ShowsIdIndexRoute
   ShowsIdSeasonsSeasonRoute: typeof ShowsIdSeasonsSeasonRoute
 }
@@ -431,13 +418,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/v1/$': {
-      id: '/api/v1/$'
-      path: '/api/v1/$'
-      fullPath: '/api/v1/$'
-      preLoaderRoute: typeof ApiV1SplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shows/$id/': {
       id: '/shows/$id/'
       path: '/shows/$id'
@@ -474,7 +454,6 @@ const rootRouteChildren: RootRouteChildren = {
   RecordsIndexRoute: RecordsIndexRoute,
   ShowsIndexRoute: ShowsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiV1SplatRoute: ApiV1SplatRoute,
   ShowsIdIndexRoute: ShowsIdIndexRoute,
   ShowsIdSeasonsSeasonRoute: ShowsIdSeasonsSeasonRoute,
 }

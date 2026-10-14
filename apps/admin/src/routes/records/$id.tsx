@@ -117,14 +117,17 @@ function RecordPage() {
         }
         actions={
           <>
-            <Button
-              size="lg"
-              className="h-11 text-base"
-              onClick={logSheet.openNew}
-            >
-              <PlusIcon />
-              Log play
-            </Button>
+            {/* Plays are logged on a copy you own. */}
+            {copies.length ? (
+              <Button
+                size="lg"
+                className="h-11 text-base"
+                onClick={logSheet.openNew}
+              >
+                <PlusIcon />
+                Log play
+              </Button>
+            ) : null}
             <Button
               variant={copies.length ? "secondary" : "outline"}
               size="lg"
@@ -233,7 +236,19 @@ function RecordPage() {
         open={logSheet.open}
         onOpenChange={logSheet.onOpenChange}
         editing={logSheet.editing}
-        target={{ kind: "record", item }}
+        target={{
+          kind: "record",
+          item,
+          copies: copies.map((copy, i) => ({
+            value: copy.id,
+            label:
+              joinDefined([
+                copy.variant,
+                copy.mediaCondition,
+                formatDate(copy.acquiredAt),
+              ]) || `Copy ${i + 1}`,
+          })),
+        }}
       />
       <CopySheet
         open={copySheet.open}

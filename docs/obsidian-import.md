@@ -1,8 +1,12 @@
 # Obsidian import
 
 The owner's vault export lives in `References/` (**gitignored, private**). It's the
-source for seeding the archive: `pnpm --filter admin db:seed
-../../References/.import/archive-import.json` (or Settings → Import).
+source for seeding the archive.
+
+> **On hold (2026-10-14):** the importer still writes the v1 export format, which
+> the database no longer imports. The owner wants to rework the import before
+> using it; it must produce export v2 (one array per work table, see
+> `docs/data-model.md`), then load with `db:seed` + `db:backfill-details`.
 
 ## Run
 

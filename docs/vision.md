@@ -10,26 +10,27 @@ about it. Until now the data lived in an Obsidian vault (one note per item).
 
 ## Decisions (with reasons)
 
-| Topic               | Decision                                                                                                                                        | Why                                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Admin app           | Separate app at **archive.guilhermevictor.me**, not inside the Next.js site                                                                     | Needs auth, offline, forms; the site stays a read-only consumer                            |
-| Stack               | TanStack Start + Router/Query/Form/Table, shadcn/ui on **Base UI**, Tailwind v4, Zod                                                            | Owner wanted to try TanStack; Base UI for native-feeling primitives (Drawer, Combobox)     |
-| Repo                | pnpm + Turborepo monorepo (`apps/admin`, `packages/schemas`, `packages/ui`)                                                                     | Schemas shared with the future API                                                         |
-| Backend             | Postgres (Neon free tier) + Drizzle (standard `pg` driver), Better Auth (passkey/GitHub, single user, API-key plugin for the website)           | Budget **under $5/month**, managed now but **portable to a VPS** (no Vercel-only features) |
-| API shape           | Server functions for the app; read-only `/api/v1/*` (API key) for the website, both inside the admin app                                        | One deployable; no separate API service                                                    |
-| Hosting             | Vercel Hobby + Neon free (São Paulo), Nitro build that also runs as a plain Node server                                                         | $0/month; a VPS later is `pnpm start` behind a proxy                                       |
-| Website access      | Private API key, called server-side only                                                                                                        | Data isn't public by default                                                               |
-| Images              | Hotlink provider CDNs (TMDB/IGDB/Open Library/Discogs); store ids/paths only                                                                    | No R2 for now; can backfill later from stored ids                                          |
-| Ratings             | 5 stars **with halves**, stored 1–10                                                                                                            | Avoids a migration if half stars change                                                    |
-| Logs                | Many logs per work, each with its own rating/date                                                                                               | Rewatches and changing opinions are part of the history                                    |
-| Dates               | Optional on every log                                                                                                                           | Imported history has no dates ("Date unknown")                                             |
-| Shows               | Log per season **or** the whole show (`show` log)                                                                                               | Vault rates whole shows                                                                    |
-| Backlog             | One global backlog for all kinds (no separate wishlist); logging/owning removes the item                                                        | Owner's call                                                                               |
-| Records             | Collection of owned copies (Goldmine grades, price, store…), imported from Discogs once (re-runnable), then the archive owns it; plays are logs | Discogs is just metadata, like TMDB                                                        |
-| Games time          | `hoursPlayed` is what the owner types; IGDB "time to beat" is only an estimate shown next to it                                                 | Vault `playtime` was a HowLongToBeat estimate → ignored                                    |
-| Flights             | Own records (no provider), local times + airport timezones                                                                                      | Correct durations across timezones/DST                                                     |
-| AI                  | Not in v1 (later: MCP server over the API)                                                                                                      | Scope                                                                                      |
-| Obsidian categories | Import only Movies, Shows, Games, Books, Records, Flights. Videos, Websites, Places, Coding, Languages, People stay in Obsidian                 | Owner's call                                                                               |
+| Topic                 | Decision                                                                                                                                                                                                       | Why                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Admin app             | Separate app at **archive.guilhermevictor.me**, not inside the Next.js site                                                                                                                                    | Needs auth, offline, forms; the site stays a read-only consumer                            |
+| Stack                 | TanStack Start + Router/Query/Form/Table, shadcn/ui on **Base UI**, Tailwind v4, Zod                                                                                                                           | Owner wanted to try TanStack; Base UI for native-feeling primitives (Drawer, Combobox)     |
+| Repo                  | pnpm + Turborepo monorepo (`apps/admin`, `packages/schemas`, `packages/ui`)                                                                                                                                    | Schemas shared with the future API                                                         |
+| Backend               | Postgres (Neon free tier) + Drizzle (standard `pg` driver), Better Auth (passkey/GitHub, single user)                                                                                                          | Budget **under $5/month**, managed now but **portable to a VPS** (no Vercel-only features) |
+| API shape             | Server functions only; no public API until a client needs one (API keys removed 2026-10-14)                                                                                                                    | One deployable; nothing to secure that isn't used                                          |
+| Tables                | One table per kind (movies, shows, games, books, records = one row per copy) with provider `data` jsonb + query columns; one log table per kind; backlog is a flag on the work row; plays only on owned copies | Simple, separated entities; real FKs; easy SQL                                             |
+| Hosting               | Vercel Hobby + Neon free (São Paulo), Nitro build that also runs as a plain Node server                                                                                                                        | $0/month; a VPS later is `pnpm start` behind a proxy                                       |
+| Provider independence | Store trimmed provider details per archived work (en-US, full cast); provider first, stored copy as fallback; no user edits for now                                                                            | Pages keep working without TMDB/IGDB; search stays provider-dependent                      |
+| Images                | Hotlink provider CDNs (TMDB/IGDB/Open Library/Discogs); store ids/paths only                                                                                                                                   | No R2 for now; can backfill later from stored ids                                          |
+| Ratings               | 5 stars **with halves**, stored 1–10                                                                                                                                                                           | Avoids a migration if half stars change                                                    |
+| Logs                  | Many logs per work, each with its own rating/date                                                                                                                                                              | Rewatches and changing opinions are part of the history                                    |
+| Dates                 | Optional on every log                                                                                                                                                                                          | Imported history has no dates ("Date unknown")                                             |
+| Shows                 | Log per season **or** the whole show (`show` log)                                                                                                                                                              | Vault rates whole shows                                                                    |
+| Backlog               | One global backlog for all kinds (no separate wishlist); logging/owning removes the item                                                                                                                       | Owner's call                                                                               |
+| Records               | Collection of owned copies (Goldmine grades, price, store…), imported from Discogs once (re-runnable), then the archive owns it; plays are logs                                                                | Discogs is just metadata, like TMDB                                                        |
+| Games time            | `hoursPlayed` is what the owner types; IGDB "time to beat" is only an estimate shown next to it                                                                                                                | Vault `playtime` was a HowLongToBeat estimate → ignored                                    |
+| Flights               | Own records (no provider), local times + airport timezones                                                                                                                                                     | Correct durations across timezones/DST                                                     |
+| AI                    | Not in v1 (later: MCP server over the API)                                                                                                                                                                     | Scope                                                                                      |
+| Obsidian categories   | Import only Movies, Shows, Games, Books, Records, Flights. Videos, Websites, Places, Coding, Languages, People stay in Obsidian                                                                                | Owner's call                                                                               |
 
 ## Status
 
@@ -44,17 +45,20 @@ Done (frontend phase):
 
 Done (backend phase, 2026-10-14; runs locally, see `docs/backend.md`):
 
-- Postgres + Drizzle schema and migrations; server-function repository replacing
-  localStorage; lossless round trip of the Obsidian import (`db:seed`)
+- Postgres + Drizzle: one table per kind with provider `data`, per-kind log tables,
+  flights, SQL views `all_logs`/`all_backlog`; server-function repository
+  replacing localStorage; export/import v2
 - Better Auth: GitHub + passkeys, single owner (`OWNER_EMAIL`), sessions, CSRF check
-- Read-only `/api/v1` for the website with API keys managed in Settings
 - Nitro build (Vercel or plain Node), daily `pg_dump` GitHub Action
+- Stored provider details (full cast), so pages work when a provider is down;
+  external ids (IMDb, Steam…, ISBNs, barcodes) kept for portability
 
 Next:
 
-1. **Deploy**: Neon + Vercel + GitHub OAuth app + domain (checklist in
-   `docs/backend.md`), then seed production and create the website's API key.
-2. Website: read `/api/v1` from the Next.js site.
+1. Test the system from scratch locally (owner), then **deploy**: Neon + Vercel +
+   GitHub OAuth app + domain (checklist in `docs/backend.md`).
+2. Rework the Obsidian importer to produce export v2.
+3. Website: add a read API when the Next.js site needs it.
 
 Later ideas (agreed or discussed): Stremio addon (add/log from Stremio), MCP server
 for AI questions, Steam import for real hours played, barcode scanning (ISBN,

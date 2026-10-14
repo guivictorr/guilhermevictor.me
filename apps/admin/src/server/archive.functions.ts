@@ -10,13 +10,16 @@ import {
   MediaType,
 } from "@workspace/schemas"
 import { z } from "zod"
-import { migrateExport } from "@/lib/repo/derive"
+import { mediaTypeOf } from "@/lib/repo/log-utils"
 import { pgRepository as repo } from "./archive.server"
 import { requireOwner } from "./auth.functions"
+import { ensureDetails, ensureSeasonDetails } from "./details.server"
 
 /*
  * RPCs behind `remoteRepository` (src/lib/repo). One per repository method;
- * all of them require the owner's session.
+ * all of them require the owner's session. Works entering the archive get
+ * their provider details stored (details.server.ts); a provider failure
+ * there never fails the write.
  */
 
 const Id = z.object({ id: z.uuid() })
@@ -56,7 +59,13 @@ export const listRecentFn = createServerFn({ method: "GET" })
 export const addLogFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
   .validator(z.object({ input: LogInput, item: ItemInput }))
-  .handler(({ data }) => repo.addLog(data.input, data.item))
+  .handler(async ({ data }) => {
+    const log = await repo.addLog(data.input, data.item)
+    await ensureDetails(mediaTypeOf(data.input), data.input.mediaId)
+    if (data.input.kind === "season")
+      await ensureSeasonDetails(data.input.mediaId, data.input.seasonNumber)
+    return log
+  })
 
 export const updateLogFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
@@ -75,7 +84,10 @@ export const listBacklogFn = createServerFn({ method: "GET" })
 export const addToBacklogFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
   .validator(ItemInput)
-  .handler(({ data }) => repo.addToBacklog(data))
+  .handler(async ({ data }) => {
+    await repo.addToBacklog(data)
+    await ensureDetails(data.type, data.id)
+  })
 
 export const removeFromBacklogFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
@@ -97,7 +109,11 @@ export const listCollectionFn = createServerFn({ method: "GET" })
 export const addCollectionItemFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
   .validator(z.object({ snapshot: Snapshot, input: CollectionItemInput }))
-  .handler(({ data }) => repo.addCollectionItem(data.snapshot, data.input))
+  .handler(async ({ data }) => {
+    const copy = await repo.addCollectionItem(data.snapshot, data.input)
+    await ensureDetails("record", copy.releaseId)
+    return copy
+  })
 
 export const updateCollectionItemFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
@@ -139,8 +155,7 @@ export const exportAllFn = createServerFn({ method: "GET" })
 
 export const importAllFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
-  // Old exports are upgraded before validation.
-  .validator((raw: ArchiveExport) => ArchiveExport.parse(migrateExport(raw)))
+  .validator(ArchiveExport)
   .handler(({ data }) => repo.importAll(data))
 
 export const clearFn = createServerFn({ method: "POST" })

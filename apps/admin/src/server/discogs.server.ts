@@ -269,10 +269,15 @@ export async function fetchRelease(id: number): Promise<Release> {
     series: (r.series ?? []).map((s) =>
       s.catno ? `${cleanName(s.name)} – ${s.catno}` : cleanName(s.name)
     ),
-    videos: (r.videos ?? []).flatMap((v) => {
-      const key = youtubeKey(v.uri)
-      return key ? [{ key, name: v.title ?? "Video" }] : []
-    }),
+    // Discogs sometimes lists the same video more than once.
+    videos: [
+      ...new Map(
+        (r.videos ?? []).flatMap((v) => {
+          const key = youtubeKey(v.uri)
+          return key ? [[key, { key, name: v.title ?? "Video" }] as const] : []
+        })
+      ).values(),
+    ],
     providerRating:
       rating && rating.count > 0
         ? { source: "discogs", value: rating.average, count: rating.count }

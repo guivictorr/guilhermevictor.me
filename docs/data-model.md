@@ -2,7 +2,7 @@
 
 Source of truth: `packages/schemas/src/` (Zod). The Postgres tables
 (`apps/admin/src/server/db/schema.ts`, see `docs/backend.md`) map to these shapes;
-the export file format and `/api/v1` responses depend on them.
+the export file format depends on them.
 
 ## Kinds and ids
 
@@ -35,14 +35,16 @@ else finished, else started, else undefined.
 
 ## Library items, backlog
 
-- `LibraryItem`: denormalized snapshot (title, subtitle, year, poster, genres,
-  addedAt) saved when a work is **first logged**, so library screens render without
-  providers. Only logged works are library items.
-- `BacklogItem`: same shape, any kind. Logging a work or owning a record removes it.
+- `LibraryItem`: what library screens show (title, subtitle, year, poster, genres),
+  built from the work's row. Only works with logs appear in the library.
+- `BacklogItem`: same shape, any kind; a work row with `backlog_added_at` set.
+  Logging a work or owning a record removes it from the backlog.
+- Record plays (`kind: "record"`) carry `copyId`, the owned copy that was played.
 
 ## Collection (`collection.ts`)
 
-`CollectionItem` = one physical copy of a record (you can own several of a release):
+`CollectionItem` = one physical copy of a record, i.e. a row in `records` (you can
+own several of a release, each its own row):
 `mediaCondition?`/`sleeveCondition?` (Goldmine: M, NM, VG+, VG, G+, G, F, P),
 `variant?`, `acquiredAt?`, `price?` ({amount, currency}), `store?`, `notes?`,
 `rating?`, `folder?`, `discogsInstanceId?` (makes Discogs re-imports idempotent),
@@ -64,7 +66,9 @@ are full signed URLs; Open Library uses cover ids (`author:<id>` for author phot
 
 ## Export format
 
-`ArchiveExport` v1: `{ version: 1, exportedAt, items, logs, backlog, collection, flights }`.
-Newer arrays default to `[]`, so older exports still import. Settings → Import and
-`db:seed` **replace** the archive (not accounts/API keys). The Obsidian importer
-produces this same format.
+`ArchiveExport` v2 (`archive.ts`): `{ version: 2, exportedAt, movies, shows, games,
+books, records, logs, flights }`. Each work row carries its provider `data`, so an
+export is self-contained. Settings → Import and `db:seed` **replace** the archive
+(never your account). `LegacyArchiveExport` (v1, pre-database) is only read for
+data left in the browser; the Obsidian importer still writes v1 and must move to
+v2 before its output can be imported.

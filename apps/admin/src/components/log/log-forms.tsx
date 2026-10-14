@@ -323,15 +323,20 @@ export function BookLogForm({
   )
 }
 
+/** Plays go on a copy you own; the picker only shows when you own several. */
 export function RecordLogForm({
   mediaId,
+  copies,
   initial,
   onSubmit,
   submitLabel,
-}: FormProps<RecordLog>) {
+}: FormProps<RecordLog> & {
+  copies: Array<{ value: string; label: string }>
+}) {
   const defaultValues: z.input<typeof RecordLogInput> = {
     kind: "record",
     mediaId,
+    copyId: initial?.copyId ?? copies[0]?.value ?? "",
     playedAt: initial ? initial.playedAt : today(),
     rating: initial?.rating,
     notes: initial?.notes,
@@ -344,6 +349,11 @@ export function RecordLogForm({
 
   return (
     <FormShell onSubmit={form.handleSubmit}>
+      {copies.length > 1 ? (
+        <form.AppField name="copyId">
+          {(f) => <f.SelectField label="Copy" options={copies} />}
+        </form.AppField>
+      ) : null}
       <form.AppField name="playedAt">
         {(f) => <f.DateField label="Listened on" optional max={today()} />}
       </form.AppField>
