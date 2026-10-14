@@ -12,7 +12,8 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "generate-pwa-assets": "pwa-assets-generator",
-    "build-airports": "node scripts/build-airports.mjs"
+    "build-airports": "node scripts/build-airports.mjs",
+    "import-obsidian": "tsx scripts/import-obsidian.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4",
@@ -52,6 +53,7 @@
     "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-react": "^6",
     "eslint": "^10",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.2",
     "vite": "^8"
   }
