@@ -21,8 +21,8 @@ import type {
 export const mediaKey = (target: LogTarget) => `${target.type}:${target.id}`
 
 /*
- * Archive data is client-only for now (localStorage), so these queries are
- * never prefetched in loaders — they resolve after hydration.
+ * Archive data comes from server functions (Postgres). Queries aren't
+ * prefetched in loaders, so pages render their skeletons first.
  */
 
 export const archiveKeys = {

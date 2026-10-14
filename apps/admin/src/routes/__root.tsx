@@ -4,6 +4,8 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  redirect,
+  useRouterState,
 } from "@tanstack/react-router"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
@@ -11,10 +13,24 @@ import { ThemeProvider } from "next-themes"
 import { AppShell } from "@/components/app-shell"
 import { PwaRegister } from "@/components/pwa-register"
 import { ThemeColorSync } from "@/components/theme-color-sync"
+import { viewerQuery } from "@/queries/auth"
 import appCss from "@/styles/app.css?url"
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
+    // UX only: every server function checks the session itself.
+    beforeLoad: async ({ context, location }) => {
+      if (location.pathname === "/login") return
+      let viewer
+      try {
+        viewer = await context.queryClient.ensureQueryData(viewerQuery())
+      } catch {
+        // Offline (PWA): let the cached shell render instead of bouncing.
+        return
+      }
+      if (!viewer)
+        throw redirect({ to: "/login", search: { redirect: location.href } })
+    },
     head: () => ({
       meta: [
         { charSet: "utf-8" },
@@ -60,6 +76,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 )
 
 function RootComponent() {
+  const bare = useRouterState({
+    select: (s) => s.location.pathname === "/login",
+  })
+  if (bare) return <Outlet />
   return (
     <AppShell>
       <Outlet />

@@ -76,7 +76,7 @@ export type ArchiveStats = {
 
 /**
  * The only way the UI touches persisted archive data.
- * `localRepository` backs it today; an API client will implement it next.
+ * `remoteRepository` (server functions → Postgres) implements it.
  */
 export interface ArchiveRepository {
   listLibrary: (type: MediaType) => Promise<Array<LibraryEntry>>

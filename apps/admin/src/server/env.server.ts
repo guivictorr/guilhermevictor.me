@@ -33,3 +33,18 @@ export const getDiscogsEnv = () => readEnv(DiscogsEnv)
 /** Optional: only used to fill missing book descriptions. */
 export const getGoogleBooksKey = () =>
   process.env.GOOGLE_BOOKS_KEY?.trim() || undefined
+
+const DatabaseEnv = z.object({ DATABASE_URL: z.url() })
+
+export const getDatabaseUrl = () => readEnv(DatabaseEnv).DATABASE_URL
+
+const AuthEnv = z.object({
+  BETTER_AUTH_SECRET: z.string().min(32),
+  BETTER_AUTH_URL: z.url(),
+  GITHUB_CLIENT_ID: z.string().min(1),
+  GITHUB_CLIENT_SECRET: z.string().min(1),
+  /** The only account allowed to sign in (comma-separate to allow more). */
+  OWNER_EMAIL: z.string().min(3),
+})
+
+export const getAuthEnv = () => readEnv(AuthEnv)

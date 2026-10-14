@@ -5,14 +5,18 @@ reads, collects and flies — movies, shows (per season or whole show), games,
 books, vinyl records and flights. Replaces Letterboxd/IMDb-style services: the
 data must stay fully owned and portable (export/import as JSON at any time).
 
-Current phase: **admin PWA frontend done**, data stored in the browser
-(`localStorage`) behind a repository interface. **Next phase: API + Postgres +
-hosting**, then seed the DB from the Obsidian import. Details in `docs/`.
+Current phase: **backend done locally**. The admin PWA stores everything in Postgres
+(Drizzle) through server functions, with Better Auth (GitHub + passkeys, single
+user) and a read-only `/api/v1` for the personal website (API keys). **Next: deploy**
+(Vercel + Neon, see `docs/backend.md`). Details in `docs/`.
 
 ## Commands
 
 ```bash
 pnpm install
+docker compose up -d                       # local Postgres on :5433
+pnpm --filter admin db:migrate             # apply migrations (db:generate after schema edits)
+pnpm --filter admin db:seed <export.json>  # load an export / the Obsidian import (--replace)
 pnpm dev                                   # admin app on http://localhost:3000 (LAN too)
 pnpm typecheck                             # all packages (turbo)
 pnpm lint
@@ -33,11 +37,15 @@ apps/admin/          TanStack Start PWA (the only app so far)
   src/routes/        file-based routes (movies, shows/$id/seasons/$season, games, books,
                      records, flights, search, backlog, stats, settings)
   src/server/        *.server.ts provider clients + media.functions.ts (createServerFn RPCs)
-  src/lib/repo/      ArchiveRepository interface + localRepository (localStorage mock)
+                     archive.server.ts (Postgres repo), archive.functions.ts, auth.server.ts,
+                     auth.functions.ts (requireOwner), db/ (Drizzle schema + client)
+  src/routes/api/    auth/$ (Better Auth handler), v1/$ (read-only API for the website)
+  src/lib/repo/      ArchiveRepository interface, remoteRepository, derive.ts (stats/library)
+  drizzle/           SQL migrations (generated)
   src/lib/           media-kinds.ts (kind registry), images, flight-math, airports, format…
   src/queries/       TanStack Query options/mutations (media.ts = providers, archive.ts = repo)
   src/components/    app components (detail-layout, log/, media/, records/, flights/, form/)
-  scripts/           import-obsidian.ts, build-airports.mjs
+  scripts/           import-obsidian.ts, seed.ts, build-airports.mjs
   public/            sw.js (hand-written), manifest, icons, data/airports.json
 packages/schemas/    Zod schemas = the data contract (shared with the future API)
 packages/ui/         shadcn/ui on Base UI (import as @workspace/ui/components/*)
@@ -64,8 +72,8 @@ docs/                project documentation (start at docs/README.md)
 - **Kinds are centralized** in `src/lib/media-kinds.ts` (`KINDS`, `KIND_ORDER`,
   `LIBRARY_SECTIONS`). Adding a `MediaType` makes TypeScript flag every place that
   needs handling — follow the errors. See `docs/architecture.md#adding-a-kind`.
-- UI talks to data only through `src/queries/*` → `repo` (never localStorage directly),
-  so swapping `localRepository` for an API client won't touch screens.
+- UI talks to data only through `src/queries/*` → `repo` → server functions. Every
+  server function must use the `requireOwner` middleware (route guards are only UX).
 - Provider responses are normalized at the edge into `@workspace/schemas` types;
   images are stored as `{ provider, path }`, never full URLs (except Discogs, whose
   URLs are signed).
@@ -86,3 +94,10 @@ headless Chromium (Playwright browsers are installed under
 `~/.cache/ms-playwright/chromium-*/`; use `playwright-core` from the scratchpad).
 For provider-dependent screens without keys, point a temporary env override at a
 local mock server — and **revert the override before finishing**.
+
+Signed-in testing without GitHub: run your server with env overrides
+(`DATABASE_URL`, `BETTER_AUTH_*`, `OWNER_EMAIL`), create a user + session with
+`auth.$context` → `internalAdapter.createSession()`, and send the cookie
+`better-auth.session_token=<token>.<base64 HMAC-SHA256(secret, token)>`.
+`auth.api.createApiKey({ body: { userId } })` makes an API key. Delete test
+users/keys and re-seed (`--replace`) afterwards.

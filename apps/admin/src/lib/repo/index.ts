@@ -1,8 +1,7 @@
-import { localRepository } from "./local-repository"
+import { remoteRepository } from "./remote-repository"
 import type { ArchiveRepository } from "./types"
 
-/** Swap this for the API-backed repository once the backend exists. */
-export const repo: ArchiveRepository = localRepository
+export const repo: ArchiveRepository = remoteRepository
 
 export * from "./types"
 export * from "./log-utils"

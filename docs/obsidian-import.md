@@ -1,7 +1,8 @@
 # Obsidian import
 
 The owner's vault export lives in `References/` (**gitignored, private**). It's the
-source for seeding the archive: today via Settings → Import, later to seed the DB.
+source for seeding the archive: `pnpm --filter admin db:seed
+../../References/.import/archive-import.json` (or Settings → Import).
 
 ## Run
 

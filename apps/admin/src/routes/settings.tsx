@@ -11,12 +11,17 @@ import {
 } from "@workspace/ui/components/field"
 import { DownloadIcon, Trash2Icon, UploadIcon } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { BackButton } from "@/components/detail-layout"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { SegmentedControl } from "@/components/segmented-control"
+import { AccountSettings } from "@/components/settings/account-settings"
 import { repo } from "@/lib/repo"
+import {
+  clearLegacyLocalData,
+  readLegacyLocalData,
+} from "@/lib/repo/legacy-local"
 import { useClearArchive, useImportArchive } from "@/queries/archive"
 
 export const Route = createFileRoute("/settings")({
@@ -38,18 +43,22 @@ function SettingsPage() {
 
   async function handleExport() {
     const data = await repo.exportAll()
+    download(data)
+    toast.success("Export ready", {
+      description: `${data.logs.length} logs, ${data.items.length} items`,
+    })
+  }
+
+  function download(data: ArchiveExport, name = "archive") {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `archive-${data.exportedAt.slice(0, 10)}.json`
+    a.download = `${name}-${data.exportedAt.slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
-    toast.success("Export ready", {
-      description: `${data.logs.length} logs, ${data.items.length} items`,
-    })
   }
 
   async function handleImport(file: File) {
@@ -69,13 +78,17 @@ function SettingsPage() {
   async function handleClear() {
     if (
       !window.confirm(
-        "Delete all logs stored in this browser? Export first if you want a copy."
+        "Delete EVERYTHING in the archive (logs, backlog, collection, flights)? This can't be undone. Export first."
       )
     )
       return
     await clearArchive.mutateAsync()
     toast("Archive cleared")
   }
+
+  // Data from before the server existed, still in this browser.
+  const [legacy, setLegacy] = useState<ArchiveExport>()
+  useEffect(() => setLegacy(readLegacyLocalData()), [])
 
   return (
     <>
@@ -102,6 +115,10 @@ function SettingsPage() {
 
           <FieldSeparator />
 
+          <AccountSettings />
+
+          <FieldSeparator />
+
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel>Export data</FieldLabel>
@@ -119,7 +136,7 @@ function SettingsPage() {
             <FieldContent>
               <FieldLabel>Import data</FieldLabel>
               <FieldDescription>
-                Restore from an export. Replaces what's stored here.
+                Restore from an export. Replaces everything in the archive.
               </FieldDescription>
             </FieldContent>
             <Button
@@ -148,17 +165,61 @@ function SettingsPage() {
 
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel>Clear local data</FieldLabel>
+              <FieldLabel>Delete everything</FieldLabel>
               <FieldDescription>
-                Logs are stored in this browser until the API exists. This
-                deletes them.
+                Empties the archive on the server. Your account and API keys
+                stay.
               </FieldDescription>
             </FieldContent>
-            <Button variant="destructive" size="lg" onClick={handleClear}>
+            <Button
+              variant="destructive"
+              size="lg"
+              onClick={handleClear}
+              disabled={clearArchive.isPending}
+            >
               <Trash2Icon />
-              Clear
+              Delete
             </Button>
           </Field>
+
+          {legacy ? (
+            <>
+              <FieldSeparator />
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel>Data in this browser</FieldLabel>
+                  <FieldDescription>
+                    {legacy.logs.length} logs saved here before the server
+                    existed. Download them, then import the file above if you
+                    want them back.
+                  </FieldDescription>
+                </FieldContent>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => download(legacy, "archive-browser")}
+                  >
+                    <DownloadIcon />
+                    Download
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
+                    aria-label="Delete browser data"
+                    onClick={() => {
+                      if (!window.confirm("Delete the copy in this browser?"))
+                        return
+                      clearLegacyLocalData()
+                      setLegacy(undefined)
+                    }}
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </div>
+              </Field>
+            </>
+          ) : null}
         </FieldGroup>
       </PageBody>
     </>

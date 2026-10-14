@@ -16,6 +16,6 @@ export default [
     },
   },
   {
-    ignores: ["eslint.config.js", ".prettierrc", "public/**", "dist/**", "pwa-assets.config.ts"],
+    ignores: ["eslint.config.js", ".prettierrc", "public/**", "dist/**", ".output/**", ".vercel/**", "drizzle/**", "pwa-assets.config.ts"],
   },
 ]

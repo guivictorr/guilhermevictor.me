@@ -1,0 +1,36 @@
+# Daily pg_dump of the production database, kept as a workflow artifact for
+# 90 days. Needs the DATABASE_URL repository secret (Settings → Secrets →
+# Actions); skipped until it exists. Restore with:
+#   pg_restore --clean --if-exists --no-owner -d "$DATABASE_URL" archive.dump
+name: Backup database
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Dump
+        if: env.DATABASE_URL != ''
+        # pg_dump must be at least the server's major version.
+        run: |
+          docker run --rm -e DATABASE_URL postgres:18-alpine \
+            sh -c 'pg_dump --format=custom --no-owner --no-privileges "$DATABASE_URL"' > archive.dump
+          ls -lh archive.dump
+          test -s archive.dump
+
+      - name: Upload
+        if: env.DATABASE_URL != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-${{ github.run_number }}
+          path: archive.dump
+          retention-days: 90

@@ -2,6 +2,7 @@ import { notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { MediaType } from "@workspace/schemas"
 import { z } from "zod"
+import { requireOwner } from "./auth.functions"
 import { cached } from "./cache.server"
 import {
   fetchCollectionValue,
@@ -29,12 +30,14 @@ import {
 
 /*
  * Provider API keys never leave the server: every provider call goes
- * through these RPCs, which return our normalized schemas.
+ * through these RPCs, which return our normalized schemas. They require the
+ * owner's session so nobody else can spend the provider quotas.
  */
 
 const Id = z.object({ id: z.number().int().positive() })
 
 export const searchMedia = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(
     z.object({ type: MediaType, query: z.string().trim().min(1).max(200) })
   )
@@ -52,18 +55,22 @@ export const searchMedia = createServerFn({ method: "GET" })
   })
 
 export const getMovie = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(({ data }) => fetchMovie(data.id))
 
 export const getShow = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(({ data }) => fetchShow(data.id))
 
 export const getSeason = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id.extend({ season: z.number().int().min(0) }))
   .handler(({ data }) => fetchSeason(data.id, data.season))
 
 export const getGame = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(async ({ data }) => {
     const game = await fetchGame(data.id)
@@ -72,6 +79,7 @@ export const getGame = createServerFn({ method: "GET" })
   })
 
 export const getCollection = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(({ data }) => fetchCollection(data.id))
 
@@ -79,6 +87,7 @@ const TRENDING_TTL = 1000 * 60 * 60 * 6
 
 /** Popular right now, per media type. Cached on the server for 6 hours. */
 export const getTrending = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(z.object({ type: MediaType }))
   .handler(({ data }) => {
     // Discogs has no trending endpoint; the UI shows your collection instead.
@@ -97,32 +106,37 @@ export const getTrending = createServerFn({ method: "GET" })
   })
 
 export const getRelease = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(({ data }) => fetchRelease(data.id))
 
 /** Reads your whole Discogs collection; the client merges it locally. */
-export const importDiscogsCollection = createServerFn({
-  method: "POST",
-}).handler(() => fetchDiscogsCollection())
+export const importDiscogsCollection = createServerFn({ method: "POST" })
+  .middleware([requireOwner])
+  .handler(() => fetchDiscogsCollection())
 
-export const getCollectionValue = createServerFn({ method: "GET" }).handler(
-  () => cached("discogs:value", 1000 * 60 * 60, fetchCollectionValue)
-)
+export const getCollectionValue = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
+  .handler(() => cached("discogs:value", 1000 * 60 * 60, fetchCollectionValue))
 
 export const getMaster = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(({ data }) => fetchMaster(data.id))
 
 export const getBook = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(Id)
   .handler(({ data }) => fetchBook(data.id))
 
 const AuthorKey = z.object({ key: z.string().regex(/^OL\d+A$/) })
 
 export const getAuthor = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(AuthorKey)
   .handler(({ data }) => fetchAuthor(data.key))
 
 export const getAuthorWorks = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
   .validator(AuthorKey)
   .handler(({ data }) => fetchAuthorWorks(data.key))

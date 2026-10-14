@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BacklogRouteImport } from './routes/backlog'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
@@ -25,6 +26,8 @@ import { Route as MoviesIdRouteImport } from './routes/movies/$id'
 import { Route as RecordsIndexRouteImport } from './routes/records/index'
 import { Route as RecordsIdRouteImport } from './routes/records/$id'
 import { Route as ShowsIndexRouteImport } from './routes/shows/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 import { Route as ShowsIdIndexRouteImport } from './routes/shows/$id/index'
 import { Route as ShowsIdSeasonsSeasonRouteImport } from './routes/shows/$id/seasons/$season'
 
@@ -36,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
 const BacklogRoute = BacklogRouteImport.update({
   id: '/backlog',
   path: '/backlog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -108,6 +116,16 @@ const ShowsIndexRoute = ShowsIndexRouteImport.update({
   path: '/shows/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
+  id: '/api/v1/$',
+  path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShowsIdIndexRoute = ShowsIdIndexRouteImport.update({
   id: '/shows/$id/',
   path: '/shows/$id/',
@@ -122,6 +140,7 @@ const ShowsIdSeasonsSeasonRoute = ShowsIdSeasonsSeasonRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/backlog': typeof BacklogRoute
+  '/login': typeof LoginRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -136,12 +155,15 @@ export interface FileRoutesByFullPath {
   '/movies/': typeof MoviesIndexRoute
   '/records/': typeof RecordsIndexRoute
   '/shows/': typeof ShowsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/shows/$id/': typeof ShowsIdIndexRoute
   '/shows/$id/seasons/$season': typeof ShowsIdSeasonsSeasonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/backlog': typeof BacklogRoute
+  '/login': typeof LoginRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -156,6 +178,8 @@ export interface FileRoutesByTo {
   '/movies': typeof MoviesIndexRoute
   '/records': typeof RecordsIndexRoute
   '/shows': typeof ShowsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/shows/$id': typeof ShowsIdIndexRoute
   '/shows/$id/seasons/$season': typeof ShowsIdSeasonsSeasonRoute
 }
@@ -163,6 +187,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/backlog': typeof BacklogRoute
+  '/login': typeof LoginRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -177,6 +202,8 @@ export interface FileRoutesById {
   '/movies/': typeof MoviesIndexRoute
   '/records/': typeof RecordsIndexRoute
   '/shows/': typeof ShowsIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/shows/$id/': typeof ShowsIdIndexRoute
   '/shows/$id/seasons/$season': typeof ShowsIdSeasonsSeasonRoute
 }
@@ -185,6 +212,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/backlog'
+    | '/login'
     | '/search'
     | '/settings'
     | '/stats'
@@ -199,12 +227,15 @@ export interface FileRouteTypes {
     | '/movies/'
     | '/records/'
     | '/shows/'
+    | '/api/auth/$'
+    | '/api/v1/$'
     | '/shows/$id/'
     | '/shows/$id/seasons/$season'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/backlog'
+    | '/login'
     | '/search'
     | '/settings'
     | '/stats'
@@ -219,12 +250,15 @@ export interface FileRouteTypes {
     | '/movies'
     | '/records'
     | '/shows'
+    | '/api/auth/$'
+    | '/api/v1/$'
     | '/shows/$id'
     | '/shows/$id/seasons/$season'
   id:
     | '__root__'
     | '/'
     | '/backlog'
+    | '/login'
     | '/search'
     | '/settings'
     | '/stats'
@@ -239,6 +273,8 @@ export interface FileRouteTypes {
     | '/movies/'
     | '/records/'
     | '/shows/'
+    | '/api/auth/$'
+    | '/api/v1/$'
     | '/shows/$id/'
     | '/shows/$id/seasons/$season'
   fileRoutesById: FileRoutesById
@@ -246,6 +282,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BacklogRoute: typeof BacklogRoute
+  LoginRoute: typeof LoginRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
@@ -260,6 +297,8 @@ export interface RootRouteChildren {
   MoviesIndexRoute: typeof MoviesIndexRoute
   RecordsIndexRoute: typeof RecordsIndexRoute
   ShowsIndexRoute: typeof ShowsIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiV1SplatRoute: typeof ApiV1SplatRoute
   ShowsIdIndexRoute: typeof ShowsIdIndexRoute
   ShowsIdSeasonsSeasonRoute: typeof ShowsIdSeasonsSeasonRoute
 }
@@ -278,6 +317,13 @@ declare module '@tanstack/react-router' {
       path: '/backlog'
       fullPath: '/backlog'
       preLoaderRoute: typeof BacklogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -378,6 +424,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShowsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/$': {
+      id: '/api/v1/$'
+      path: '/api/v1/$'
+      fullPath: '/api/v1/$'
+      preLoaderRoute: typeof ApiV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shows/$id/': {
       id: '/shows/$id/'
       path: '/shows/$id'
@@ -398,6 +458,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BacklogRoute: BacklogRoute,
+  LoginRoute: LoginRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
@@ -412,6 +473,8 @@ const rootRouteChildren: RootRouteChildren = {
   MoviesIndexRoute: MoviesIndexRoute,
   RecordsIndexRoute: RecordsIndexRoute,
   ShowsIndexRoute: ShowsIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiV1SplatRoute: ApiV1SplatRoute,
   ShowsIdIndexRoute: ShowsIdIndexRoute,
   ShowsIdSeasonsSeasonRoute: ShowsIdSeasonsSeasonRoute,
 }
@@ -420,10 +483,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

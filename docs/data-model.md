@@ -1,7 +1,8 @@
 # Data model
 
-Source of truth: `packages/schemas/src/` (Zod). The future API/DB must keep these
-shapes (or map to them); the export file format depends on them.
+Source of truth: `packages/schemas/src/` (Zod). The Postgres tables
+(`apps/admin/src/server/db/schema.ts`, see `docs/backend.md`) map to these shapes;
+the export file format and `/api/v1` responses depend on them.
 
 ## Kinds and ids
 
@@ -64,5 +65,6 @@ are full signed URLs; Open Library uses cover ids (`author:<id>` for author phot
 ## Export format
 
 `ArchiveExport` v1: `{ version: 1, exportedAt, items, logs, backlog, collection, flights }`.
-Newer arrays default to `[]`, so older exports still import. Settings → Import
-**replaces** local data. The Obsidian importer produces this same format.
+Newer arrays default to `[]`, so older exports still import. Settings → Import and
+`db:seed` **replace** the archive (not accounts/API keys). The Obsidian importer
+produces this same format.
