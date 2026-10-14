@@ -8,6 +8,13 @@
       "when": 1792001854633,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792004390403,
+      "tag": "0001_discogs_instance_bigint",
+      "breakpoints": true
     }
   ]
 }

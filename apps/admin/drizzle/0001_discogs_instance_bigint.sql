@@ -1,0 +1,1 @@
+ALTER TABLE "records" ALTER COLUMN "discogs_instance_id" SET DATA TYPE bigint;

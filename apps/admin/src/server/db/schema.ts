@@ -9,6 +9,7 @@ import type {
 } from "@workspace/schemas"
 import { sql } from "drizzle-orm"
 import {
+  bigint,
   boolean,
   check,
   date,
@@ -185,7 +186,10 @@ export const records = pgTable(
     rating: rating(),
     folder: text("folder"),
     /** Set when imported from Discogs; makes re-imports idempotent. */
-    discogsInstanceId: integer("discogs_instance_id").unique(),
+    // Discogs instance ids already exceed 32-bit integers.
+    discogsInstanceId: bigint("discogs_instance_id", {
+      mode: "number",
+    }).unique(),
     backlogAddedAt: tz("backlog_added_at"),
     addedAt: tz("added_at").notNull().defaultNow(),
     updatedAt: tz("updated_at").notNull().defaultNow(),
