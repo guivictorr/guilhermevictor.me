@@ -8,7 +8,12 @@ import {
 } from "@workspace/schemas"
 import type { MediaType } from "@workspace/schemas"
 import { z } from "zod"
-import { compareLogsDesc, logDate, mediaTypeOf } from "./log-utils"
+import {
+  compareDatesDesc,
+  compareLogsDesc,
+  logDate,
+  mediaTypeOf,
+} from "./log-utils"
 import type {
   ArchiveRepository,
   ArchiveStats,
@@ -111,7 +116,7 @@ export const localRepository: ArchiveRepository = {
           },
         ]
       })
-      .sort((a, b) => b.lastLoggedAt.localeCompare(a.lastLoggedAt))
+      .sort((a, b) => compareDatesDesc(a.lastLoggedAt, b.lastLoggedAt))
   },
 
   async listLogs({ type, id }) {
@@ -264,10 +269,14 @@ export const localRepository: ArchiveRepository = {
       }
       if (log.kind === "game") hoursPlayed += log.hoursPlayed ?? 0
 
-      const year = Number(logDate(log).slice(0, 4))
-      const counts = years.get(year) ?? zeroCounts()
-      counts[type]++
-      years.set(year, counts)
+      // Undated logs (imported history) can't be placed in a year.
+      const date = logDate(log)
+      if (date) {
+        const year = Number(date.slice(0, 4))
+        const counts = years.get(year) ?? zeroCounts()
+        counts[type]++
+        years.set(year, counts)
+      }
     }
 
     // Each game counts once, by the status of its most recent log.

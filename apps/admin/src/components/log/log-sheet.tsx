@@ -5,6 +5,7 @@ import type {
   MovieLog,
   RecordLog,
   SeasonLog,
+  ShowLog,
 } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
 import { Trash2Icon } from "lucide-react"
@@ -14,6 +15,7 @@ import {
   MovieLogForm,
   RecordLogForm,
   SeasonLogForm,
+  ShowLogForm,
 } from "./log-forms"
 import { ResponsiveSheet, useOpenSession } from "@/components/responsive-sheet"
 import type { LibraryItemInput } from "@/lib/repo"
@@ -29,6 +31,7 @@ export type LogTargetContext =
     }
   | { kind: "game"; item: LibraryItemInput; platforms: Array<string> }
   | { kind: "record"; item: LibraryItemInput }
+  | { kind: "show"; item: LibraryItemInput }
 
 /** Create/edit a log in a responsive sheet. */
 export function LogSheet({
@@ -107,6 +110,14 @@ export function LogSheet({
           mediaId={target.item.id}
           seasonNumber={target.seasonNumber}
           initial={editing as SeasonLog | undefined}
+          onSubmit={handleSubmit}
+          submitLabel={submitLabel}
+        />
+      ) : target.kind === "show" ? (
+        <ShowLogForm
+          key={formKey}
+          mediaId={target.item.id}
+          initial={editing as ShowLog | undefined}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}
         />

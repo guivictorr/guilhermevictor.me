@@ -17,7 +17,7 @@ export type LibraryItemInput = Omit<LibraryItem, "addedAt">
 export type LibraryEntry = LibraryItem & {
   logCount: number
   /** The most recent logical date (watched/finished/started), falling back to createdAt. */
-  lastLoggedAt: string
+  lastLoggedAt?: string
   /** Rating from the most recent rated log. */
   rating?: number
   /** Games only: status of the most recent log. */

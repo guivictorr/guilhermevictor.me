@@ -3,6 +3,7 @@ import {
   MovieLogInput,
   RecordLogInput,
   SeasonLogInput,
+  ShowLogInput,
 } from "@workspace/schemas"
 import type {
   GameLog,
@@ -10,6 +11,7 @@ import type {
   MovieLog,
   RecordLog,
   SeasonLog,
+  ShowLog,
 } from "@workspace/schemas"
 import { FieldGroup } from "@workspace/ui/components/field"
 import type { z } from "zod"
@@ -38,7 +40,8 @@ export function MovieLogForm({
   const defaultValues: z.input<typeof MovieLogInput> = {
     kind: "movie",
     mediaId,
-    watchedAt: initial?.watchedAt ?? today(),
+    // Editing an undated log keeps it undated; new logs default to today.
+    watchedAt: initial ? initial.watchedAt : today(),
     rating: initial?.rating,
     rewatch: initial?.rewatch ?? false,
     notes: initial?.notes,
@@ -52,7 +55,14 @@ export function MovieLogForm({
   return (
     <FormShell onSubmit={form.handleSubmit}>
       <form.AppField name="watchedAt">
-        {(f) => <f.DateField label="Watched on" max={today()} />}
+        {(f) => (
+          <f.DateField
+            label="Watched on"
+            optional
+            max={today()}
+            description="Leave empty if you don't remember"
+          />
+        )}
       </form.AppField>
       <form.AppField name="rating">{(f) => <f.RatingField />}</form.AppField>
       <form.AppField name="rewatch">
@@ -114,6 +124,57 @@ export function SeasonLogForm({
           <f.SwitchField
             label="Rewatch"
             description="I've seen this season before"
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="notes">
+        {(f) => <f.TextareaField label="Notes" />}
+      </form.AppField>
+      <form.AppForm>
+        <form.SubmitButton>{submitLabel}</form.SubmitButton>
+      </form.AppForm>
+    </FormShell>
+  )
+}
+
+/** The whole show in one log, for shows you don't track per season. */
+export function ShowLogForm({
+  mediaId,
+  initial,
+  onSubmit,
+  submitLabel,
+}: FormProps<ShowLog>) {
+  const defaultValues: z.input<typeof ShowLogInput> = {
+    kind: "show",
+    mediaId,
+    startedAt: initial?.startedAt,
+    finishedAt: initial ? initial.finishedAt : today(),
+    rating: initial?.rating,
+    rewatch: initial?.rewatch ?? false,
+    notes: initial?.notes,
+  }
+  const form = useAppForm({
+    defaultValues,
+    validators: { onSubmit: ShowLogInput },
+    onSubmit: ({ value }) => onSubmit(ShowLogInput.parse(value)),
+  })
+
+  return (
+    <FormShell onSubmit={form.handleSubmit}>
+      <div className="grid grid-cols-2 gap-3">
+        <form.AppField name="startedAt">
+          {(f) => <f.DateField label="Started" optional max={today()} />}
+        </form.AppField>
+        <form.AppField name="finishedAt">
+          {(f) => <f.DateField label="Finished" optional max={today()} />}
+        </form.AppField>
+      </div>
+      <form.AppField name="rating">{(f) => <f.RatingField />}</form.AppField>
+      <form.AppField name="rewatch">
+        {(f) => (
+          <f.SwitchField
+            label="Rewatch"
+            description="I've seen this show before"
           />
         )}
       </form.AppField>
@@ -203,7 +264,7 @@ export function RecordLogForm({
   const defaultValues: z.input<typeof RecordLogInput> = {
     kind: "record",
     mediaId,
-    playedAt: initial?.playedAt ?? today(),
+    playedAt: initial ? initial.playedAt : today(),
     rating: initial?.rating,
     notes: initial?.notes,
   }
@@ -216,7 +277,7 @@ export function RecordLogForm({
   return (
     <FormShell onSubmit={form.handleSubmit}>
       <form.AppField name="playedAt">
-        {(f) => <f.DateField label="Listened on" max={today()} />}
+        {(f) => <f.DateField label="Listened on" optional max={today()} />}
       </form.AppField>
       <form.AppField name="rating">{(f) => <f.RatingField />}</form.AppField>
       <form.AppField name="notes">

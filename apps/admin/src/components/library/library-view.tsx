@@ -133,7 +133,8 @@ const columns = helper.columns([
   helper.accessor("lastLoggedAt", {
     header: "Last logged",
     sortFn: "alphanumeric",
-    cell: (info) => formatDate(info.getValue()),
+    sortUndefined: "last",
+    cell: (info) => formatDate(info.getValue()) ?? "—",
   }),
 ])
 

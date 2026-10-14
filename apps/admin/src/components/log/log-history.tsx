@@ -10,14 +10,15 @@ import { logsQuery } from "@/queries/archive"
 
 /** Human summary of a log's dates. */
 export function describeLogDates(log: LogEntry) {
-  if (log.kind === "movie") return formatDate(log.watchedAt)
-  if (log.kind === "record") return formatDate(log.playedAt)
+  const unknown = "Date unknown"
+  if (log.kind === "movie") return formatDate(log.watchedAt) ?? unknown
+  if (log.kind === "record") return formatDate(log.playedAt) ?? unknown
   const start = formatDate(log.startedAt)
   const end = formatDate(log.finishedAt)
   if (start && end) return start === end ? end : `${start} → ${end}`
   if (end) return `Finished ${end}`
   if (start) return `Started ${start}`
-  return `Logged ${formatDate(log.createdAt)}`
+  return unknown
 }
 
 export function LogHistory({
@@ -96,13 +97,24 @@ function LogBadges({ log }: { log: LogEntry }) {
       </>
     )
   }
-  if ((log.kind === "movie" || log.kind === "season") && log.rewatch) {
-    return (
-      <Badge variant="outline">
-        <RotateCcwIcon />
-        Rewatch
-      </Badge>
-    )
-  }
-  return null
+  const rewatch =
+    (log.kind === "movie" || log.kind === "season" || log.kind === "show") &&
+    log.rewatch
+  return (
+    <>
+      {log.kind === "show" ? (
+        <Badge variant="secondary">Whole show</Badge>
+      ) : log.kind === "season" ? (
+        <Badge variant="secondary">
+          {log.seasonNumber === 0 ? "Specials" : `S${log.seasonNumber}`}
+        </Badge>
+      ) : null}
+      {rewatch ? (
+        <Badge variant="outline">
+          <RotateCcwIcon />
+          Rewatch
+        </Badge>
+      ) : null}
+    </>
+  )
 }

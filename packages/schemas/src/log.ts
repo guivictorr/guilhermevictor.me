@@ -32,7 +32,19 @@ const stored = {
 const movieLogFields = z.object({
   kind: z.literal("movie"),
   mediaId: z.number().int(),
-  watchedAt: IsoDate,
+  /** Missing = you don't remember when (e.g. imported history). */
+  watchedAt: IsoDate.optional(),
+  rating: Rating.optional(),
+  rewatch: z.boolean(),
+  notes: optionalText,
+})
+
+/** The whole show at once, when you don't track it season by season. */
+const showLogFields = z.object({
+  kind: z.literal("show"),
+  mediaId: z.number().int(),
+  startedAt: IsoDate.optional(),
+  finishedAt: IsoDate.optional(),
   rating: Rating.optional(),
   rewatch: z.boolean(),
   notes: optionalText,
@@ -75,13 +87,15 @@ const gameLogFields = z.object({
 const recordLogFields = z.object({
   kind: z.literal("record"),
   mediaId: z.number().int(),
-  playedAt: IsoDate,
+  playedAt: IsoDate.optional(),
   rating: Rating.optional(),
   notes: optionalText,
 })
 
 export const MovieLogInput = movieLogFields
 export const RecordLogInput = recordLogFields
+export const ShowLogInput = finishAfterStart(showLogFields)
+export type ShowLogInput = z.infer<typeof ShowLogInput>
 export type RecordLogInput = z.infer<typeof RecordLogInput>
 export const SeasonLogInput = finishAfterStart(seasonLogFields)
 export const GameLogInput = finishAfterStart(gameLogFields)
@@ -94,11 +108,14 @@ export const LogInput = z.union([
   SeasonLogInput,
   GameLogInput,
   RecordLogInput,
+  ShowLogInput,
 ])
 export type LogInput = z.infer<typeof LogInput>
 
 export const MovieLog = movieLogFields.extend(stored)
 export const SeasonLog = finishAfterStart(seasonLogFields.extend(stored))
+export const ShowLog = finishAfterStart(showLogFields.extend(stored))
+export type ShowLog = z.infer<typeof ShowLog>
 export const GameLog = finishAfterStart(gameLogFields.extend(stored))
 export const RecordLog = recordLogFields.extend(stored)
 export type RecordLog = z.infer<typeof RecordLog>
@@ -106,7 +123,13 @@ export type MovieLog = z.infer<typeof MovieLog>
 export type SeasonLog = z.infer<typeof SeasonLog>
 export type GameLog = z.infer<typeof GameLog>
 
-export const LogEntry = z.union([MovieLog, SeasonLog, GameLog, RecordLog])
+export const LogEntry = z.union([
+  MovieLog,
+  ShowLog,
+  SeasonLog,
+  GameLog,
+  RecordLog,
+])
 export type LogEntry = z.infer<typeof LogEntry>
 
 /**

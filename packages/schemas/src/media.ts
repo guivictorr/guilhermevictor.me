@@ -198,7 +198,13 @@ export const Track = z.object({
   credits: z.array(Credit),
   /** Parts of an index track (medleys, suites). */
   subTracks: z
-    .array(z.object({ position: z.string(), title: z.string(), duration: z.string().optional() }))
+    .array(
+      z.object({
+        position: z.string(),
+        title: z.string(),
+        duration: z.string().optional(),
+      })
+    )
     .optional(),
 })
 export type Track = z.infer<typeof Track>

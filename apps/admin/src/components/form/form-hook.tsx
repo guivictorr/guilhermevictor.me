@@ -54,10 +54,12 @@ function DateField({
   label,
   optional = false,
   max,
+  description,
 }: {
   label: string
   optional?: boolean
   max?: string
+  description?: string
 }) {
   const { errors, invalid } = useFieldErrors()
   const field = useFieldContext<string | undefined>()
@@ -75,6 +77,7 @@ function DateField({
           field.handleChange(e.target.value || (optional ? undefined : ""))
         }
       />
+      {description ? <FieldDescription>{description}</FieldDescription> : null}
       <FieldError errors={errors} />
     </Field>
   )

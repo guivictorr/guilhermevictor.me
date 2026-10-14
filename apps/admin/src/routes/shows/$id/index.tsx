@@ -1,7 +1,8 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import type { SeasonSummary, Show } from "@workspace/schemas"
-import { CheckIcon } from "lucide-react"
+import { Button } from "@workspace/ui/components/button"
+import { CheckIcon, PlusIcon } from "lucide-react"
 import {
   DetailBody,
   DetailHero,
@@ -11,6 +12,8 @@ import {
   RatingsRow,
 } from "@/components/detail-layout"
 import { LogHistory } from "@/components/log/log-history"
+import { LogSheet } from "@/components/log/log-sheet"
+import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import {
   LogsTabLabel,
@@ -40,7 +43,16 @@ function ShowPage() {
   const { id } = Route.useParams()
   const { data: show } = useSuspenseQuery(showQuery(parseId(id)))
   const navigate = Route.useNavigate()
+  const sheet = useLogSheet()
   const regularSeasons = show.seasons.filter((s) => s.seasonNumber > 0).length
+  const item = {
+    type: "show" as const,
+    id: show.id,
+    title: show.title,
+    year: show.year,
+    poster: show.poster,
+    genres: show.genres,
+  }
 
   return (
     <article>
@@ -61,16 +73,18 @@ function ShowPage() {
           <RatingsRow provider={show.providerRating} type="show" id={show.id} />
         }
         actions={
-          <BacklogButton
-            item={{
-              type: "show",
-              id: show.id,
-              title: show.title,
-              year: show.year,
-              poster: show.poster,
-              genres: show.genres,
-            }}
-          />
+          <>
+            {/* Per-season logs live on each season page; this rates the whole show. */}
+            <Button
+              size="lg"
+              className="h-11 text-base"
+              onClick={sheet.openNew}
+            >
+              <PlusIcon />
+              Log show
+            </Button>
+            <BacklogButton item={item} />
+          </>
         }
       />
 
@@ -113,15 +127,16 @@ function ShowPage() {
               <LogHistory
                 type="show"
                 id={show.id}
-                // Season logs are edited on their season page.
+                // Whole-show logs edit here; season logs on their season page.
                 onSelect={(log) =>
-                  log.kind === "season" &&
-                  navigate({
-                    to: "/shows/$id/seasons/$season",
-                    params: { id, season: String(log.seasonNumber) },
-                  })
+                  log.kind === "season"
+                    ? navigate({
+                        to: "/shows/$id/seasons/$season",
+                        params: { id, season: String(log.seasonNumber) },
+                      })
+                    : sheet.openEdit(log)
                 }
-                emptyLabel="Open a season to log it."
+                emptyLabel="Log the whole show, or open a season to log it."
               />
             ),
           },
@@ -146,6 +161,12 @@ function ShowPage() {
             />
           </>
         }
+      />
+      <LogSheet
+        open={sheet.open}
+        onOpenChange={sheet.onOpenChange}
+        editing={sheet.editing}
+        target={{ kind: "show", item }}
       />
     </article>
   )

@@ -11,7 +11,10 @@ import { logsQuery } from "@/queries/archive"
 function summarize(logs: Array<LogEntry>) {
   const latest = logs[0]
   const rated = logs.flatMap((l) => (l.rating === undefined ? [] : [l.rating]))
-  const dates = logs.map(logDate).sort()
+  const dates = logs
+    .map(logDate)
+    .filter((d): d is string => d !== undefined)
+    .sort()
   return {
     count: logs.length,
     latestRating: rated.at(0),
@@ -43,7 +46,7 @@ export function YourStatsCard({ type, id }: { type: MediaType; id: number }) {
       type === "game" || type === "record" ? "Times played" : "Times logged",
       s.count,
     ],
-    ...(type === "show"
+    ...(type === "show" && s.seasons > 0
       ? [["Seasons logged", s.seasons] as [string, number]]
       : []),
     ...(s.status ? [["Status", s.status] as [string, string]] : []),
