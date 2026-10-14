@@ -10,14 +10,18 @@ import { useState } from "react"
 export function YouTubeVideo({
   video,
   className,
+  id,
 }: {
   video: Video
   className?: string
+  /** Lets other controls find and start this player (record play button). */
+  id?: string
 }) {
   const [playing, setPlaying] = useState(false)
 
   return (
     <div
+      id={id}
       className={cn(
         "relative aspect-video overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/5",
         className

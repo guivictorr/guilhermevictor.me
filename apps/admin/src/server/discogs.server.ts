@@ -188,7 +188,8 @@ export async function searchDiscogs(
   query: string | undefined,
   filters: SearchFilters = {}
 ): Promise<Array<MediaSummary>> {
-  const format = filters.format === "all" ? undefined : (filters.format ?? "Vinyl")
+  const format =
+    filters.format === "all" ? undefined : (filters.format ?? "Vinyl")
   const params: Record<string, string | undefined> = {
     q: query,
     type: "release",

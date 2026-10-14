@@ -72,8 +72,18 @@ export function BoardingPass({
 
   return (
     <div
-      className={cn("overflow-hidden rounded-2xl border bg-card", className)}
+      className={cn(
+        "edge-highlight relative isolate overflow-hidden border bg-card",
+        compact ? "rounded-[24px]" : "rounded-[28px]",
+        className
+      )}
     >
+      {/* Paper grain, so it reads as a printed pass rather than a panel. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
       <div className={cn("px-4", compact ? "py-3" : "py-4")}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -130,21 +140,21 @@ export function BoardingPass({
         <>
           {/* Perforation between the pass and its stub. */}
           <div className="relative h-0 border-t border-dashed">
-            <span className="absolute -top-2.5 -left-2.5 size-5 rounded-full border bg-background" />
-            <span className="absolute -top-2.5 -right-2.5 size-5 rounded-full border bg-background" />
+            <span className="absolute -top-3 -left-3 size-6 rounded-full border bg-background" />
+            <span className="absolute -top-3 -right-3 size-6 rounded-full border bg-background" />
           </div>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-4 sm:grid-cols-4">
-            {stub.map(([label, value]) => (
-              <div key={label} className="min-w-0">
-                <dt className="text-[0.6875rem] font-medium tracking-wide text-muted-foreground uppercase">
-                  {label}
-                </dt>
-                <dd className="truncate text-sm font-medium capitalize">
-                  {value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <div className="flex items-end gap-4 px-4 pt-4 pb-4">
+            <dl className="grid flex-1 grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+              {stub.map(([label, value]) => (
+                <div key={label} className="min-w-0">
+                  <dt className="type-overline text-subtle">{label}</dt>
+                  <dd className="mt-0.5 truncate text-sm font-medium capitalize">
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </>
       ) : null}
     </div>
@@ -166,18 +176,41 @@ function Endpoint({
 }) {
   return (
     <div className={cn("min-w-0", align === "end" && "text-right")}>
+      {/* Departure-board code (Doto); screen readers get the plain text. */}
       <div
+        aria-hidden
         className={cn(
-          "font-heading leading-none font-bold tracking-tight tabular-nums",
-          compact ? "text-2xl" : "text-4xl"
+          "font-dots",
+          compact ? "text-[1.75rem]" : "text-[2.75rem]"
         )}
       >
         {code}
       </div>
+      <span className="sr-only">
+        {city ? `${city}, ` : ""}
+        {code}
+        {time ? ` at ${time}` : ""}
+      </span>
       {time ? (
-        <div className="mt-1.5 text-sm font-semibold tabular-nums">{time}</div>
+        <div
+          aria-hidden
+          className={cn(
+            compact
+              ? "mt-1.5 text-sm font-semibold tabular-nums"
+              : "mt-2 font-dots text-[1.25rem] text-signal-text"
+          )}
+        >
+          {time}
+        </div>
       ) : null}
-      <div className="truncate text-xs text-muted-foreground">{city}</div>
+      <div aria-hidden className="truncate text-xs text-muted-foreground">
+        {city}
+      </div>
     </div>
   )
 }
+
+/** Fractal noise as a data URI; tiles seamlessly at any size. */
+const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
+)}")`

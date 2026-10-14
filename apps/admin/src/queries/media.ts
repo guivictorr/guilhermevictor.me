@@ -48,8 +48,7 @@ export const searchQuery = (
   queryOptions({
     queryKey: mediaKeys.search(type, query, filters),
     queryFn: () => searchMedia({ data: { type, query, filters } }),
-    enabled:
-      query.trim().length > 0 || activeFilters(type, filters).length > 0,
+    enabled: query.trim().length > 0 || activeFilters(type, filters).length > 0,
     staleTime: PROVIDER_STALE_TIME,
   })
 

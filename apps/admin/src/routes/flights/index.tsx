@@ -12,9 +12,9 @@ import {
 } from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { PlaneTakeoffIcon, PlusIcon, RouteIcon } from "lucide-react"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { BoardingPass } from "@/components/flights/boarding-pass"
-import { FlightMap } from "@/components/flights/flight-map"
+import { FlightMap, routeKey } from "@/components/flights/flight-map"
 import { FlightSheet, useFlightSheet } from "@/components/flights/flight-sheet"
 import { LibraryNav } from "@/components/library/library-nav"
 import { PageBody, PageHeader } from "@/components/page-header"
@@ -40,6 +40,8 @@ function FlightsPage() {
   const { data: flights, isPending } = useQuery(flightsQuery())
   const { data: airports } = useQuery(airportsQuery())
   const sheet = useFlightSheet()
+  // Hovering a trip isolates its legs on the map (desktop).
+  const [highlight, setHighlight] = useState<ReadonlySet<string>>()
   const stats = useMemo(
     () => computeFlightStats(flights ?? [], airports),
     [flights, airports]
@@ -82,9 +84,17 @@ function FlightsPage() {
         ) : (
           <>
             <Totals stats={stats} />
-            <FlightMap routes={stats.routes} />
-            <Highlights stats={stats} />
-            <FlightList stats={stats} onAddConnection={sheet.openConnection} />
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+              <div className="space-y-6 lg:sticky lg:top-6 lg:order-2">
+                <FlightMap routes={stats.routes} highlight={highlight} />
+                <Highlights stats={stats} />
+              </div>
+              <FlightList
+                stats={stats}
+                onAddConnection={sheet.openConnection}
+                onHighlight={setHighlight}
+              />
+            </div>
           </>
         )}
       </PageBody>
@@ -121,9 +131,13 @@ function Totals({ stats }: { stats: FlightStats }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {tiles.map((tile) => (
-        <div key={tile.label} className="min-w-0 rounded-xl border bg-card p-3">
+        <div
+          key={tile.label}
+          className="edge-highlight min-w-0 rounded-[20px] border bg-card p-4"
+        >
           <div className="text-xs text-muted-foreground">{tile.label}</div>
-          <div className="mt-0.5 truncate text-xl font-semibold tabular-nums">
+          {/* Departure-board digits (Doto, ≥20px per design.md §4). */}
+          <div className="mt-1 truncate font-dots text-[1.75rem]">
             {tile.value}
           </div>
           {tile.sub ? (
@@ -174,7 +188,7 @@ function Highlights({ stats }: { stats: FlightStats }) {
   ].filter((row): row is [string, string] => Boolean(row[1]))
 
   return (
-    <section className="rounded-xl border bg-card p-4">
+    <section className="edge-highlight rounded-[20px] border bg-card p-4">
       <h2 className="mb-3 font-heading font-semibold">Highlights</h2>
       <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
         {items.map(([label, value]) => (
@@ -191,9 +205,11 @@ function Highlights({ stats }: { stats: FlightStats }) {
 function FlightList({
   stats,
   onAddConnection,
+  onHighlight,
 }: {
   stats: FlightStats
   onAddConnection: (flight: Flight) => void
+  onHighlight: (keys: ReadonlySet<string> | undefined) => void
 }) {
   // A trip belongs to the year of its first leg.
   const byYear = new Map<string, Array<Trip>>()
@@ -211,12 +227,26 @@ function FlightList({
               {trips.reduce((n, t) => n + t.legs.length, 0)}
             </span>
           </h2>
-          <ul className="grid items-start gap-3 md:grid-cols-2">
-            {trips.map((trip) => (
-              <li key={trip.key}>
-                <TripCard trip={trip} onAddConnection={onAddConnection} />
-              </li>
-            ))}
+          <ul className="grid items-start gap-3 md:grid-cols-2 lg:grid-cols-1">
+            {trips.map((trip) => {
+              const keys = new Set(
+                trip.legs.map((l) => routeKey(l.flight.from, l.flight.to))
+              )
+              return (
+                <li
+                  key={trip.key}
+                  // Mouse only: on touch, hover would stick after a tap.
+                  onPointerEnter={(e) =>
+                    e.pointerType === "mouse" && onHighlight(keys)
+                  }
+                  onPointerLeave={() => onHighlight(undefined)}
+                  onFocus={() => onHighlight(keys)}
+                  onBlur={() => onHighlight(undefined)}
+                >
+                  <TripCard trip={trip} onAddConnection={onAddConnection} />
+                </li>
+              )
+            })}
           </ul>
         </section>
       ))}

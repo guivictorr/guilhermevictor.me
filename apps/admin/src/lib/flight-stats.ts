@@ -33,17 +33,25 @@ export function computeFlightStats(
     if (r.facts.to) visited.set(r.facts.to.iata, r.facts.to)
   }
 
-  // A→B and B→A are the same line on the map.
+  // The map keeps each direction (planes fly the way you did); "top route"
+  // counts A⇄B together.
   const routes = new Map<string, Route>()
+  const pairs = new Map<string, Route>()
   for (const r of rows) {
-    if (!r.facts.from || !r.facts.to) continue
-    const [a, b] = [r.facts.from, r.facts.to].sort((x, y) =>
-      x.iata.localeCompare(y.iata)
-    )
-    const key = `${a!.iata}-${b!.iata}`
-    const route = routes.get(key) ?? { from: a!, to: b!, count: 0 }
-    route.count++
-    routes.set(key, route)
+    const { from, to } = r.facts
+    if (!from || !to) continue
+    const directed = routes.get(`${from.iata}-${to.iata}`) ?? {
+      from,
+      to,
+      count: 0,
+    }
+    directed.count++
+    routes.set(`${from.iata}-${to.iata}`, directed)
+    const [a, b] = [from, to].sort((x, y) => x.iata.localeCompare(y.iata))
+    const pairKey = `${a!.iata}-${b!.iata}`
+    const pair = pairs.get(pairKey) ?? { from: a!, to: b!, count: 0 }
+    pair.count++
+    pairs.set(pairKey, pair)
   }
 
   const withDistance = rows.filter((r) => r.facts.distanceKm !== undefined)
@@ -62,7 +70,7 @@ export function computeFlightStats(
     routes: [...routes.values()],
     longest: byDistance.at(0),
     shortest: byDistance.at(-1),
-    topRoutes: [...routes.values()].sort((a, b) => b.count - a.count),
+    topRoutes: [...pairs.values()].sort((a, b) => b.count - a.count),
     topAirports: countBy(
       rows.flatMap((r) => [r.flight.from, r.flight.to]),
       (x) => x

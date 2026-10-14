@@ -10,7 +10,7 @@ import {
 import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { ThemeProvider } from "next-themes"
-import { AppShell } from "@/components/app-shell"
+import { AppShell, readSidebarOpen } from "@/components/app-shell"
 import { PwaRegister } from "@/components/pwa-register"
 import { ThemeColorSync } from "@/components/theme-color-sync"
 import { viewerQuery } from "@/queries/auth"
@@ -31,6 +31,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       if (!viewer)
         throw redirect({ to: "/login", search: { redirect: location.href } })
     },
+    loader: () => ({ sidebarOpen: readSidebarOpen() }),
     head: () => ({
       meta: [
         { charSet: "utf-8" },
@@ -47,12 +48,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         {
           name: "theme-color",
           media: "(prefers-color-scheme: light)",
-          content: "#ffffff",
+          content: "#f5f2eb",
         },
         {
           name: "theme-color",
           media: "(prefers-color-scheme: dark)",
-          content: "#0a0a0a",
+          content: "#0b0b0c",
         },
         { name: "color-scheme", content: "light dark" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -79,9 +80,10 @@ function RootComponent() {
   const bare = useRouterState({
     select: (s) => s.location.pathname === "/login",
   })
+  const { sidebarOpen } = Route.useLoaderData()
   if (bare) return <Outlet />
   return (
-    <AppShell>
+    <AppShell sidebarOpen={sidebarOpen}>
       <Outlet />
     </AppShell>
   )

@@ -10,7 +10,6 @@ import { DetailSection } from "@/components/detail-layout"
 import { ScrollRow } from "@/components/media/media-rail"
 import { YouTubeVideo } from "@/components/media/youtube"
 import { Poster } from "@/components/poster"
-import { ResponsiveSheet } from "@/components/responsive-sheet"
 import { joinDefined } from "@/lib/format"
 import { indexQuery, mediaKey } from "@/queries/archive"
 import { masterQuery } from "@/queries/media"
@@ -321,9 +320,10 @@ export function VideosSection({ release }: { release: Release }) {
   return (
     <DetailSection title={`Videos (${release.videos.length})`}>
       <ScrollRow>
-        {release.videos.map((video) => (
+        {release.videos.map((video, i) => (
           <YouTubeVideo
             key={video.key}
+            id={i === 0 ? FIRST_VIDEO_ID : undefined}
             video={video}
             className="w-72 shrink-0 snap-start md:w-80"
           />
@@ -343,71 +343,46 @@ export function useOriginalYear(release: Release) {
   return year && release.year && year < release.year ? year : undefined
 }
 
-/** Round play button next to the title: plays the release's first video. */
+const FIRST_VIDEO_ID = "release-first-video"
+
+/**
+ * Round play button next to the title: starts the first video in the Videos
+ * section, right where it is on the page (switching to the About tab first
+ * if needed).
+ */
 export function PlayReleaseButton({ release }: { release: Release }) {
-  const [open, setOpen] = useState(false)
-  const [current, setCurrent] = useState(0)
-  const video = release.videos[current]
   if (!release.videos.length) return null
+
+  function play() {
+    const start = () => {
+      const player = document.getElementById(FIRST_VIDEO_ID)
+      if (!player) return false
+      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)")
+        .matches
+      player.scrollIntoView({
+        behavior: smooth ? "smooth" : "auto",
+        block: "center",
+      })
+      player.querySelector("button")?.click()
+      return true
+    }
+    if (start()) return
+    // The videos live in the About tab; open it, then start once rendered.
+    const about = [
+      ...document.querySelectorAll<HTMLElement>('[role="tab"]'),
+    ].find((tab) => tab.textContent.trim() === "About")
+    about?.click()
+    requestAnimationFrame(() => requestAnimationFrame(start))
+  }
+
   return (
-    <>
-      <Button
-        size="icon-lg"
-        className="pressable shrink-0 rounded-full"
-        aria-label={`Play ${release.videos[0]?.name ?? "video"}`}
-        onClick={() => {
-          setCurrent(0)
-          setOpen(true)
-        }}
-      >
-        <PlayIcon className="ml-0.5" fill="currentColor" />
-      </Button>
-      <ResponsiveSheet
-        open={open}
-        onOpenChange={setOpen}
-        title={release.title}
-        description={video?.name}
-        className="md:[--drawer-content-width:36rem]"
-      >
-        {/* Mounted only while open, so closing the sheet stops playback. */}
-        {open && video ? (
-          <div className="space-y-3">
-            <div className="aspect-video overflow-hidden rounded-xl bg-black">
-              <iframe
-                key={video.key}
-                src={`https://www.youtube-nocookie.com/embed/${video.key}?autoplay=1&playsinline=1&rel=0`}
-                title={video.name}
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowFullScreen
-                className="size-full"
-              />
-            </div>
-            {release.videos.length > 1 ? (
-              <ol className="divide-y rounded-xl border">
-                {release.videos.map((v, i) => (
-                  <li key={v.key}>
-                    <button
-                      type="button"
-                      onClick={() => setCurrent(i)}
-                      aria-current={i === current || undefined}
-                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/50 aria-[current]:font-medium"
-                    >
-                      <span className="w-5 shrink-0 text-xs text-muted-foreground tabular-nums">
-                        {i === current ? (
-                          <PlayIcon className="size-3.5" fill="currentColor" />
-                        ) : (
-                          i + 1
-                        )}
-                      </span>
-                      <span className="min-w-0 truncate">{v.name}</span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            ) : null}
-          </div>
-        ) : null}
-      </ResponsiveSheet>
-    </>
+    <Button
+      size="icon-lg"
+      className="pressable shrink-0 rounded-full"
+      aria-label={`Play ${release.videos[0]?.name ?? "video"}`}
+      onClick={play}
+    >
+      <PlayIcon className="ml-0.5" fill="currentColor" />
+    </Button>
   )
 }

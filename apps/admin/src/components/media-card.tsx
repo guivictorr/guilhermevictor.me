@@ -59,13 +59,13 @@ export function MediaCard({
     <div className="relative min-w-0">
       <MediaLink
         media={media}
-        className="pressable group block min-w-0 rounded-lg outline-none"
+        className="pressable group block min-w-0 rounded-xl outline-none"
       >
         <Poster
           image={media.poster}
           type={media.type}
           title={media.title}
-          className="transition-shadow group-focus-visible:ring-3 group-focus-visible:ring-ring/50"
+          className="group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background"
         />
         <div className="mt-2 min-w-0 px-0.5">
           <p className="truncate text-sm leading-tight font-medium">

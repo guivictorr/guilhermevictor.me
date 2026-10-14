@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils"
 
-/** iOS-style large title header; pads itself below the notch. */
+/** Large expanded-uppercase title (design.md §4 "Display"); pads below the notch. */
 export function PageHeader({
   title,
   subtitle,
@@ -16,11 +16,9 @@ export function PageHeader({
     <header className={cn("pt-safe px-safe md:px-8", className)}>
       <div className="flex items-end justify-between gap-4 pt-6 pb-4 md:pt-10">
         <div className="min-w-0">
-          <h1 className="truncate font-heading text-3xl font-bold tracking-tight">
-            {title}
-          </h1>
+          <h1 className="type-display">{title}</h1>
           {subtitle ? (
-            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
           ) : null}
         </div>
         {actions ? (

@@ -185,25 +185,25 @@ Rules:
 shadcn on Base UI provides behavior and accessibility; the styling is ours. Restyle the
 components, don't fight their logic.
 
-| Component         | Style                                                                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Primary button    | Orange pill with `on-accent` label. One per view                                                                             |
-| Secondary button  | `field` pill with `text` label                                                                                               |
-| Ghost button      | Text only, `muted`; becomes `text` on hover                                                                                  |
-| Icon button       | Round, 44px touch size, always with `aria-label`                                                                             |
-| Sizes             | 36px (compact) and 44px (default, touch); press `scale(0.97)`                                                                |
-| Chips and filters | Pill; may carry a count ("In progress 4"). Active = `text` fill with `ink` label. Removable chips end with ×                 |
-| Segmented control | `field` track with a `raised` thumb that slides (ease-in-out token)                                                          |
-| Tab bar           | Floating glass pill above the safe area. Active item: orange icon (filled variant) and label                                 |
-| Card              | `surface`, hairline `line` border, 20px radius. Hover lift only under `(hover: hover) and (pointer: fine)`                   |
-| Detail hero       | Blurred cover as backdrop fading into `ink`; the poster/sleeve as an object; overline for the kind; title; one orange action |
-| Sheet             | `ResponsiveSheet`: bottom sheet on mobile, side sheet on desktop; 28px top radius; grab handle; drawer easing                |
-| Input             | `field` fill, no border at rest; 2px `accent-text` focus ring via `box-shadow`, offset 2px; 16px or larger text on touch     |
-| Rating            | Orange stars; hover previews on desktop, tap or drag on touch (already built)                                                |
-| Toast             | Sonner on a `raised` surface; success and error with icons                                                                   |
-| Inline feedback   | A check next to the trigger for success; the field itself highlighted for errors                                             |
-| Loading           | Skeletons shaped like the content. Spinners only inside buttons                                                              |
-| Empty state       | One line saying what's missing plus one primary action ("Find something")                                                    |
+| Component         | Style                                                                                                                                          |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary button    | Orange pill with `on-accent` label. One per view                                                                                               |
+| Secondary button  | `field` pill with `text` label                                                                                                                 |
+| Ghost button      | Text only, `muted`; becomes `text` on hover                                                                                                    |
+| Icon button       | Round, 44px touch size, always with `aria-label`                                                                                               |
+| Sizes             | 36px (compact) and 44px (default, touch); press `scale(0.97)`                                                                                  |
+| Chips and filters | Pill; may carry a count ("In progress 4"). Active = `text` fill with `ink` label. Removable chips end with ×                                   |
+| Segmented control | `field` track with a `raised` thumb that slides (ease-in-out token)                                                                            |
+| Tab bar           | Floating glass pill above the safe area. Active item: orange icon (filled variant) and label                                                   |
+| Card              | `surface`, hairline `line` border, 20px radius. Media covers never animate on hover (owner's call); other cards may change background on hover |
+| Detail hero       | Blurred cover as backdrop fading into `ink`; the poster/sleeve as an object; overline for the kind; title; one orange action                   |
+| Sheet             | `ResponsiveSheet`: bottom sheet on mobile, side sheet on desktop; 28px top radius; grab handle; drawer easing                                  |
+| Input             | `field` fill, no border at rest; 2px `accent-text` focus ring via `box-shadow`, offset 2px; 16px or larger text on touch                       |
+| Rating            | Orange stars; hover previews on desktop, tap or drag on touch (already built)                                                                  |
+| Toast             | Sonner on a `raised` surface; success and error with icons                                                                                     |
+| Inline feedback   | A check next to the trigger for success; the field itself highlighted for errors                                                               |
+| Loading           | Skeletons shaped like the content. Spinners only inside buttons                                                                                |
+| Empty state       | One line saying what's missing plus one primary action ("Find something")                                                                      |
 
 Other rules:
 
@@ -216,13 +216,13 @@ Other rules:
 
 Each kind looks like the thing it is:
 
-| Kind             | Object treatment                                                                                                                      |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Movies and shows | 2:3 poster, 10px radius, hairline, a faint top glare gradient. Heroes use the backdrop image                                          |
-| Games            | Cover in grids. The hero uses a landscape screenshot with the title over a gradient                                                   |
-| Books            | A spine edge on the left of the cover: a 2–3% darker band plus an inner shadow, so it reads as a physical book                        |
-| Records          | Square sleeve. On the detail page, a vinyl disc peeks out from behind the sleeve (static, CSS only)                                   |
-| Flights          | Boarding pass: Doto codes and times, perforation notches, airline logo, and a progress line with a plane for in-air or upcoming trips |
+| Kind             | Object treatment                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Movies and shows | The cover alone: 2:3 poster, 10px radius, hairline. No case or frame (owner's call). Heroes use the backdrop image                                |
+| Games            | The cover alone, no case. The hero uses a landscape screenshot behind the title                                                                   |
+| Books            | A spine edge on the left of the cover: a 2–3% darker band plus an inner shadow, so it reads as a physical book                                    |
+| Records          | Square sleeve. On the detail page, a vinyl disc peeks out from behind the sleeve (static, CSS only)                                               |
+| Flights          | Boarding pass: Doto codes and times, paper grain, perforation notches, airline logo. No barcode. Map planes fly each route in the direction flown |
 
 - **Missing covers** show a typed fallback: the kind icon plus the title in Archivo on
   `field`. Never a broken image.
@@ -329,16 +329,14 @@ A simple hover or fade never needs a library; use CSS.
 - [ ] Dot-matrix text has a plain-text accessible name
 - [ ] Checked on a real phone (sticky hover, safe areas, keyboard)
 
-## Applying this
+## Where it lives in code
 
-The rules are decided; the code doesn't follow them yet. Suggested order:
-
-1. **Tokens.** Map the §3 colors onto the shadcn variables in
-   `packages/ui/src/styles/globals.css` for both themes. Point `--color-star` in
-   `apps/admin/src/styles/app.css` at the accent.
-2. **Fonts.** Add `@fontsource-variable/archivo` (import `wdth.css`) and
-   `@fontsource-variable/doto`, replacing Geist. Define the §4 roles as utilities.
-3. **Components,** in this order: tab bar, buttons and chips, cards and posters, detail
-   hero, boarding pass, empty states.
-4. **Review.** Run `break-ui` and `review-animations` passes, and take screenshots in both
-   themes at 375 and 1280px widths.
+| Piece                                                                                                                             | File                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Color tokens (both themes), fonts                                                                                                 | `packages/ui/src/styles/globals.css`                                              |
+| Type roles (`type-display`, `type-title`, `type-heading`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, motion tokens | `apps/admin/src/styles/app.css`                                                   |
+| Buttons, inputs, toggles                                                                                                          | `packages/ui/src/components/*` (restyled shadcn)                                  |
+| Sidebar (desktop, collapsible ⌘B) and tab bar (phones)                                                                            | `apps/admin/src/components/app-shell.tsx`                                         |
+| Covers (book spine, record sleeve + vinyl)                                                                                        | `components/poster.tsx`                                                           |
+| Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                      | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |
+| Home facts                                                                                                                        | `server/facts.server.ts`, `components/home/facts-deck.tsx`                        |

@@ -1,7 +1,7 @@
 import { useTheme } from "next-themes"
 import { useEffect } from "react"
 
-const COLORS = { light: "#ffffff", dark: "#0a0a0a" }
+const COLORS = { light: "#f5f2eb", dark: "#0b0b0c" }
 
 /**
  * theme-color metas follow the OS scheme; when the user forces a theme

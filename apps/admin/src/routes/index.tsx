@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { Button, buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@workspace/ui/components/button"
 import {
   Empty,
   EmptyContent,
@@ -13,7 +13,6 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import {
   ArchiveIcon,
-  DicesIcon,
   ChevronRightIcon,
   PlusIcon,
   SettingsIcon,
@@ -24,10 +23,7 @@ import { PageBody, PageHeader } from "@/components/page-header"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { MediaRail } from "@/components/media/media-rail"
-import {
-  RandomPickSheet,
-  useRandomPick,
-} from "@/components/media/random-pick-sheet"
+import { FactsDeck } from "@/components/home/facts-deck"
 import { dailyPicks } from "@/lib/daily-picks"
 import { today } from "@/lib/format"
 import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
@@ -71,6 +67,7 @@ function HomePage() {
       />
       <PageBody className="space-y-8">
         <Counts />
+        <FactsDeck />
         <ForToday />
 
         {playing.length > 0 ? (
@@ -183,10 +180,9 @@ function SectionTitle({
   )
 }
 
-/** Deciding what to do: today's picks from the backlog, or let chance decide. */
+/** Deciding what to do: today's picks from the backlog. */
 function ForToday() {
   const { data: backlog } = useQuery(backlogQuery())
-  const { surprise, sheetProps } = useRandomPick()
   const picks = useMemo(
     () => (backlog ? dailyPicks(backlog, today()) : []),
     [backlog]
@@ -195,16 +191,7 @@ function ForToday() {
   return (
     <section>
       <SectionTitle title="For today" to="/backlog" />
-      <Button
-        size="lg"
-        className="mb-4 h-14 w-full rounded-2xl text-base"
-        onClick={() => surprise(backlog)}
-      >
-        <DicesIcon className="size-5" />
-        Surprise me
-      </Button>
       <MediaRail items={picks} />
-      <RandomPickSheet {...sheetProps} />
     </section>
   )
 }
@@ -223,9 +210,9 @@ function Counts() {
           <Link
             key={key}
             to={to}
-            className="pressable min-w-0 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/50"
+            className="pressable edge-highlight min-w-0 rounded-[20px] border bg-card p-3.5 transition-colors hover:bg-raised"
           >
-            <div className="text-2xl font-semibold tabular-nums">
+            <div className="font-dots text-[1.75rem]">
               {count === undefined ? <Skeleton className="h-8 w-8" /> : count}
             </div>
             <div className="truncate text-xs text-muted-foreground">

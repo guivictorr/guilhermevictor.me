@@ -32,6 +32,7 @@ import type {
   LibraryItemInput,
 } from "@/lib/repo/types"
 import { getDb } from "./db/client.server"
+import { computeFacts } from "./facts.server"
 import type { Db } from "./db/client.server"
 import {
   bookLogs,
@@ -903,6 +904,8 @@ export const pgRepository: ArchiveRepository = {
       collection: owned,
     })
   },
+
+  getFacts: computeFacts,
 
   async listCollection() {
     const rows = await getDb()

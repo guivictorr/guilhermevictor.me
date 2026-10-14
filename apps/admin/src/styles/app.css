@@ -6,10 +6,11 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  --color-star: oklch(0.8 0.16 80);
+  /* Your rating is "you": it uses the signal orange (design.md §3). */
+  --color-star: #ff6a1f;
 
   /* Height of the mobile tab bar, excluding the safe area. */
-  --tab-bar-height: 3.5rem;
+  --tab-bar-height: 4rem;
 }
 
 /* Safe-area helpers; require viewport-fit=cover in the viewport meta. */
@@ -28,6 +29,65 @@
   padding-bottom: calc(
     var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 1.5rem
   );
+}
+
+/* Type roles (docs/design.md §4). Archivo's width axis gives the expanded
+   display style; Doto is only for flight codes, times and big counters. */
+@utility type-display {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 0.95;
+  font-weight: 900;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+@utility type-title {
+  line-height: 1.05;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+@utility type-heading {
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+@utility type-overline {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  font-stretch: 112%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+@utility font-dots {
+  font-family: var(--font-dots);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* Raised surfaces in dark mode: light catching the top edge, not a shadow. */
+@utility edge-highlight {
+  box-shadow: inset 0 1px 0 var(--highlight);
+}
+
+/* Floating chrome over content (tab bar, sticky headers). Solid when the
+   user asks for less transparency or more contrast. */
+@utility glass {
+  background: color-mix(in oklab, var(--background) 72%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--raised);
+    backdrop-filter: none;
+  }
+  @media (prefers-contrast: more) {
+    background: var(--raised);
+    backdrop-filter: none;
+    border-color: var(--foreground);
+  }
 }
 
 /* Press feedback for anything tappable that isn't a <Button>. */
@@ -54,6 +114,12 @@
     min-height: 100dvh;
     overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-optical-sizing: auto;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
   }
 
   button,

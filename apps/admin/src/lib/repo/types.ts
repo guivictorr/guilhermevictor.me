@@ -14,6 +14,7 @@ import type {
   MediaType,
   WorkId,
 } from "@workspace/schemas"
+import type { Fact } from "@/lib/facts"
 import type { ProgressStatus } from "@/lib/status"
 
 /** Item snapshot passed when logging, so the library can render offline from providers. */
@@ -91,6 +92,8 @@ export interface ArchiveRepository {
   removeFromBacklog: (target: LogTarget) => Promise<void>
   getIndex: () => Promise<ArchiveIndex>
   getStats: () => Promise<ArchiveStats>
+  /** Interesting facts across the archive (flights are added on the client). */
+  getFacts: () => Promise<Array<Fact>>
   listCollection: () => Promise<Array<CollectionItem>>
   addCollectionItem: (
     snapshot: CollectionSnapshot,

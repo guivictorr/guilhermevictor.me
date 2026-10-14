@@ -110,16 +110,19 @@ export function DetailHero({
             title={title}
             size="large"
             priority
-            className="w-28 shrink-0 shadow-xl md:w-44"
+            vinyl={type === "record"}
+            className={cn(
+              "w-28 shrink-0 shadow-xl md:w-44",
+              // Room for the record sliding out of its sleeve.
+              type === "record" && "mr-10 md:mr-16"
+            )}
           />
           <div className="min-w-0 pb-1">
-            <div className="mb-1.5 text-xs font-medium text-muted-foreground">
-              {eyebrow ?? (
-                <Badge variant="secondary">{KINDS[type].label}</Badge>
-              )}
+            <div className="type-overline mb-2 text-signal-text">
+              {eyebrow ?? KINDS[type].label}
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-4xl">
+              <h1 className="type-title text-[1.75rem] md:text-[2.5rem]">
                 {title}
               </h1>
               {titleAction}

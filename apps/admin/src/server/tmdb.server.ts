@@ -331,7 +331,9 @@ export async function searchTmdb(
   filters: SearchFilters = {}
 ): Promise<Array<MediaSummary>> {
   const exactYear =
-    filters.from && filters.from === filters.to ? String(filters.from) : undefined
+    filters.from && filters.from === filters.to
+      ? String(filters.from)
+      : undefined
   const filtering = Object.keys(filters).length > 0
   // Filtering drops results, so look a bit deeper than the first page.
   const pages = filtering ? [1, 2, 3] : [1]
@@ -417,7 +419,9 @@ export async function discoverTmdb(
     )
   )
   const results = pages.flatMap((p) => p.results)
-  return results.map((r) => (type === "movie" ? movieSummary(r) : showSummary(r)))
+  return results.map((r) =>
+    type === "movie" ? movieSummary(r) : showSummary(r)
+  )
 }
 
 /** Streaming services in your region, most relevant first. */

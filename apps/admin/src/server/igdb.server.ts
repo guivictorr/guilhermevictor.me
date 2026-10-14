@@ -137,7 +137,9 @@ export async function searchIgdb(
   if (filters.from) where.push(`first_release_date >= ${unix(filters.from)}`)
   if (filters.to) where.push(`first_release_date <= ${unix(filters.to, true)}`)
   if (filters.rating)
-    where.push(`total_rating >= ${filters.rating * 20} & total_rating_count > 5`)
+    where.push(
+      `total_rating >= ${filters.rating * 20} & total_rating_count > 5`
+    )
 
   const body = query
     ? [`search ${quote(query)}`]

@@ -4,7 +4,8 @@ import { geoGraticule10, geoNaturalEarth1, geoPath } from "d3-geo"
 import type { GeoPermissibleObjects } from "d3-geo"
 import { feature } from "topojson-client"
 import type { Topology } from "topojson-specification"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import type { Airport } from "@/lib/airports"
 
 export type Route = { from: Airport; to: Airport; count: number }
@@ -24,20 +25,47 @@ const landQuery = {
   gcTime: Infinity,
 }
 
+export const routeKey = (from: string, to: string) => `${from}-${to}`
+
+/** Most planes in the air at once; more turns the map into noise. */
+const MAX_PLANES = 12
+
 /**
  * Great-circle routes on a world map, zoomed to where you've flown.
- * Thicker arcs = routes flown more often.
+ * Thicker arcs = routes flown more often. `highlight` isolates some routes
+ * (hovered trip, current flight) and dims the rest. Small planes fly the
+ * routes unless the user prefers reduced motion; they pause off-screen.
  */
 export function FlightMap({
   routes,
   className,
   labels = true,
+  highlight,
+  planes = true,
 }: {
   routes: Array<Route>
   className?: string
   labels?: boolean
+  /** Route keys (`routeKey(from, to)`) to emphasize; others are dimmed. */
+  highlight?: ReadonlySet<string>
+  planes?: boolean
 }) {
   const { data: land } = useQuery(landQuery)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)")
+  const focused = highlight && highlight.size > 0
+
+  // SMIL animations keep running off-screen; pause them when not visible.
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg || !planes) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) svg.unpauseAnimations()
+      else svg.pauseAnimations()
+    })
+    observer.observe(svg)
+    return () => observer.disconnect()
+  }, [planes])
 
   const scene = useMemo(() => {
     const airports = new Map<string, Airport>()
@@ -102,7 +130,7 @@ export function FlightMap({
       airports: [...airports.values()],
       labeled,
       arcs: routes.map((r, i) => ({
-        key: `${r.from.iata}-${r.to.iata}`,
+        key: routeKey(r.from.iata, r.to.iata),
         d: path(lines[i]!) ?? "",
         width: 1.5 + (r.count / maxCount) * 2.5,
         count: r.count,
@@ -110,12 +138,22 @@ export function FlightMap({
     }
   }, [routes])
 
+  const isLit = (key: string) => !focused || highlight.has(key)
+  const litAirports = new Set(
+    scene.arcs.filter((a) => isLit(a.key)).flatMap((a) => a.key.split("-"))
+  )
+  const flying =
+    planes && !reduceMotion
+      ? scene.arcs.filter((a) => isLit(a.key)).slice(0, MAX_PLANES)
+      : []
+
   return (
     <svg
+      ref={svgRef}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
       aria-label={`Map of ${routes.length} routes`}
-      className={cn("w-full rounded-xl border bg-card", className)}
+      className={cn("w-full rounded-[20px] border bg-card", className)}
     >
       <path
         d={scene.path(geoGraticule10()) ?? ""}
@@ -124,18 +162,19 @@ export function FlightMap({
       {land ? (
         <path
           d={scene.path(land) ?? ""}
-          className="fill-muted stroke-foreground/10"
+          className="fill-field stroke-foreground/10"
           strokeWidth={0.5}
         />
       ) : null}
       {scene.arcs.map((arc) => (
         <path
           key={arc.key}
+          id={`route-${arc.key}`}
           d={arc.d}
-          className="fill-none stroke-sky-500 dark:stroke-sky-400"
-          strokeWidth={arc.width}
+          className="fill-none stroke-primary transition-opacity duration-200 ease-(--ease-out)"
+          strokeWidth={focused && isLit(arc.key) ? arc.width + 1 : arc.width}
           strokeLinecap="round"
-          opacity={0.85}
+          opacity={isLit(arc.key) ? 0.9 : 0.12}
         >
           <title>
             {arc.key.replace("-", " → ")}: {arc.count} flight
@@ -143,15 +182,43 @@ export function FlightMap({
           </title>
         </path>
       ))}
+      {flying.map((arc, i) => (
+        // A plane following the route, staggered so they don't move in step.
+        <g key={`plane-${arc.key}`} aria-hidden className="pointer-events-none">
+          <path
+            d="M7 0 L-4 -4.5 L-2.2 0 L-4 4.5 Z"
+            className="fill-foreground stroke-background"
+            strokeWidth={1}
+          >
+            <animateMotion
+              dur={`${6 + (i % 4) * 1.5}s`}
+              begin={`${(i * 0.9) % 5}s`}
+              repeatCount="indefinite"
+              rotate="auto"
+              keyPoints="0;1"
+              keyTimes="0;1"
+              calcMode="linear"
+            >
+              <mpath href={`#route-${arc.key}`} />
+            </animateMotion>
+          </path>
+        </g>
+      ))}
       {scene.airports.map((a) => {
         const point = scene.projection([a.lon, a.lat])
         if (!point) return null
+        const lit = !focused || litAirports.has(a.iata)
         return (
-          <g key={a.iata} transform={`translate(${point[0]} ${point[1]})`}>
+          <g
+            key={a.iata}
+            transform={`translate(${point[0]} ${point[1]})`}
+            opacity={lit ? 1 : 0.25}
+            className="transition-opacity duration-200"
+          >
             {/* Surface ring keeps dots legible where arcs overlap. */}
-            <circle r={5} className="fill-background" />
+            <circle r={5} className="fill-card" />
             <circle r={3.5} className="fill-foreground" />
-            {labels && scene.labeled.has(a.iata) ? (
+            {labels && (scene.labeled.has(a.iata) || (focused && lit)) ? (
               <text
                 y={-9}
                 textAnchor="middle"

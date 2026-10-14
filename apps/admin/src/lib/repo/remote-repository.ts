@@ -9,6 +9,7 @@ import {
   deleteLogFn,
   exportAllFn,
   getIndexFn,
+  getFactsFn,
   getStatsFn,
   importAllFn,
   importCollectionFn,
@@ -38,6 +39,7 @@ export const remoteRepository: ArchiveRepository = {
   removeFromBacklog: (target) => removeFromBacklogFn({ data: target }),
   getIndex: () => getIndexFn(),
   getStats: () => getStatsFn(),
+  getFacts: () => getFactsFn(),
   listCollection: () => listCollectionFn(),
   addCollectionItem: (snapshot, input) =>
     addCollectionItemFn({ data: { snapshot, input } }),

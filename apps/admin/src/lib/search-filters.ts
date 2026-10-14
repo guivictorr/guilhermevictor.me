@@ -9,7 +9,13 @@ import { z } from "zod"
  * The router parses number-like params as numbers, so text fields coerce.
  */
 
-const text = z.coerce.string().trim().min(1).max(100).optional().catch(undefined)
+const text = z.coerce
+  .string()
+  .trim()
+  .min(1)
+  .max(100)
+  .optional()
+  .catch(undefined)
 const year = z.coerce
   .number()
   .int()
@@ -367,7 +373,12 @@ export const FILTER_FIELDS: Record<MediaType, Array<FilterField>> = {
     },
   ],
   game: [
-    { key: "platform", label: "Platform", control: "select", options: PLATFORMS },
+    {
+      key: "platform",
+      label: "Platform",
+      control: "select",
+      options: PLATFORMS,
+    },
     { key: "genre", label: "Genre", control: "select", options: GAME_GENRES },
     { key: "theme", label: "Theme", control: "select", options: GAME_THEMES },
     { key: "mode", label: "Mode", control: "select", options: GAME_MODES },
@@ -394,7 +405,12 @@ export const FILTER_FIELDS: Record<MediaType, Array<FilterField>> = {
       control: "text",
       placeholder: "Clarice Lispector",
     },
-    { key: "genre", label: "Subject", control: "select", options: BOOK_SUBJECTS },
+    {
+      key: "genre",
+      label: "Subject",
+      control: "select",
+      options: BOOK_SUBJECTS,
+    },
     {
       key: "publisher",
       label: "Publisher",
@@ -405,12 +421,22 @@ export const FILTER_FIELDS: Record<MediaType, Array<FilterField>> = {
     { key: "sort", label: "Sort by", control: "select", options: BOOK_SORTS },
   ],
   record: [
-    { key: "artist", label: "Artist", control: "text", placeholder: "Gal Costa" },
+    {
+      key: "artist",
+      label: "Artist",
+      control: "text",
+      placeholder: "Gal Costa",
+    },
     { key: "label", label: "Label", control: "text", placeholder: "Philips" },
     { key: "genre", label: "Genre", control: "select", options: RECORD_GENRES },
     { key: "style", label: "Style", control: "text", placeholder: "MPB" },
     { key: "from", label: "Year", control: "years" },
-    { key: "country", label: "Country", control: "text", placeholder: "Brazil" },
+    {
+      key: "country",
+      label: "Country",
+      control: "text",
+      placeholder: "Brazil",
+    },
     {
       key: "format",
       label: "Format",
