@@ -502,15 +502,18 @@ type ReportRow = { file: string; kind: string; result: string; detail?: string }
 async function main() {
   await mkdir(outDir, { recursive: true })
   const cache = await readJson<Cache>(cachePath, {})
-  const overrides = await readJson<Record<string, number | null>>(
-    overridesPath,
-    {}
-  )
+  // A provider id, `{ id, type: "show" }` for vault "movies" that are TV
+  // (episodes, series), or null to skip the note.
+  type Override = number | { id: number; type: "show" } | null
+  const overrides = await readJson<Record<string, Override>>(overridesPath, {})
   if (!existsSync(overridesPath))
     await writeFile(
       overridesPath,
       JSON.stringify(
-        { "_example Note name.md": "provider id, or null to skip the note" },
+        {
+          "_example Note name.md":
+            'provider id, { "id": 123, "type": "show" }, or null to skip',
+        },
         null,
         2
       )
@@ -536,10 +539,17 @@ async function main() {
     find: () => Promise<Match | undefined>
   ): Promise<Match | undefined> => {
     if (note.file in overrides) {
-      const id = overrides[note.file]
-      if (id === null || id === undefined) return undefined
-      const key = `override:${note.file}:${id}`
-      if (!(key in cache)) cache[key] = (await lookup(kind, id)) ?? null
+      const override = overrides[note.file]
+      if (override === null || override === undefined) return undefined
+      const { id, asShow } =
+        typeof override === "number"
+          ? { id: override, asShow: false }
+          : { id: override.id, asShow: true }
+      const key = `override:${note.file}:${asShow ? "tv" : ""}${id}`
+      if (!(key in cache)) {
+        const found = await lookup(asShow ? "Shows" : kind, id)
+        cache[key] = found ? { ...found, asShow: asShow || undefined } : null
+      }
       return cache[key] ?? undefined
     }
     if (!(note.file in cache)) {

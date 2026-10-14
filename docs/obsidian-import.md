@@ -11,12 +11,12 @@ pnpm --filter admin import-obsidian ../../References
 
 Writes `References/.import/`:
 
-| File                  | Purpose                                                          |
-| --------------------- | ---------------------------------------------------------------- |
-| `archive-import.json` | `ArchiveExport`, validated against `@workspace/schemas`          |
-| `report.md`           | summary, "Needs review" list, all matches with confidence        |
-| `overrides.json`      | owner's fixes: `"Note name.md": <provider id>` or `null` to skip |
-| `cache.json`          | match cache; delete entries to re-match them                     |
+| File                  | Purpose                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| `archive-import.json` | `ArchiveExport`, validated against `@workspace/schemas`                                           |
+| `report.md`           | summary, "Needs review" list, all matches with confidence                                         |
+| `overrides.json`      | owner's fixes: `"Note name.md": <id>`, `{ "id": <tmdb tv id>, "type": "show" }` or `null` to skip |
+| `cache.json`          | match cache; delete entries to re-match them                                                      |
 
 First run ~8 min (IGDB rate limit); cached re-runs ~2 min. The script loads
 `apps/admin/.env` itself.
@@ -63,6 +63,12 @@ count (Brazilian films). Vault "movies" that are series switch to TV only when T
 clearly wins. Games prefer main games over DLC. File-name years like
 `The Batman (2022).md` are used when the note has no year.
 
-Last run: 494 items, 497 logs, 220 backlog, 47 records, 18 flights; 43 notes to
-review (mostly correct ±1-year matches; real misses are 8 Brazilian book editions,
-2 Love Death & Robots episodes, a few games).
+Provider data (TMDB/IGDB) wins over the vault for titles and years; books keep
+the vault title (the owner's edition) but link to the Open Library work, so translated
+editions map to the original work (e.g. "Laranja Mecânica" → A Clockwork Orange).
+Episodes/finales filed as movies become whole-show logs via `type: "show"` overrides.
+
+Last run (2026-10-14, after review): 498 items, 501 logs, 226 backlog, 47 records,
+18 flights. 40 reviewed matches are pinned in `overrides.json`. Still unmatched: 3
+books that don't exist on Open Library (_Nós: O Atlântico em solitário_, _Sábado no
+parque_, _Só sei que foi assim_) — add them to Open Library (it's a wiki) and re-run.
