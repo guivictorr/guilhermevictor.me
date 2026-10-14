@@ -1,0 +1,37 @@
+import { Link } from "@tanstack/react-router"
+import { useEffect, useRef } from "react"
+import { ScrollRow } from "@/components/media/media-rail"
+import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
+
+/**
+ * Kind switcher at the top of every library page. On phones the tab bar
+ * has a single "Library" tab, so this is how you move between kinds.
+ */
+export function LibraryNav() {
+  const ref = useRef<HTMLElement>(null)
+  // Kinds overflow on narrow phones; keep the current one visible.
+  useEffect(() => {
+    ref.current
+      ?.querySelector('[data-status="active"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" })
+  }, [])
+  return (
+    <nav ref={ref} aria-label="Library">
+      <ScrollRow className="snap-none gap-2 pb-1">
+        {KIND_ORDER.map((type) => {
+          const { plural, icon: Icon, to } = KINDS[type]
+          return (
+            <Link
+              key={type}
+              to={to}
+              className="pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[status=active]:border-primary data-[status=active]:bg-primary data-[status=active]:text-primary-foreground"
+            >
+              <Icon className="size-4" />
+              {plural}
+            </Link>
+          )
+        })}
+      </ScrollRow>
+    </nav>
+  )
+}

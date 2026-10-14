@@ -1,0 +1,99 @@
+@import "@workspace/ui/globals.css";
+
+@theme {
+  /* Motion tokens (Emil Kowalski): strong ease-out for UI, iOS drawer curve for sheets. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --color-star: oklch(0.8 0.16 80);
+
+  /* Height of the mobile tab bar, excluding the safe area. */
+  --tab-bar-height: 3.5rem;
+}
+
+/* Safe-area helpers; require viewport-fit=cover in the viewport meta. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility px-safe {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+/* Bottom padding that clears the mobile tab bar. */
+@utility pb-tab-bar {
+  padding-bottom: calc(
+    var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 1.5rem
+  );
+}
+
+/* Press feedback for anything tappable that isn't a <Button>. */
+@utility pressable {
+  transition: transform 160ms var(--ease-out);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button,
+  a,
+  [role="button"],
+  [role="tab"] {
+    touch-action: manipulation;
+  }
+
+  button,
+  [role="button"],
+  [role="tab"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* iOS zooms into inputs under 16px and never zooms back out. */
+  @media (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* Router view transitions: a quick crossfade between screens. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .pressable:active {
+    transform: none;
+  }
+}

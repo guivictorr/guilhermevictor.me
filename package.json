@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=admin",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"
@@ -15,12 +15,8 @@
     "turbo": "^2.11.7",
     "typescript": "^6.0.2"
   },
-  "packageManager": "npm@11.8.0",
+  "packageManager": "pnpm@10.28.2",
   "engines": {
     "node": ">=22.12.0"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  }
 }

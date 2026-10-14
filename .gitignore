@@ -17,3 +17,9 @@ todos.json
 
 # typescript
 *.tsbuildinfo
+
+# env (keep the example)
+!.env.example
+
+# Personal Obsidian notes used as import reference (never commit)
+References/
