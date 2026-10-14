@@ -5,7 +5,7 @@ import {
   LibraryIcon,
   SearchIcon,
 } from "lucide-react"
-import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
+import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
 
 /** Phone tab bar. "Library" covers every kind; pages switch kinds with chips. */
 export const TAB_ITEMS = [
@@ -14,7 +14,7 @@ export const TAB_ITEMS = [
     to: "/movies",
     label: "Library",
     icon: LibraryIcon,
-    match: KIND_ORDER.map((type) => KINDS[type].to),
+    match: LIBRARY_SECTIONS.map((section) => section.to),
   },
   { to: "/backlog", label: "Backlog", icon: BookmarkIcon, match: ["/backlog"] },
   { to: "/stats", label: "Stats", icon: BarChart3Icon, match: ["/stats"] },
@@ -31,10 +31,10 @@ export const SIDEBAR_SECTIONS = [
   },
   {
     title: "Library",
-    items: KIND_ORDER.map((type) => ({
-      to: KINDS[type].to,
-      label: KINDS[type].plural,
-      icon: KINDS[type].icon,
+    items: LIBRARY_SECTIONS.map((section) => ({
+      to: section.to,
+      label: section.plural,
+      icon: section.icon,
       exact: false,
     })),
   },

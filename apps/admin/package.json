@@ -11,7 +11,8 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "generate-pwa-assets": "pwa-assets-generator"
+    "generate-pwa-assets": "pwa-assets-generator",
+    "build-airports": "node scripts/build-airports.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4",
@@ -26,12 +27,15 @@
     "@tanstack/react-virtual": "^3.14.19",
     "@workspace/schemas": "workspace:*",
     "@workspace/ui": "workspace:*",
+    "d3-geo": "^3.1.1",
     "lucide-react": "^1.56.0",
     "next-themes": "^0.4.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sonner": "^2.0.8",
     "tailwindcss": "^4",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -39,9 +43,12 @@
     "@tanstack/eslint-config": "^0.4.0",
     "@tanstack/react-query-devtools": "^5.104.2",
     "@tanstack/router-cli": "^1.167.40",
+    "@types/d3-geo": "^3.1.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/topojson-client": "^3.1.5",
+    "@types/topojson-specification": "^1.0.5",
     "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-react": "^6",
     "eslint": "^10",

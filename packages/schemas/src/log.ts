@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { CollectionItem } from "./collection"
+import { Flight } from "./flight"
 import { ImageRef, IsoDate, IsoDateTime, MediaType, Rating } from "./common"
 
 /*
@@ -184,5 +185,6 @@ export const ArchiveExport = z.object({
   // Optional so exports made before the backlog existed still import.
   backlog: z.array(BacklogItem).default([]),
   collection: z.array(CollectionItem).default([]),
+  flights: z.array(Flight).default([]),
 })
 export type ArchiveExport = z.infer<typeof ArchiveExport>

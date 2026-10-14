@@ -22,11 +22,13 @@ import { PageBody, PageHeader } from "@/components/page-header"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { MediaRail } from "@/components/media/media-rail"
-import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
+import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
+import type { LibrarySection } from "@/lib/media-kinds"
 import {
   backlogQuery,
   libraryQuery,
   recentQuery,
+  flightsQuery,
   statsQuery,
 } from "@/queries/archive"
 
@@ -184,25 +186,24 @@ function UpNext() {
   )
 }
 
-/** One tile per kind: logged works, or owned records. */
+/** One tile per library section: logged works, owned records, flights. */
 function Counts() {
   const { data: stats } = useQuery(statsQuery())
+  const { data: flights } = useQuery(flightsQuery())
+  const value = (key: LibrarySection["key"]) =>
+    key === "flight" ? flights?.length : stats?.byType[key].items
   return (
-    <div className="grid grid-cols-4 gap-2">
-      {KIND_ORDER.map((type) => {
-        const { plural, to } = KINDS[type]
+    <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+      {LIBRARY_SECTIONS.map(({ key, plural, to }) => {
+        const count = value(key)
         return (
           <Link
-            key={type}
+            key={key}
             to={to}
             className="pressable min-w-0 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/50"
           >
             <div className="text-2xl font-semibold tabular-nums">
-              {stats ? (
-                stats.byType[type].items
-              ) : (
-                <Skeleton className="h-8 w-8" />
-              )}
+              {count === undefined ? <Skeleton className="h-8 w-8" /> : count}
             </div>
             <div className="truncate text-xs text-muted-foreground">
               {plural}

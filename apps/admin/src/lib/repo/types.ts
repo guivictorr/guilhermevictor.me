@@ -5,6 +5,8 @@ import type {
   CollectionItem,
   CollectionItemDraft,
   CollectionItemInput,
+  Flight,
+  FlightInput,
   GameStatus,
   LibraryItem,
   LogEntry,
@@ -102,6 +104,10 @@ export interface ArchiveRepository {
   importCollection: (
     drafts: Array<CollectionItemDraft>
   ) => Promise<{ added: number; skipped: number }>
+  listFlights: () => Promise<Array<Flight>>
+  addFlight: (input: FlightInput) => Promise<Flight>
+  updateFlight: (id: string, input: FlightInput) => Promise<Flight>
+  deleteFlight: (id: string) => Promise<void>
   exportAll: () => Promise<ArchiveExport>
   importAll: (data: ArchiveExport) => Promise<void>
   clear: () => Promise<void>

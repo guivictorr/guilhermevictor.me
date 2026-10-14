@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router"
 import { useEffect, useRef } from "react"
 import { ScrollRow } from "@/components/media/media-rail"
-import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
+import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
 
 /**
  * Kind switcher at the top of every library page. On phones the tab bar
@@ -18,11 +18,10 @@ export function LibraryNav() {
   return (
     <nav ref={ref} aria-label="Library">
       <ScrollRow className="snap-none gap-2 pb-1">
-        {KIND_ORDER.map((type) => {
-          const { plural, icon: Icon, to } = KINDS[type]
+        {LIBRARY_SECTIONS.map(({ key, plural, icon: Icon, to }) => {
           return (
             <Link
-              key={type}
+              key={key}
               to={to}
               className="pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[status=active]:border-primary data-[status=active]:bg-primary data-[status=active]:text-primary-foreground"
             >

@@ -7,6 +7,7 @@ import type {
   ArchiveExport,
   CollectionItemDraft,
   CollectionItemInput,
+  FlightInput,
   LogInput,
   MediaType,
 } from "@workspace/schemas"
@@ -34,6 +35,7 @@ export const archiveKeys = {
   index: () => [...archiveKeys.all, "index"] as const,
   stats: () => [...archiveKeys.all, "stats"] as const,
   collection: () => [...archiveKeys.all, "collection"] as const,
+  flights: () => [...archiveKeys.all, "flights"] as const,
 }
 
 export const libraryQuery = (type: MediaType) =>
@@ -76,6 +78,12 @@ export const collectionQuery = () =>
   queryOptions({
     queryKey: archiveKeys.collection(),
     queryFn: () => repo.listCollection(),
+  })
+
+export const flightsQuery = () =>
+  queryOptions({
+    queryKey: archiveKeys.flights(),
+    queryFn: () => repo.listFlights(),
   })
 
 export const statsQuery = () =>
@@ -189,6 +197,23 @@ export function useImportCollection() {
   return useMutation({
     mutationFn: (drafts: Array<CollectionItemDraft>) =>
       repo.importCollection(drafts),
+    onSuccess: invalidate,
+  })
+}
+
+export function useSaveFlight() {
+  const invalidate = useInvalidateArchive()
+  return useMutation({
+    mutationFn: ({ id, input }: { id?: string; input: FlightInput }) =>
+      id ? repo.updateFlight(id, input) : repo.addFlight(input),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteFlight() {
+  const invalidate = useInvalidateArchive()
+  return useMutation({
+    mutationFn: (id: string) => repo.deleteFlight(id),
     onSuccess: invalidate,
   })
 }

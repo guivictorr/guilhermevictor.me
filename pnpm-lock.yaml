@@ -59,6 +59,9 @@ importers:
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      d3-geo:
+        specifier: ^3.1.1
+        version: 3.1.1
       lucide-react:
         specifier: ^1.56.0
         version: 1.56.0(@types/react@19.3.0)(react@19.3.0)
@@ -77,6 +80,12 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.3
+      topojson-client:
+        specifier: ^3.1.0
+        version: 3.1.0
+      world-atlas:
+        specifier: ^2.0.2
+        version: 2.0.2
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -93,6 +102,9 @@ importers:
       '@tanstack/router-cli':
         specifier: ^1.167.40
         version: 1.167.43
+      '@types/d3-geo':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@types/node':
         specifier: ^22
         version: 22.20.5
@@ -102,6 +114,12 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.3.0(@types/react@19.3.0)
+      '@types/topojson-client':
+        specifier: ^3.1.5
+        version: 3.1.5
+      '@types/topojson-specification':
+        specifier: ^1.0.5
+        version: 1.0.5
       '@vite-pwa/assets-generator':
         specifier: ^2.0.0
         version: 2.0.0(@types/node@22.20.5)
@@ -1914,11 +1932,17 @@ packages:
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
 
+  '@types/d3-geo@3.1.1':
+    resolution: {integrity: sha512-65Emv9fQiQQqphLlRkuQ5ypPsOmWPhtBGCMv61JDPEPMvsx+gzhGf74yw1a78xFKPj6zw4AgQICJoQv0vK9M2w==}
+
   '@types/esrecurse@4.3.1':
     resolution: {integrity: sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==}
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/geojson@7946.0.16':
+    resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1933,6 +1957,12 @@ packages:
 
   '@types/react@19.3.0':
     resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
+
+  '@types/topojson-client@3.1.5':
+    resolution: {integrity: sha512-C79rySTyPxnQNNguTZNI1Ct4D7IXgvyAs3p9HPecnl6mNrJ5+UhvGNYcZfpROYV2lMHI48kJPxwR+F9C6c7nmw==}
+
+  '@types/topojson-specification@1.0.5':
+    resolution: {integrity: sha512-C7KvcQh+C2nr6Y2Ub4YfgvWvWCgP2nOQMtfhlnwsRL4pYmmwzBS7HclGiS87eQfDOU/DLQpX6GEscviaz4yLIQ==}
 
   '@types/validate-npm-package-name@4.0.2':
     resolution: {integrity: sha512-lrpDziQipxCEeK5kWxvljWYhUvOiB2A9izZd9B2AFarYAkqZshb4lPbRs7zKEic6eGtH8V/2qJW+dPp9OtF6bw==}
@@ -2384,6 +2414,14 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  d3-array@3.2.4:
+    resolution: {integrity: sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==}
+    engines: {node: '>=12'}
+
+  d3-geo@3.1.1:
+    resolution: {integrity: sha512-637ln3gXKXOwhalDzinUgY83KzNWZRKbYubaG+fGVuc/dxO64RRljtCTnf5ecMyE1RIdtqpkVcq0IbtU2S8j2Q==}
+    engines: {node: '>=12'}
 
   dayjs@1.11.23:
     resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
@@ -2855,6 +2893,10 @@ packages:
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
+
+  internmap@2.0.3:
+    resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
+    engines: {node: '>=12'}
 
   ip-address@10.7.4:
     resolution: {integrity: sha512-DWBMKyeM25D70nrIiTkgQth59/G+naKOTep6huF9j+GmeK3DMD60Zvxg5d5qQnz+38AHgou6ean2LECX+lrKDg==}
@@ -3812,6 +3854,10 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
+  topojson-client@3.1.0:
+    resolution: {integrity: sha512-605uxS6bcYxGXw9qi62XyrV6Q3xwbndjachmNxu8HWTtVPxZfEJN9fd/SZS1Q54Sn2y0TMyMxFj/cJINqGHrKw==}
+    hasBin: true
+
   ts-api-utils@2.5.0:
     resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
     engines: {node: '>=18.12'}
@@ -4029,6 +4075,9 @@ packages:
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
+
+  world-atlas@2.0.2:
+    resolution: {integrity: sha512-IXfV0qwlKXpckz1FhwXVwKRjiIhOnWttOskm5CtxMsjgE/MXAYRHWJqgXOpM8IkcPBoXnyTU5lFHcYa5ChG0LQ==}
 
   wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
@@ -5738,9 +5787,15 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@types/d3-geo@3.1.1':
+    dependencies:
+      '@types/geojson': 7946.0.16
+
   '@types/esrecurse@4.3.1': {}
 
   '@types/estree@1.0.9': {}
+
+  '@types/geojson@7946.0.16': {}
 
   '@types/json-schema@7.0.15': {}
 
@@ -5755,6 +5810,15 @@ snapshots:
   '@types/react@19.3.0':
     dependencies:
       csstype: 3.2.3
+
+  '@types/topojson-client@3.1.5':
+    dependencies:
+      '@types/geojson': 7946.0.16
+      '@types/topojson-specification': 1.0.5
+
+  '@types/topojson-specification@1.0.5':
+    dependencies:
+      '@types/geojson': 7946.0.16
 
   '@types/validate-npm-package-name@4.0.2': {}
 
@@ -6106,8 +6170,7 @@ snapshots:
 
   commander@14.0.3: {}
 
-  commander@2.20.3:
-    optional: true
+  commander@2.20.3: {}
 
   comment-parser@1.4.9: {}
 
@@ -6156,6 +6219,14 @@ snapshots:
   cssesc@3.0.0: {}
 
   csstype@3.2.3: {}
+
+  d3-array@3.2.4:
+    dependencies:
+      internmap: 2.0.3
+
+  d3-geo@3.1.1:
+    dependencies:
+      d3-array: 3.2.4
 
   dayjs@1.11.23: {}
 
@@ -6668,6 +6739,8 @@ snapshots:
   imurmurhash@0.1.4: {}
 
   inherits@2.0.4: {}
+
+  internmap@2.0.3: {}
 
   ip-address@10.7.4: {}
 
@@ -7546,6 +7619,10 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
+  topojson-client@3.1.0:
+    dependencies:
+      commander: 2.20.3
+
   ts-api-utils@2.5.0(typescript@6.0.3):
     dependencies:
       typescript: 6.0.3
@@ -7728,6 +7805,8 @@ snapshots:
       isexe: 3.1.5
 
   word-wrap@1.2.5: {}
+
+  world-atlas@2.0.2: {}
 
   wrap-ansi@6.2.0:
     dependencies:

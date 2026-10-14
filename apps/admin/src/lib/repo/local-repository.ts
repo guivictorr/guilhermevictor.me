@@ -3,6 +3,7 @@ import {
   BacklogItem,
   BookStatus,
   CollectionItem,
+  Flight,
   GameStatus,
   LibraryItem,
   LogEntry,
@@ -34,6 +35,7 @@ const Stored = z.object({
   logs: z.array(LogEntry),
   backlog: z.array(BacklogItem).default([]),
   collection: z.array(CollectionItem).default([]),
+  flights: z.array(Flight).default([]),
 })
 type Stored = z.infer<typeof Stored>
 
@@ -42,6 +44,7 @@ const empty = (): Stored => ({
   logs: [],
   backlog: [],
   collection: [],
+  flights: [],
 })
 
 /** Upgrades data written by older versions of the app before validating it. */
@@ -405,8 +408,51 @@ export const localRepository: ArchiveRepository = {
     return { added: fresh.length, skipped: drafts.length - fresh.length }
   },
 
+  async listFlights() {
+    // Most recent first; departure is local time, which sorts fine as text.
+    return [...read().flights].sort((a, b) =>
+      b.departure.localeCompare(a.departure)
+    )
+  },
+
+  async addFlight(input) {
+    const data = read()
+    const now = new Date().toISOString()
+    const flight = Flight.parse({
+      ...input,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    })
+    data.flights.push(flight)
+    write(data)
+    return flight
+  },
+
+  async updateFlight(id, input) {
+    const data = read()
+    const index = data.flights.findIndex((f) => f.id === id)
+    const current = data.flights[index]
+    if (!current) throw new Error("Flight not found")
+    const updated = Flight.parse({
+      ...input,
+      id,
+      createdAt: current.createdAt,
+      updatedAt: new Date().toISOString(),
+    })
+    data.flights[index] = updated
+    write(data)
+    return updated
+  },
+
+  async deleteFlight(id) {
+    const data = read()
+    data.flights = data.flights.filter((f) => f.id !== id)
+    write(data)
+  },
+
   async exportAll() {
-    const { items, logs, backlog, collection } = read()
+    const { items, logs, backlog, collection, flights } = read()
     return {
       version: 1,
       exportedAt: new Date().toISOString(),
@@ -414,6 +460,7 @@ export const localRepository: ArchiveRepository = {
       logs,
       backlog,
       collection,
+      flights,
     }
   },
 
@@ -424,6 +471,7 @@ export const localRepository: ArchiveRepository = {
       logs: data.logs,
       backlog: data.backlog,
       collection: data.collection,
+      flights: data.flights,
     })
   },
 

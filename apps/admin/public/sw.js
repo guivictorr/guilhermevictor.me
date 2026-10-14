@@ -6,7 +6,7 @@
  *  - cover images (TMDB/IGDB/Discogs/Open Library): cache first, trimmed to a max entry count
  * Bump VERSION to drop old caches after changing this file.
  */
-const VERSION = "v3"
+const VERSION = "v4"
 const CACHES = {
   static: `static-${VERSION}`,
   pages: `pages-${VERSION}`,
@@ -29,7 +29,7 @@ self.addEventListener("install", (event) => {
       .open(CACHES.static)
       .then((cache) => cache.addAll(PRECACHE))
       .catch(() => undefined)
-      .then(() => self.skipWaiting()),
+      .then(() => self.skipWaiting())
   )
 })
 
@@ -38,8 +38,14 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => !current.has(key)).map((key) => caches.delete(key))))
-      .then(() => self.clients.claim()),
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => !current.has(key))
+            .map((key) => caches.delete(key))
+        )
+      )
+      .then(() => self.clients.claim())
   )
 })
 
@@ -50,9 +56,15 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirst(request, CACHES.pages))
-  } else if (url.origin === self.location.origin && url.pathname.startsWith("/_serverFn/")) {
+  } else if (
+    url.origin === self.location.origin &&
+    url.pathname.startsWith("/_serverFn/")
+  ) {
     event.respondWith(networkFirst(request, CACHES.data))
-  } else if (url.origin === self.location.origin && url.pathname.startsWith("/assets/")) {
+  } else if (
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/data/"))
+  ) {
     event.respondWith(cacheFirst(request, CACHES.static))
   } else if (IMAGE_ORIGINS.includes(url.origin)) {
     event.respondWith(cacheFirst(request, CACHES.images, MAX_IMAGES))
@@ -66,7 +78,9 @@ async function networkFirst(request, cacheName) {
     if (response.ok) cache.put(request, response.clone())
     return response
   } catch (error) {
-    const cached = (await cache.match(request)) ?? (request.mode === "navigate" ? await caches.match("/") : undefined)
+    const cached =
+      (await cache.match(request)) ??
+      (request.mode === "navigate" ? await caches.match("/") : undefined)
     if (cached) return cached
     throw error
   }
@@ -88,7 +102,11 @@ async function cacheFirst(request, cacheName, maxEntries) {
 async function trim(cache, maxEntries) {
   const keys = await cache.keys()
   // Cache keys are insertion-ordered: drop the oldest first.
-  await Promise.all(keys.slice(0, Math.max(0, keys.length - maxEntries)).map((key) => cache.delete(key)))
+  await Promise.all(
+    keys
+      .slice(0, Math.max(0, keys.length - maxEntries))
+      .map((key) => cache.delete(key))
+  )
 }
 
 function withTimeout(promise, ms) {
@@ -102,7 +120,7 @@ function withTimeout(promise, ms) {
       (error) => {
         clearTimeout(timer)
         reject(error)
-      },
+      }
     )
   })
 }

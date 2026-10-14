@@ -2,6 +2,7 @@ import type { MediaType } from "@workspace/schemas"
 import type { LucideIcon } from "lucide-react"
 import {
   BookOpenIcon,
+  PlaneIcon,
   ClapperboardIcon,
   Disc3Icon,
   Gamepad2Icon,
@@ -73,4 +74,25 @@ export const KIND_ORDER: Array<MediaType> = [
   "game",
   "book",
   "record",
+]
+
+/**
+ * Everything listed under "Library": media kinds plus flights, which are
+ * your own records rather than a catalog (no search, backlog or provider).
+ */
+export type LibrarySection = {
+  key: MediaType | "flight"
+  plural: string
+  icon: LucideIcon
+  to: KindConfig["to"] | "/flights"
+}
+
+export const LIBRARY_SECTIONS: Array<LibrarySection> = [
+  ...KIND_ORDER.map((type) => ({
+    key: type,
+    plural: KINDS[type].plural,
+    icon: KINDS[type].icon,
+    to: KINDS[type].to,
+  })),
+  { key: "flight", plural: "Flights", icon: PlaneIcon, to: "/flights" },
 ]
