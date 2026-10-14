@@ -12,7 +12,7 @@ about it. Until now the data lived in an Obsidian vault (one note per item).
 
 | Topic                | Decision                                                                                                                                        | Why                                                                                        |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Admin app            | Separate app on a subdomain (name TBD), not inside the Next.js site                                                                             | Needs auth, offline, forms; the site stays a read-only consumer                            |
+| Admin app            | Separate app at **archive.guilhermevictor.me**, not inside the Next.js site                                                                     | Needs auth, offline, forms; the site stays a read-only consumer                            |
 | Stack                | TanStack Start + Router/Query/Form/Table, shadcn/ui on **Base UI**, Tailwind v4, Zod                                                            | Owner wanted to try TanStack; Base UI for native-feeling primitives (Drawer, Combobox)     |
 | Repo                 | pnpm + Turborepo monorepo (`apps/admin`, `packages/schemas`, `packages/ui`)                                                                     | Schemas shared with the future API                                                         |
 | Backend (next phase) | Postgres (Neon free tier) + Drizzle (standard `pg` driver), Better Auth (passkey/GitHub, single user, API-key plugin for the website)           | Budget **under $5/month**, managed now but **portable to a VPS** (no Vercel-only features) |
@@ -55,8 +55,5 @@ collecting reference designs).
 
 ## Open questions
 
-- Subdomain name for the admin app.
-- Imported games without a status were set to **Finished** (212 games, 46 unrated) —
-  owner hasn't confirmed this default.
-- Whether to purge commit `9ec56b0` (contained test screenshots of imported data,
-  removed in `4ab5308`) from git history with a force-push.
+- None right now. Decided 2026-10-14: subdomain `archive.guilhermevictor.me`;
+  imported games without a status stay **Finished**.

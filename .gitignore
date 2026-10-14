@@ -23,3 +23,8 @@ todos.json
 
 # Personal Obsidian notes used as import reference (never commit)
 References/
+
+# Test screenshots and browser test output (never commit)
+shots/
+test-results/
+playwright-report/

@@ -47,7 +47,7 @@ Places, Languages, People.
 - `tags: backlog` or `wishlist` → Backlog (no separate wishlist).
 - Movies: rated or untagged → one movie log. Shows: whole-show log.
 - Games: untagged or rated → log with status **finished** (vault has no status;
-  default not yet confirmed by the owner). `playtime` ignored.
+  confirmed by the owner). `playtime` ignored.
 - Books: matched by ISBN via Open Library (exact), else title + author.
 - Records: release id from `source`; release details fetched from Discogs when a
   token is set; `price` assumed **BRL**; note body → copy notes.
