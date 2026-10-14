@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 import viteReact from "@vitejs/plugin-react"
+import { nitro } from "nitro/vite"
 import tailwindcss from "@tailwindcss/vite"
 
 export default defineConfig(({ mode }) => {
@@ -13,6 +14,8 @@ export default defineConfig(({ mode }) => {
     resolve: { tsconfigPaths: true },
     // Listen on the LAN so the app can be tested on a real phone.
     server: { host: true },
-    plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
+    // Nitro picks the target at build time: Vercel when built there, a plain
+    // Node server (`node .output/server/index.mjs`) anywhere else.
+    plugins: [devtools(), tailwindcss(), tanstackStart(), nitro(), viteReact()],
   }
 })
