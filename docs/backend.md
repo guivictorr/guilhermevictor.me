@@ -79,8 +79,7 @@ Google Books is down or gone. Search and discovery still need the providers.
 `ArchiveExport` = `{ version: 2, exportedAt, movies, shows, games, books, records,
 logs, flights }`: one array per work table (with `data`), all logs as one array
 (`LogEntry` union), flights. Settings → Import and `db:seed` **replace** the
-archive (never your account). v1 files (pre-database, and what the Obsidian
-importer still writes) are rejected until the importer moves to v2.
+archive (never your account). v1 files (pre-database) are rejected.
 
 ## Auth (`src/server/auth.server.ts`)
 

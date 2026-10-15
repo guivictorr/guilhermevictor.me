@@ -5,12 +5,12 @@ reads, collects and flies — movies, shows (per season or whole show), games,
 books, vinyl records and flights. Replaces Letterboxd/IMDb-style services: the
 data must stay fully owned and portable (export/import as JSON at any time).
 
-Current phase: **backend done locally**. The admin PWA stores everything in Postgres
+Current phase: **deployed**. The admin PWA stores everything in Postgres
 (Drizzle) through server functions, with Better Auth (GitHub + passkeys, single
 user). One table per kind (movies, shows, games, books, records = one row per copy)
 with the provider details in a `data` column, one log table per kind, flights.
-The DB starts empty (the Obsidian importer must move to export v2 first).
-**Next: deploy** (Vercel + Neon, see `docs/backend.md`). Details in `docs/`.
+Deployed at archive.guilhermevictor.me (Vercel + Neon, see `docs/backend.md`);
+the Obsidian vault is imported with `import-obsidian` → `db:seed`. Details in `docs/`.
 
 ## Commands
 
@@ -21,6 +21,7 @@ pnpm --filter admin db:migrate             # apply migrations (db:generate after
 pnpm --filter admin db:seed <export.json>  # load a v2 export (--replace to overwrite)
 pnpm --filter admin db:studio              # browse the tables in the browser
 pnpm --filter admin db:backfill-details    # store provider details for works missing them
+pnpm --filter admin import-obsidian ../../References  # vault → References/.import/
 pnpm dev                                   # admin app on http://localhost:3000 (LAN too)
 pnpm typecheck                             # all packages (turbo)
 pnpm lint
@@ -48,8 +49,8 @@ apps/admin/          TanStack Start PWA (the only app so far)
   src/lib/           media-kinds.ts (kind registry), images, flight-math, airports, format…
   src/queries/       TanStack Query options/mutations (media.ts = providers, archive.ts = repo)
   src/components/    app components (detail-layout, log/, media/, records/, flights/, form/)
-  scripts/           seed.ts, backfill-details.ts, build-airports.mjs; legacy/ = old
-                     Obsidian importer (excluded from tsc/lint until reworked)
+  scripts/           seed.ts, backfill-details.ts, build-airports.mjs,
+                     import-obsidian.ts (vault → export v2)
   public/            sw.js (hand-written), manifest, icons, data/airports.json
 packages/schemas/    Zod schemas = the data contract (shared with the future API)
 packages/ui/         shadcn/ui on Base UI (import as @workspace/ui/components/*)

@@ -113,6 +113,17 @@ export type BookSearch = {
   orderBy?: "relevance" | "newest"
 }
 
+/**
+ * Google's quoted phrases (`inauthor:"George Orwell"`) find nothing, so
+ * each word gets its own prefix: `inauthor:george inauthor:orwell`.
+ */
+const field = (prefix: string, value?: string) =>
+  value
+    ?.split(/\s+/)
+    .filter(Boolean)
+    .map((word) => `${prefix}:${word}`)
+    .join(" ")
+
 /** Google's query syntax: free text plus inauthor:/subject:/inpublisher:/isbn:. */
 export async function searchGoogleBooks(
   search: BookSearch
@@ -120,9 +131,9 @@ export async function searchGoogleBooks(
   const isbn = search.query?.replace(/[-\s]/g, "") ?? ""
   const terms = [
     /^(\d{9}[\dX]|\d{13})$/i.test(isbn) ? `isbn:${isbn}` : search.query,
-    search.author && `inauthor:"${search.author}"`,
-    search.subject && `subject:"${search.subject}"`,
-    search.publisher && `inpublisher:"${search.publisher}"`,
+    field("inauthor", search.author),
+    field("subject", search.subject),
+    field("inpublisher", search.publisher),
   ].filter(Boolean)
   if (!terms.length) return []
   const data = await googleBooks<{ items?: Array<Volume> }>("/volumes", {

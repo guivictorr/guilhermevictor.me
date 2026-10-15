@@ -55,10 +55,9 @@ Done (backend phase, 2026-10-14; runs locally, see `docs/backend.md`):
 
 Next:
 
-1. Test the system from scratch locally (owner), then **deploy**: Neon + Vercel +
-   GitHub OAuth app + domain (checklist in `docs/backend.md`).
-2. Rework the Obsidian importer to produce export v2.
-3. Website: add a read API when the Next.js site needs it.
+1. Load the Obsidian import into production (tested locally, see
+   `docs/obsidian-import.md`).
+2. Website: add a read API when the Next.js site needs it.
 
 Later ideas (agreed or discussed): Stremio addon (add/log from Stremio), MCP server
 for AI questions, Steam import for real hours played, barcode scanning (ISBN,

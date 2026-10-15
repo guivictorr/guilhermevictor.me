@@ -36,9 +36,11 @@ const top = <T>(items: Array<T>, score: (item: T) => number) =>
     undefined
   )
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`
 const stars = (rating: number) => `${(rating / 2).toFixed(1)}★`
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US")
+/** "1 copy", "2 copies", "3 watches". */
+const plural = (n: number, word: string) =>
+  `${fmt(n)} ${n === 1 ? word : word.replace(/(?<![aeiou])y$/, "ie").replace(/(ch|sh|s|x)$/, "$1e") + "s"}`
 const yearOf = (date?: string | null) =>
   date ? Number(date.slice(0, 4)) : undefined
 

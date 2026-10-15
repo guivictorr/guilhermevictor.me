@@ -71,5 +71,5 @@ are full signed URLs; Google Books paths are volume ids. Work ids are `WorkId`
 books, records, logs, flights }`. Each work row carries its provider `data`, so an
 export is self-contained. Settings → Import and `db:seed` **replace** the archive
 (never your account). `LegacyArchiveExport` (v1, pre-database) is only read for
-data left in the browser; the Obsidian importer still writes v1 and must move to
-v2 before its output can be imported.
+data left in the browser. The Obsidian importer writes v2 (without `data`; run
+`db:backfill-details` after seeding).

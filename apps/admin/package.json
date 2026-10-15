@@ -18,7 +18,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
     "start": "node --env-file-if-exists=.env .output/server/index.mjs",
-    "db:backfill-details": "tsx scripts/backfill-details.ts"
+    "db:backfill-details": "tsx scripts/backfill-details.ts",
+    "import-obsidian": "tsx scripts/import-obsidian.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "1.7.7",

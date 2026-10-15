@@ -1,14 +1,9 @@
 /**
- * LEGACY — kept for reference, not built or typechecked (scripts/legacy is
- * excluded). It targets Open Library and the v1 export; the owner will
- * rework it for Google Books and export v2.
- *
  * Obsidian → Archive import.
  *
  * Reads the vault notes (one note per item, data in YAML frontmatter),
- * matches them to TMDB / IGDB / Open Library / Discogs ids and writes an
- * JSON file in the legacy v1 export format. TODO: it must produce the v2
- * format (one array per table) before it can be imported again.
+ * matches them to TMDB / IGDB / Google Books / Discogs ids and writes an
+ * export (format v2) for `db:seed` or Settings → Import.
  *
  *   pnpm --filter admin import-obsidian ../../References
  *
@@ -30,16 +25,17 @@
 import { existsSync } from "node:fs"
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises"
 import path from "node:path"
-import { LegacyArchiveExport } from "@workspace/schemas"
+import { ArchiveExport } from "@workspace/schemas"
 import type {
-  BacklogItem,
-  CollectionItem,
   Flight,
   ImageRef,
-  LibraryItem,
   LogEntry,
   MediaType,
+  RecordRow,
+  WorkId,
 } from "@workspace/schemas"
+import type { z } from "zod"
+import { fetchBook, searchGoogleBooks } from "../src/server/googlebooks.server"
 
 // ---------------------------------------------------------------- setup
 
@@ -143,7 +139,7 @@ const normalize = (s: string) =>
 
 type Confidence = "exact" | "high" | "medium" | "low"
 type Candidate = {
-  id: number
+  id: WorkId
   title: string
   /** Original-language title, so "Central do Brasil" matches "Central Station". */
   altTitles?: Array<string>
@@ -331,80 +327,54 @@ async function matchIgdb(title: string, year?: number) {
   )
 }
 
-// Open Library --------------------------------------------------------------
+// Google Books --------------------------------------------------------------
+/**
+ * Google Books is flaky: the same query answers 503, nothing, or results
+ * from one call to the next. Retry both before believing "no results".
+ */
+async function searchBooks(query: string) {
+  for (let attempt = 1; ; attempt++) {
+    const results = await searchGoogleBooks({ query }).catch((error) => {
+      if (attempt >= 4 || !/ (429|5\d\d) /.test(String(error))) throw error
+      return undefined
+    })
+    if (results?.length || (results && attempt >= 3)) return results
+    await sleep(1500 * attempt)
+  }
+}
+
+/**
+ * A volume is an edition, so the ISBN finds the exact one you own (many
+ * Brazilian ISBNs aren't indexed); otherwise title + author as free text,
+ * which Google matches far better than inauthor:/intitle: filters. A title
+ * match without the ISBN is at best "medium".
+ */
 async function matchBook(
   isbn: string | undefined,
   title: string,
   author?: string
 ): Promise<Match | undefined> {
-  const ua = {
-    "User-Agent": "ArchivePersonalApp/0.1 (personal archive import)",
-  }
+  const asCandidate = (
+    r: Awaited<ReturnType<typeof searchGoogleBooks>>[number]
+  ): Candidate => ({ id: r.id, title: r.title, year: r.year, poster: r.poster })
   if (isbn) {
-    const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`, {
-      headers: ua,
-    })
-    if (res.ok) {
-      const edition = (await res.json()) as {
-        works?: Array<{ key: string }>
-        covers?: Array<number>
-        title: string
-      }
-      const work = edition.works?.[0]?.key.match(/OL(\d+)W/)?.[1]
-      if (work)
-        return {
-          id: Number(work),
-          title: edition.title,
-          poster: edition.covers?.[0]
-            ? { provider: "openlibrary", path: String(edition.covers[0]) }
-            : undefined,
-          confidence: "exact",
-        }
-    }
+    const [hit] = await searchBooks(`isbn:${isbn}`)
+    if (hit) return { ...asCandidate(hit), confidence: "exact" }
   }
-  // Brazilian editions are often missing from /isbn; the search index
-  // sometimes still knows the ISBN, else fall back to title + author.
   const clean = searchTitle(title)
-  const url = new URL("https://openlibrary.org/search.json")
-  if (isbn) url.searchParams.set("isbn", isbn)
-  else {
-    url.searchParams.set("title", clean)
-    if (author) url.searchParams.set("author", author)
+  // Google often drops the subtitle, so "Title: Subtitle" also tries "Title".
+  const titles = [clean, clean.split(":")[0]!.trim()]
+  for (const t of new Set(titles)) {
+    const results = await searchBooks([t, author].filter(Boolean).join(" "))
+    const best = pick(t, undefined, results.slice(0, 10).map(asCandidate))
+    if (best && best.confidence !== "low")
+      return {
+        ...best,
+        confidence: best.confidence === "high" ? "medium" : best.confidence,
+      }
+    if (t === titles.at(-1)) return best
   }
-  url.searchParams.set("fields", "key,title,first_publish_year,cover_i")
-  url.searchParams.set("limit", "5")
-  const res = await fetch(url, { headers: ua })
-  if (!res.ok) return undefined
-  const { docs } = (await res.json()) as {
-    docs: Array<{
-      key: string
-      title: string
-      first_publish_year?: number
-      cover_i?: number
-    }>
-  }
-  if (!docs.length && isbn) return matchBook(undefined, title, author)
-  if (!docs.length && clean.includes(":"))
-    return matchBook(undefined, clean.split(":")[0]!, author)
-  const best = pick(
-    clean,
-    undefined,
-    docs.map((d) => ({
-      id: Number(d.key.match(/OL(\d+)W/)?.[1]),
-      title: d.title,
-      year: d.first_publish_year,
-      poster: d.cover_i
-        ? { provider: "openlibrary" as const, path: String(d.cover_i) }
-        : undefined,
-    }))
-  )
-  // Without an ISBN hit, a title match is at best "medium".
-  return (
-    best && {
-      ...best,
-      confidence: best.confidence === "high" ? "medium" : best.confidence,
-    }
-  )
+  return undefined
 }
 
 // Discogs -------------------------------------------------------------------
@@ -438,7 +408,7 @@ async function fetchDiscogs(id: number): Promise<DiscogsRelease | undefined> {
 const cleanName = (n: string) => n.replace(/\s\(\d+\)$/, "")
 
 /** Fetch an item by id, for overrides.json entries. */
-async function lookup(kind: string, id: number): Promise<Match | undefined> {
+async function lookup(kind: string, id: WorkId): Promise<Match | undefined> {
   if (kind === "Movies" || kind === "Shows") {
     const r = await tmdb<{
       title?: string
@@ -484,15 +454,12 @@ async function lookup(kind: string, id: number): Promise<Match | undefined> {
     }
   }
   if (kind === "Books") {
-    const res = await fetch(`https://openlibrary.org/works/OL${id}W.json`)
-    if (!res.ok) return undefined
-    const w = (await res.json()) as { title: string; covers?: Array<number> }
+    const b = await fetchBook(String(id))
     return {
-      id,
-      title: w.title,
-      poster: w.covers?.[0]
-        ? { provider: "openlibrary", path: String(w.covers[0]) }
-        : undefined,
+      id: b.id,
+      title: b.title,
+      year: b.year,
+      poster: b.cover,
       confidence: "exact",
     }
   }
@@ -508,7 +475,7 @@ async function main() {
   const cache = await readJson<Cache>(cachePath, {})
   // A provider id, `{ id, type: "show" }` for vault "movies" that are TV
   // (episodes, series), or null to skip the note.
-  type Override = number | { id: number; type: "show" } | null
+  type Override = WorkId | { id: number; type: "show" } | null
   const overrides = await readJson<Record<string, Override>>(overridesPath, {})
   if (!existsSync(overridesPath))
     await writeFile(
@@ -530,10 +497,9 @@ async function main() {
     if (note) notes.push(note)
   }
 
-  const items = new Map<string, LibraryItem>()
+  const items = new Map<string, Work>()
   const logs: Array<LogEntry> = []
-  const backlog: Array<BacklogItem> = []
-  const collection: Array<CollectionItem> = []
+  const records: Array<z.input<typeof RecordRow>> = []
   const flights: Array<Flight> = []
   const report: Array<ReportRow> = []
 
@@ -542,13 +508,22 @@ async function main() {
     kind: string,
     find: () => Promise<Match | undefined>
   ): Promise<Match | undefined> => {
-    if (note.file in overrides) {
-      const override = overrides[note.file]
+    const override = overrides[note.file]
+    // Book overrides from the Open Library days are numbers; match again.
+    const stale = kind === "Books" && typeof override === "number"
+    if (stale)
+      report.push({
+        file: note.file,
+        kind,
+        result: "stale override",
+        detail: `Open Library id ${override}; replace with a Google Books volume id`,
+      })
+    if (note.file in overrides && !stale) {
       if (override === null || override === undefined) return undefined
       const { id, asShow } =
-        typeof override === "number"
-          ? { id: override, asShow: false }
-          : { id: override.id, asShow: true }
+        typeof override === "object"
+          ? { id: override.id, asShow: true }
+          : { id: override, asShow: false }
       const key = `override:${note.file}:${asShow ? "tv" : ""}${id}`
       if (!(key in cache)) {
         const found = await lookup(asShow ? "Shows" : kind, id)
@@ -556,9 +531,12 @@ async function main() {
       }
       return cache[key] ?? undefined
     }
-    if (!(note.file in cache)) {
+    // Books were matched on Open Library before; their old entries stay
+    // under the plain file name and are ignored.
+    const cacheKey = kind === "Books" ? `googlebooks:${note.file}` : note.file
+    if (!(cacheKey in cache)) {
       try {
-        cache[note.file] = (await find()) ?? null
+        cache[cacheKey] = (await find()) ?? null
       } catch (error) {
         report.push({
           file: note.file,
@@ -569,9 +547,10 @@ async function main() {
         return undefined
       }
     }
-    return cache[note.file] ?? undefined
+    return cache[cacheKey] ?? undefined
   }
 
+  const noteOf = new Map<string, string>()
   const addItem = (
     type: MediaType,
     m: Match,
@@ -580,6 +559,17 @@ async function main() {
     subtitle?: string
   ) => {
     const key = `${type}:${m.id}`
+    // Several notes can be one show (a note per season), but two notes on
+    // one movie, game or book is usually a wrong match.
+    const first = noteOf.get(key)
+    if (first && type !== "show")
+      report.push({
+        file: note.file,
+        kind: type,
+        result: "duplicate",
+        detail: `same ${type} #${m.id} as \`${first}\``,
+      })
+    if (!items.has(key)) noteOf.set(key, note.file)
     if (!items.has(key))
       items.set(key, {
         type,
@@ -598,9 +588,8 @@ async function main() {
     createdAt: toIso(created),
     updatedAt: now,
   })
-  const toBacklog = (item: Omit<LibraryItem, "addedAt">, note: Note) => {
-    if (!backlog.some((b) => b.type === item.type && b.id === item.id))
-      backlog.push({ ...item, addedAt: toIso(scalar(note.fm.created)) })
+  const toBacklog = (item: Work, note: Note) => {
+    item.backlogAddedAt ??= toIso(scalar(note.fm.created))
   }
 
   let done = 0
@@ -653,7 +642,7 @@ async function main() {
           type === "movie"
             ? {
                 kind: "movie",
-                mediaId: m.id,
+                mediaId: Number(m.id),
                 watchedAt: end ?? start,
                 rating: rated,
                 rewatch: false,
@@ -661,7 +650,7 @@ async function main() {
               }
             : {
                 kind: "show",
-                mediaId: m.id,
+                mediaId: Number(m.id),
                 startedAt: start,
                 finishedAt: end,
                 rating: rated,
@@ -692,7 +681,7 @@ async function main() {
       if (!wantsLater || rated !== undefined)
         logs.push({
           kind: "game",
-          mediaId: m.id,
+          mediaId: Number(m.id),
           status: "finished",
           startedAt: start,
           finishedAt: end,
@@ -725,13 +714,13 @@ async function main() {
         "book",
         m,
         note,
-        title,
+        m.title,
         list(note.fm.author).join(", ")
       )
       if (!wantsLater || rated !== undefined)
         logs.push({
           kind: "book",
-          mediaId: m.id,
+          mediaId: String(m.id),
           status: "finished",
           startedAt: start,
           finishedAt: end,
@@ -744,7 +733,7 @@ async function main() {
         file: note.file,
         kind: category,
         result: m.confidence,
-        detail: `${title}${isbn ? ` [ISBN ${isbn}]` : ""} → OL${m.id}W`,
+        detail: `${title}${isbn ? ` [ISBN ${isbn}]` : ""} → ${m.title} (${m.year ?? "?"}) #${m.id}`,
       })
     } else if (category === "Records") {
       const id = Number(scalar(note.fm.source)?.match(/release\/(\d+)/)?.[1])
@@ -774,9 +763,8 @@ async function main() {
         release?.images?.[0]
       const cover = primary?.uri ?? scalar(note.fm.cover)
       const price = Number(scalar(note.fm.price))
-      collection.push({
+      records.push({
         id: crypto.randomUUID(),
-        type: "record",
         releaseId: id,
         title: release?.title ?? titleFromFile(note.file),
         artist:
@@ -804,7 +792,15 @@ async function main() {
         detail: `release ${id}`,
       })
     } else if (category === "Flights") {
-      const loc = list(note.fm.loc)
+      // `loc` isn't in flight order (often alphabetical); the note name is:
+      // "GRU to LIS (ABC123).md", or "GRU to LIS -> OPO (…)" when diverted.
+      // First code = origin, last = where it landed.
+      const named =
+        note.file.match(/^[A-Z]{3} to [^(]*/)?.[0].match(/\b[A-Z]{3}\b/g) ?? []
+      const loc =
+        named.length >= 2
+          ? [named[0]!, named.at(-1)!]
+          : list(note.fm.loc).map((code) => code.toUpperCase())
       const departure = scalar(note.fm.departure)?.slice(0, 16)
       if (loc.length < 2 || !departure) {
         report.push({
@@ -816,9 +812,8 @@ async function main() {
         continue
       }
       flights.push({
-        from: loc[0]!.toUpperCase(),
-        // Diverted flights list [from, landed at, planned]; keep where it landed.
-        to: loc[1]!.toUpperCase(),
+        from: loc[0]!,
+        to: loc[1]!,
         departure,
         arrival: scalar(note.fm.arrival)?.slice(0, 16),
         flightNumber: scalar(note.fm.code)?.replace(/\s+/g, "").toUpperCase(),
@@ -834,30 +829,34 @@ async function main() {
       report.push({
         file: note.file,
         kind: category,
-        result: loc.length > 2 ? "exact (diverted)" : "exact",
-        detail: loc.join(" → "),
+        result: named.length > 2 ? "exact (diverted)" : "exact",
+        detail: `${loc.join(" → ")}${named.length < 2 ? " (from loc, check the direction)" : ""}`,
       })
     }
   }
 
   await writeFile(cachePath, JSON.stringify(cache, null, 2))
 
-  // The library only holds works you've logged; backlog-only items live
-  // in the backlog with their own snapshot.
+  // A work is kept when it's logged or in the backlog (or both).
   const logged = new Set(
     logs.map((l) => `${l.kind === "season" ? "show" : l.kind}:${l.mediaId}`)
   )
+  const works = [...items.entries()]
+    .filter(([key, w]) => logged.has(key) || w.backlogAddedAt)
+    .map(([, w]) => w)
+  const rows = (type: MediaType) =>
+    works.filter((w) => w.type === type).map(({ type: _type, ...row }) => row)
 
   // Validate against the app's schema so the file is guaranteed to import.
-  const data = LegacyArchiveExport.parse({
-    version: 1,
+  const data = ArchiveExport.parse({
+    version: 2,
     exportedAt: now,
-    items: [...items.entries()]
-      .filter(([key]) => logged.has(key))
-      .map(([, item]) => item),
+    movies: rows("movie"),
+    shows: rows("show"),
+    games: rows("game"),
+    books: rows("book"),
+    records,
     logs,
-    backlog,
-    collection,
     flights,
   })
   await writeFile(
@@ -866,18 +865,43 @@ async function main() {
   )
   await writeFile(path.join(outDir, "report.md"), renderReport(report, data))
   console.log(
-    `Done: ${data.items.length} items, ${data.logs.length} logs, ${data.backlog.length} backlog, ` +
-      `${data.collection.length} records, ${data.flights.length} flights → ${path.relative(process.cwd(), outDir)}`
+    `Done: ${summarize(data)} → ${path.relative(process.cwd(), outDir)}`
   )
 }
+
+/** Snapshot of a work until `db:backfill-details` stores the provider data. */
+type Work = {
+  type: MediaType
+  id: WorkId
+  title: string
+  subtitle?: string
+  year?: number
+  poster?: ImageRef
+  genres: Array<string>
+  addedAt: string
+  backlogAddedAt?: string
+}
+
+const summarize = (data: ArchiveExport) =>
+  `${data.movies.length} movies, ${data.shows.length} shows, ${data.games.length} games, ` +
+  `${data.books.length} books, ${data.records.length} records, ${data.logs.length} logs, ` +
+  `${data.flights.length} flights`
 
 function toIso(date?: string) {
   const d = isoDate(date)
   return d ? `${d}T12:00:00.000Z` : now
 }
 
-function renderReport(rows: Array<ReportRow>, data: LegacyArchiveExport) {
-  const order = ["error", "unmatched", "low", "medium", "skipped"]
+function renderReport(rows: Array<ReportRow>, data: ArchiveExport) {
+  const order = [
+    "error",
+    "stale override",
+    "duplicate",
+    "unmatched",
+    "low",
+    "medium",
+    "skipped",
+  ]
   const needsReview = rows.filter((r) => order.includes(r.result))
   const counts = new Map<string, number>()
   for (const r of rows)
@@ -888,13 +912,13 @@ function renderReport(rows: Array<ReportRow>, data: LegacyArchiveExport) {
   return [
     `# Obsidian import report`,
     ``,
-    `Generated ${now}. Items ${data.items.length} · logs ${data.logs.length} · backlog ${data.backlog.length} · records ${data.collection.length} · flights ${data.flights.length}.`,
+    `Generated ${now}. ${summarize(data)}.`,
     ``,
     `## Summary`,
     ...[...counts.entries()].sort().map(([k, v]) => `- ${k}: ${v}`),
     ``,
     `## Needs review (${needsReview.length})`,
-    `Fix a match by adding \`"Note name.md": <TMDB/IGDB/Open Library work id>\` to overrides.json (or \`null\` to skip), then re-run.`,
+    `Fix a match by adding \`"Note name.md": <TMDB/IGDB id or Google Books volume id>\` to overrides.json (or \`null\` to skip), then re-run.`,
     ``,
     ...needsReview
       .sort((a, b) => order.indexOf(a.result) - order.indexOf(b.result))
