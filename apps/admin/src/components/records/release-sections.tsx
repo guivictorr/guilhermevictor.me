@@ -6,7 +6,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { cn } from "@workspace/ui/lib/utils"
 import { CheckIcon, PlayIcon } from "lucide-react"
 import { useState } from "react"
-import { DetailSection } from "@/components/detail-layout"
+import { DetailSection, SideCard } from "@/components/detail-layout"
 import { ScrollRow } from "@/components/media/media-rail"
 import { YouTubeVideo } from "@/components/media/youtube"
 import { Poster } from "@/components/poster"
@@ -17,7 +17,7 @@ import { masterQuery } from "@/queries/media"
 /*
  * Release page sections: the notes read as a description above the
  * tracklist; credits, companies and identifiers are reference material, so
- * they sit at the bottom in one horizontally scrolling row.
+ * they sit in the side column with the details and statistics.
  */
 
 function CreditLine({ credit }: { credit: Credit }) {
@@ -131,73 +131,54 @@ export function ReleaseNotes({ release }: { release: Release }) {
   )
 }
 
-/** One card in the reference row; scrolls inside when it's long. */
-function InfoCard({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="max-h-96 w-80 shrink-0 snap-start overflow-y-auto overscroll-contain rounded-xl border bg-card px-4 py-3 text-sm leading-relaxed md:w-96">
-      <h3 className="mb-2 font-heading font-semibold">{title}</h3>
-      {children}
-    </div>
-  )
-}
-
-/** Credits, companies and identifiers, side by side in a scrolling row. */
-export function ReleaseReference({ release }: { release: Release }) {
+/** Credits, companies and identifiers as side cards (record page aside). */
+export function ReleaseReferenceCards({ release }: { release: Release }) {
   const { credits, companies, identifiers } = release
-  if (!credits.length && !companies.length && !identifiers.length) return null
   return (
-    <DetailSection title="Credits & details">
-      <ScrollRow>
-        {credits.length ? (
-          <InfoCard title="Credits">
-            <ul className="space-y-1">
-              {credits.map((credit, i) => (
-                <li key={i}>
-                  <CreditLine credit={credit} />
-                </li>
-              ))}
-            </ul>
-          </InfoCard>
-        ) : null}
-        {companies.length ? (
-          <InfoCard title="Companies, etc.">
-            <ul className="space-y-1">
-              {companies.map((c, i) => (
-                <li key={i}>
-                  <span className="text-muted-foreground">{c.role} – </span>
-                  {c.name}
-                  {c.catno ? (
-                    <span className="text-muted-foreground"> – {c.catno}</span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </InfoCard>
-        ) : null}
-        {identifiers.length ? (
-          <InfoCard title="Barcode and other identifiers">
-            <ul className="space-y-1">
-              {identifiers.map((id, i) => (
-                <li key={i} className="break-words">
-                  <span className="text-muted-foreground">
-                    {id.type}
-                    {id.description ? ` (${id.description})` : ""}:{" "}
-                  </span>
-                  {/* Matrix etchings are compared character by character. */}
-                  <span className="font-mono text-[0.8125rem]">{id.value}</span>
-                </li>
-              ))}
-            </ul>
-          </InfoCard>
-        ) : null}
-      </ScrollRow>
-    </DetailSection>
+    <>
+      {credits.length ? (
+        <SideCard title="Credits">
+          <ul className="space-y-1 text-sm leading-relaxed">
+            {credits.map((credit, i) => (
+              <li key={i}>
+                <CreditLine credit={credit} />
+              </li>
+            ))}
+          </ul>
+        </SideCard>
+      ) : null}
+      {companies.length ? (
+        <SideCard title="Companies, etc.">
+          <ul className="space-y-1 text-sm leading-relaxed">
+            {companies.map((c, i) => (
+              <li key={i}>
+                <span className="text-muted-foreground">{c.role} – </span>
+                {c.name}
+                {c.catno ? (
+                  <span className="text-muted-foreground"> – {c.catno}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </SideCard>
+      ) : null}
+      {identifiers.length ? (
+        <SideCard title="Barcode and other identifiers">
+          <ul className="space-y-1 text-sm leading-relaxed">
+            {identifiers.map((id, i) => (
+              <li key={i} className="break-words">
+                <span className="text-muted-foreground">
+                  {id.type}
+                  {id.description ? ` (${id.description})` : ""}:{" "}
+                </span>
+                {/* Matrix etchings are compared character by character. */}
+                <span className="font-mono text-[0.8125rem]">{id.value}</span>
+              </li>
+            ))}
+          </ul>
+        </SideCard>
+      ) : null}
+    </>
   )
 }
 

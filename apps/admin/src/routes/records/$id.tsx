@@ -27,7 +27,7 @@ import {
   OtherVersionsSection,
   PlayReleaseButton,
   ReleaseNotes,
-  ReleaseReference,
+  ReleaseReferenceCards,
   Tracklist,
   VideosSection,
   useOriginalYear,
@@ -171,7 +171,6 @@ function RecordPage() {
                     </ScrollRow>
                   </DetailSection>
                 ) : null}
-                <ReleaseReference release={release} />
               </>
             ),
           },
@@ -226,6 +225,7 @@ function RecordPage() {
               ]}
             />
             <StatisticsCard release={release} />
+            <ReleaseReferenceCards release={release} />
           </>
         }
       />

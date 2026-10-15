@@ -40,13 +40,6 @@ export function Poster({
         {framed && vinyl ? <VinylDisc image={image} /> : null}
         <div className="relative size-full overflow-hidden rounded-[3%] bg-field shadow-[0_1px_2px_rgb(0_0_0/0.3)]">
           {art}
-          {framed ? (
-            // Sleeve wear: a faint ring where the record presses the cardboard.
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-[8%] rounded-full shadow-[inset_0_0_0_1px_rgb(255_255_255/0.07)]"
-            />
-          ) : null}
           <span
             aria-hidden
             className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-foreground/8 ring-inset"
