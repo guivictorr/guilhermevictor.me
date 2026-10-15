@@ -6,9 +6,8 @@ import type { ImageSize } from "@/lib/images"
 import { KINDS } from "@/lib/media-kinds"
 
 /**
- * Cover art. Movies, shows and games show the cover as-is; books get a spine
- * edge and records are sleeves (with the disc sliding out when `vinyl`).
- * Thumbnails and `bare` skip those details.
+ * Cover art, shown as-is. Records are square sleeves, with the disc sliding
+ * out when `vinyl` (detail pages); thumbnails and `bare` skip the disc.
  */
 export function Poster({
   image,
@@ -26,7 +25,7 @@ export function Poster({
   size?: ImageSize
   className?: string
   priority?: boolean
-  /** Skip the book spine / sleeve details (tiny thumbnails, dense lists). */
+  /** Skip the vinyl disc (tiny thumbnails, dense lists). */
   bare?: boolean
   /** Records: show the vinyl sliding out of the sleeve (detail pages). */
   vinyl?: boolean
@@ -51,21 +50,11 @@ export function Poster({
   return (
     <div
       className={cn(
-        "relative isolate aspect-[2/3] overflow-hidden bg-field",
-        framed && type === "book"
-          ? "rounded-[2%_5%_5%_2%/1.4%_3.4%_3.4%_1.4%]"
-          : "rounded-[6%/4%]",
+        "relative isolate aspect-[2/3] overflow-hidden rounded-[6%/4%] bg-field",
         className
       )}
     >
       {art}
-      {framed && type === "book" ? (
-        // The spine: a darker band with a crease, so it reads as a bound book.
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 w-[9%] bg-[linear-gradient(90deg,rgb(0_0_0/0.38),rgb(0_0_0/0.12)_55%,rgb(255_255_255/0.18)_62%,transparent)]"
-        />
-      ) : null}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-foreground/8 ring-inset"

@@ -220,7 +220,7 @@ Each kind looks like the thing it is:
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Movies and shows | The cover alone: 2:3 poster, 10px radius, hairline. No case or frame (owner's call). Heroes use the backdrop image                                |
 | Games            | The cover alone, no case. The hero uses a landscape screenshot behind the title                                                                   |
-| Books            | A spine edge on the left of the cover: a 2–3% darker band plus an inner shadow, so it reads as a physical book                                    |
+| Books            | The cover alone, like the other kinds (owner's call)                                                                                              |
 | Records          | Square sleeve. On the detail page, a vinyl disc peeks out from behind the sleeve (static, CSS only)                                               |
 | Flights          | Boarding pass: Doto codes and times, paper grain, perforation notches, airline logo. No barcode. Map planes fly each route in the direction flown |
 
@@ -337,6 +337,6 @@ A simple hover or fade never needs a library; use CSS.
 | Type roles (`type-display`, `type-title`, `type-heading`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, motion tokens | `apps/admin/src/styles/app.css`                                                   |
 | Buttons, inputs, toggles                                                                                                          | `packages/ui/src/components/*` (restyled shadcn)                                  |
 | Sidebar (desktop, collapsible ⌘B) and tab bar (phones)                                                                            | `apps/admin/src/components/app-shell.tsx`                                         |
-| Covers (book spine, record sleeve + vinyl)                                                                                        | `components/poster.tsx`                                                           |
+| Covers (record sleeve + vinyl)                                                                                                    | `components/poster.tsx`                                                           |
 | Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                      | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |
 | Home facts                                                                                                                        | `server/facts.server.ts`, `components/home/facts-deck.tsx`                        |

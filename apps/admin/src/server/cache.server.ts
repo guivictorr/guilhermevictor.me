@@ -1,7 +1,8 @@
 /**
  * Tiny in-memory TTL cache for provider data that's the same for every
  * request (trending lists). Per server instance; good enough for one user.
- * Failed loads aren't cached, so a provider hiccup is retried next time.
+ * Failed loads and empty lists aren't kept, so a provider hiccup (an error,
+ * or a 200 with no results) is retried on the next request.
  */
 const entries = new Map<
   string,
@@ -18,6 +19,11 @@ export function cached<T>(
 
   const value = load()
   entries.set(key, { expiresAt: Date.now() + ttlMs, value })
-  value.catch(() => entries.delete(key))
+  value.then(
+    (result) => {
+      if (Array.isArray(result) && result.length === 0) entries.delete(key)
+    },
+    () => entries.delete(key)
+  )
   return value
 }
