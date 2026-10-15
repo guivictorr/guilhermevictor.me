@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@workspace/ui/lib/utils"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { MediaLink } from "@/components/media-card"
 import { ScrollRow } from "@/components/media/media-rail"
 import { Poster } from "@/components/poster"
@@ -72,10 +72,34 @@ function useFlightFacts(): Array<Fact> {
   }, [flights, airports])
 }
 
-/** A horizontally scrolling deck of facts about the whole archive. */
+const VISIBLE = 3
+const OFFSET_KEY = "archive:facts-offset"
+
+/**
+ * Where this visit starts in the fact list. Each visit moves on by three, so
+ * the cards rotate through every fact. Kept in this browser only; without
+ * storage it simply starts at the beginning.
+ */
+function useVisitOffset() {
+  const [offset, setOffset] = useState<number>()
+  useEffect(() => {
+    let current = 0
+    try {
+      current = Number(localStorage.getItem(OFFSET_KEY)) || 0
+      localStorage.setItem(OFFSET_KEY, String(current + VISIBLE))
+    } catch {
+      // Private mode or blocked storage: no rotation, still works.
+    }
+    setOffset(current)
+  }, [])
+  return offset
+}
+
+/** Three facts about the archive, different ones on every visit. */
 export function FactsDeck() {
   const { data } = useQuery(factsQuery())
   const flightFacts = useFlightFacts()
+  const offset = useVisitOffset()
   // Interleave kinds so the first cards aren't all about one thing.
   const facts = useMemo(() => {
     const queues = [
@@ -90,12 +114,20 @@ export function FactsDeck() {
     return mixed
   }, [data, flightFacts])
 
-  if (!facts.length) return null
+  if (!facts.length || offset === undefined) return null
+  const shown =
+    facts.length <= VISIBLE
+      ? facts
+      : Array.from(
+          { length: VISIBLE },
+          (_, i) => facts[(offset + i) % facts.length]!
+        )
   return (
     <section>
       <h2 className="type-heading mb-3 text-lg">By the numbers</h2>
-      <ScrollRow>
-        {facts.map((fact) => (
+      {/* Scrolls on phones; three equal cards on wider screens. */}
+      <ScrollRow className="md:*:flex-1">
+        {shown.map((fact) => (
           <FactCard key={fact.id} fact={fact} />
         ))}
       </ScrollRow>

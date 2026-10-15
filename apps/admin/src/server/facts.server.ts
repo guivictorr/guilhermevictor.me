@@ -405,7 +405,6 @@ export async function computeFacts(): Promise<Array<Fact>> {
       value: oldestPressing.title,
       detail: `${oldestPressing.year} · ${oldestPressing.artist}`,
       link: { type: "record", id: oldestPressing.releaseId },
-      image: oldestPressing.cover ?? undefined,
     })
   const label = countBy(recordRows, (r) => r.label ?? undefined)[0]
   if (label && label[1] >= 3)
