@@ -104,10 +104,13 @@ export interface ArchiveRepository {
     input: CollectionItemInput
   ) => Promise<CollectionItem>
   deleteCollectionItem: (id: string) => Promise<void>
-  /** Idempotent: copies already imported (same Discogs instance) are skipped. */
+  /**
+   * Idempotent: copies already imported (same Discogs instance) are skipped.
+   * `linked` = copies you already had (no Discogs id) now tied to Discogs.
+   */
   importCollection: (
     drafts: Array<CollectionItemDraft>
-  ) => Promise<{ added: number; skipped: number }>
+  ) => Promise<{ added: number; linked: number; skipped: number }>
   listFlights: () => Promise<Array<Flight>>
   addFlight: (input: FlightInput) => Promise<Flight>
   updateFlight: (id: string, input: FlightInput) => Promise<Flight>

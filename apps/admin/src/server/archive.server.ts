@@ -957,15 +957,80 @@ export const pgRepository: ArchiveRepository = {
 
   async importCollection(drafts) {
     return getDb().transaction(async (tx) => {
-      // Idempotent: the unique Discogs instance id skips copies seen before.
-      const added = drafts.length
+      const instanceIds = drafts.flatMap((d) => d.discogsInstanceId ?? [])
+      const releaseIds = [...new Set(drafts.map((d) => d.releaseId))]
+      // Idempotent: copies already synced (same Discogs instance) are skipped.
+      const synced = new Set(
+        instanceIds.length
+          ? (
+              await tx
+                .select({ id: records.discogsInstanceId })
+                .from(records)
+                .where(inArray(records.discogsInstanceId, instanceIds))
+            ).map((r) => r.id)
+          : []
+      )
+      // Copies added by hand or imported from Obsidian aren't tied to Discogs
+      // yet. A new Discogs copy of the same release links to one of them
+      // instead of becoming a second copy: your price, store and notes stay,
+      // empty fields (condition, folder, rating…) come from Discogs.
+      const unlinked = releaseIds.length
+        ? await tx
+            .select()
+            .from(records)
+            .where(
+              and(
+                ownedCopies,
+                isNull(records.discogsInstanceId),
+                inArray(records.releaseId, releaseIds)
+              )
+            )
+            .orderBy(records.addedAt)
+        : []
+      const fresh: typeof drafts = []
+      let linked = 0
+      for (const draft of drafts) {
+        if (draft.discogsInstanceId === undefined) {
+          fresh.push(draft)
+          continue
+        }
+        if (synced.has(draft.discogsInstanceId)) continue
+        const index = unlinked.findIndex((r) => r.releaseId === draft.releaseId)
+        const copy = index === -1 ? undefined : unlinked.splice(index, 1)[0]
+        if (!copy) {
+          fresh.push(draft)
+          continue
+        }
+        const discogs = draftValues(draft)
+        const hasPrice = copy.priceAmount !== null
+        await tx
+          .update(records)
+          .set({
+            discogsInstanceId: discogs.discogsInstanceId,
+            folder: copy.folder ?? discogs.folder,
+            rating: copy.rating ?? discogs.rating,
+            mediaCondition: copy.mediaCondition ?? discogs.mediaCondition,
+            sleeveCondition: copy.sleeveCondition ?? discogs.sleeveCondition,
+            variant: copy.variant ?? discogs.variant,
+            acquiredAt: copy.acquiredAt ?? discogs.acquiredAt,
+            priceAmount: hasPrice ? copy.priceAmount : discogs.priceAmount,
+            priceCurrency: hasPrice
+              ? copy.priceCurrency
+              : discogs.priceCurrency,
+            store: copy.store ?? discogs.store,
+            notes: copy.notes ?? discogs.notes,
+            updatedAt: now(),
+          })
+          .where(eq(records.id, copy.id))
+        linked++
+      }
+      const added = fresh.length
         ? await tx
             .insert(records)
-            .values(drafts.map(draftValues))
+            .values(fresh.map(draftValues))
             .onConflictDoNothing({ target: records.discogsInstanceId })
             .returning({ id: records.id })
         : []
-      const releaseIds = [...new Set(drafts.map((d) => d.releaseId))]
       if (releaseIds.length)
         await tx
           .delete(records)
@@ -975,7 +1040,11 @@ export const pgRepository: ArchiveRepository = {
               isNotNull(records.backlogAddedAt)
             )
           )
-      return { added: added.length, skipped: drafts.length - added.length }
+      return {
+        added: added.length,
+        linked,
+        skipped: drafts.length - added.length - linked,
+      }
     })
   },
 

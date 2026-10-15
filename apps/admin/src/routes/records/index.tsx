@@ -211,10 +211,13 @@ function ImportButton({ compact = false }: { compact?: boolean }) {
     try {
       const { username, items } = await fetchCollection.mutateAsync()
       const result = await importCollection.mutateAsync(items)
+      const copies = (n: number) => `${n} cop${n === 1 ? "y" : "ies"}`
+      const changes = [
+        result.added && `Imported ${copies(result.added)}`,
+        result.linked && `Linked ${copies(result.linked)} you had`,
+      ].filter(Boolean)
       toast.success(
-        result.added
-          ? `Imported ${result.added} cop${result.added === 1 ? "y" : "ies"}`
-          : "Already up to date",
+        changes.length ? changes.join(" · ") : "Already up to date",
         {
           description: `From ${username}'s Discogs collection${
             result.skipped ? ` · ${result.skipped} already here` : ""
