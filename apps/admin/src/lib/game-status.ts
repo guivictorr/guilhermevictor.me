@@ -7,6 +7,7 @@ export const GAME_STATUS_OPTIONS: ReadonlyArray<{
   { value: "playing", label: "Playing" },
   { value: "finished", label: "Finished" },
   { value: "completed", label: "100%" },
+  { value: "played", label: "Played" },
   { value: "paused", label: "Paused" },
   { value: "abandoned", label: "Abandoned" },
 ]

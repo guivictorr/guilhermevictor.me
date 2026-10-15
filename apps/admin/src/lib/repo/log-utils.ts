@@ -33,3 +33,25 @@ export function compareDatesDesc(a?: string, b?: string) {
   if (b === undefined) return -1
   return b.localeCompare(a)
 }
+
+/**
+ * Your rating for a work. Shows are rated per season: their rating is the
+ * average of each season's latest rating (unrated seasons don't count).
+ * Everything else uses the latest rated log.
+ */
+export function myRating(logs: Array<LogEntry>): number | undefined {
+  const sorted = [...logs].sort(compareLogsDesc)
+  const seasons = new Map<number, number>()
+  for (const log of sorted)
+    if (
+      log.kind === "season" &&
+      log.rating !== undefined &&
+      !seasons.has(log.seasonNumber)
+    )
+      seasons.set(log.seasonNumber, log.rating)
+  if (seasons.size) {
+    const ratings = [...seasons.values()]
+    return ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+  }
+  return sorted.find((log) => log.rating !== undefined)?.rating
+}

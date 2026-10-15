@@ -20,6 +20,7 @@ import {
   InputGroupInput,
 } from "@workspace/ui/components/input-group"
 import { Spinner } from "@workspace/ui/components/spinner"
+import { Switch } from "@workspace/ui/components/switch"
 import {
   SearchIcon,
   SearchXIcon,
@@ -50,7 +51,7 @@ import {
   filtersFor,
 } from "@/lib/search-filters"
 import type { FilterField } from "@/lib/search-filters"
-import { collectionQuery } from "@/queries/archive"
+import { collectionQuery, indexQuery, mediaKey } from "@/queries/archive"
 import {
   searchQuery,
   trendingQuery,
@@ -137,6 +138,8 @@ function SearchPage() {
     placeholderData: keepPreviousData,
   })
   const swipe = useSwipe("results")
+  const [dimHave, setDimHave] = useDimHave()
+  const have = useHave()
 
   return (
     <>
@@ -204,9 +207,14 @@ function SearchPage() {
 
         <FilterChips type={type} filters={filters} onChange={applyFilters} />
 
+        <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+          <Switch size="sm" checked={dimHave} onCheckedChange={setDimHave} />
+          Gray out what I already have
+        </label>
+
         <div className="pt-3">
           {!q && !active.length ? (
-            <Trending type={type} />
+            <Trending type={type} dim={dimHave ? have : undefined} />
           ) : isError ? (
             <SearchEmpty
               icon={<SearchXIcon />}
@@ -246,13 +254,14 @@ function SearchPage() {
                 onClose={swipe.close}
               />
               {type === "record" ? (
-                <ReleaseResultList results={data} />
+                <ReleaseResultList results={data} dimOwned={dimHave} />
               ) : (
                 <MediaGrid>
                   {data.map((media) => (
                     <MediaCard
                       key={`${media.type}-${media.id}`}
                       media={media}
+                      dimmed={dimHave && have(media)}
                       badge={<CardBadges item={toBacklogItem(media)} />}
                     />
                   ))}
@@ -378,7 +387,46 @@ const TRENDING_TITLE: Record<MediaType, string> = {
   record: "Recently added to your collection",
 }
 
-function Trending({ type }: { type: MediaType }) {
+/** Logged works, and records you own: what search can gray out. */
+function useHave() {
+  const { data: index } = useQuery(indexQuery())
+  return (media: MediaSummary) =>
+    media.type === "record"
+      ? (index?.owned.has(mediaKey(media)) ?? false)
+      : (index?.logged.has(mediaKey(media)) ?? false)
+}
+
+const DIM_KEY = "archive:search-gray-have"
+
+/** On by default; remembered in this browser only. */
+function useDimHave() {
+  const [dim, setDim] = useState(true)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(DIM_KEY) === "off") setDim(false)
+    } catch {
+      // Blocked storage: keep the default.
+    }
+  }, [])
+  const update = (next: boolean) => {
+    setDim(next)
+    try {
+      localStorage.setItem(DIM_KEY, next ? "on" : "off")
+    } catch {
+      // Not remembered, still applied.
+    }
+  }
+  return [dim, update] as const
+}
+
+function Trending({
+  type,
+  dim,
+}: {
+  type: MediaType
+  /** Grays these covers (already in your archive). */
+  dim?: (media: MediaSummary) => boolean
+}) {
   const swipe = useSwipe("trending")
   // Discogs has no trending list: show your own latest additions instead.
   const trending = useQuery({
@@ -437,6 +485,7 @@ function Trending({ type }: { type: MediaType }) {
             <MediaCard
               key={`${media.type}-${media.id}`}
               media={media}
+              dimmed={dim?.(media) ?? false}
               badge={<CardBadges item={toBacklogItem(media)} />}
             />
           ))}

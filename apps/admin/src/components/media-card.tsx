@@ -50,10 +50,13 @@ export function MediaCard({
   media,
   meta,
   badge,
+  dimmed = false,
 }: {
   media: CardMedia
   meta?: React.ReactNode
   badge?: React.ReactNode
+  /** Gray cover: you already have it (search results). */
+  dimmed?: boolean
 }) {
   return (
     <div className="relative min-w-0">
@@ -65,7 +68,10 @@ export function MediaCard({
           image={media.poster}
           type={media.type}
           title={media.title}
-          className="group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background"
+          className={cn(
+            "group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background",
+            dimmed && "opacity-55 grayscale"
+          )}
         />
         <div className="mt-2 min-w-0 px-0.5">
           <p className="truncate text-sm leading-tight font-medium">

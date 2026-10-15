@@ -86,6 +86,15 @@ export interface ArchiveRepository {
   listRecent: (limit: number) => Promise<Array<RecentLog>>
   addLog: (input: LogInput, item: LibraryItemInput) => Promise<LogEntry>
   updateLog: (id: string, input: LogInput) => Promise<LogEntry>
+  /**
+   * Moves a log to another work of the same kind (`input.mediaId` is the
+   * new one): same log id and data. Not for record plays (tied to a copy).
+   */
+  moveLog: (
+    id: string,
+    input: LogInput,
+    item: LibraryItemInput
+  ) => Promise<LogEntry>
   deleteLog: (id: string) => Promise<void>
   listBacklog: () => Promise<Array<BacklogItem>>
   addToBacklog: (item: LibraryItemInput) => Promise<void>

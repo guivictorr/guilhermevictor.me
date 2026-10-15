@@ -69,11 +69,15 @@ const seasonLogFields = z.object({
   notes: optionalText,
 })
 
-/** finished = main story done; completed = 100%. */
+/**
+ * finished = main story done; completed = 100%; played = played it, with
+ * nothing to finish (multiplayer, sandbox, endless games).
+ */
 export const GameStatus = z.enum([
   "playing",
   "finished",
   "completed",
+  "played",
   "paused",
   "abandoned",
 ])

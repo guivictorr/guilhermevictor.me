@@ -19,7 +19,11 @@ import {
 import { useState } from "react"
 import { useRateLatest } from "./use-rate-latest"
 import { RatingsRow } from "@/components/detail-layout"
-import { LogHistory } from "@/components/log/log-history"
+import {
+  LogBadges,
+  LogHistory,
+  describeLogDates,
+} from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
 import type { LogTargetContext } from "@/components/log/log-sheet"
 import { SeasonList } from "@/components/log/season-list"
@@ -35,7 +39,12 @@ import { formatDate, formatRuntime, joinDefined } from "@/lib/format"
 import { formatMoney } from "@/lib/grades"
 import { imageUrl } from "@/lib/images"
 import type { LibraryItemInput } from "@/lib/repo"
-import { collectionQuery, indexQuery, mediaKey } from "@/queries/archive"
+import {
+  collectionQuery,
+  indexQuery,
+  logsQuery,
+  mediaKey,
+} from "@/queries/archive"
 import {
   bookQuery,
   gameQuery,
@@ -137,6 +146,8 @@ function useDetails(item: LibraryItemInput): Details {
 export function SwipeSlide({ item }: { item: LibraryItemInput }) {
   const details = useDetails(item)
   const rating = useRateLatest(item)
+  const { data: logs } = useQuery(logsQuery({ type: item.type, id: item.id }))
+  const latest = logs?.[0]
   const { inBacklog, toggle, ready } = useBacklogToggle(item)
   const { data: index } = useQuery(indexQuery())
   const { data: collection } = useQuery({
@@ -242,6 +253,9 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
               id={item.id}
             />
           </div>
+          {latest ? (
+            <LastLog log={latest} onSelect={() => sheet.openEdit(latest)} />
+          ) : null}
           {copies.length ? (
             <CopyChips
               copies={copies}
@@ -254,26 +268,43 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
       {/* Quick actions; the one orange button is Log. */}
       <div className="pb-safe px-4 pt-4">
         <div className="mx-auto flex max-w-md flex-col items-center gap-3 pb-4">
-          <div
-            className={cn(!rating.canRate && "pointer-events-none opacity-40")}
-          >
-            <StarRatingInput value={rating.value} onChange={rating.rate} />
-          </div>
+          {/* Shows are rated per season (in Seasons); "Mine" shows the average. */}
+          {item.type === "show" ? null : (
+            <div
+              className={cn(
+                !rating.canRate && "pointer-events-none opacity-40"
+              )}
+            >
+              <StarRatingInput value={rating.value} onChange={rating.rate} />
+            </div>
+          )}
           {!rating.canRate ? (
             <p className="text-xs text-muted-foreground">
               Add a copy to your collection to rate plays.
             </p>
           ) : null}
           <div className="grid w-full [grid-auto-columns:minmax(0,1fr)] grid-flow-col gap-2">
-            <Button
-              size="lg"
-              className="h-12"
-              onClick={sheet.openNew}
-              disabled={item.type === "record" && !copies.length}
-            >
-              <PlusIcon />
-              Log
-            </Button>
+            {item.type === "show" ? (
+              <Button
+                size="lg"
+                className="h-12"
+                onClick={() => setPanel("seasons")}
+                disabled={!details.seasons.length}
+              >
+                <ListOrderedIcon />
+                Log season
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="h-12"
+                onClick={sheet.openNew}
+                disabled={item.type === "record" && !copies.length}
+              >
+                <PlusIcon />
+                Log
+              </Button>
+            )}
             {owned ? null : (
               <Button
                 variant="secondary"
@@ -301,18 +332,6 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
                 </span>
               ) : null}
             </Button>
-            {item.type === "show" ? (
-              <Button
-                variant="secondary"
-                size="lg"
-                className="h-12"
-                onClick={() => setPanel("seasons")}
-                disabled={!details.seasons.length}
-              >
-                <ListOrderedIcon />
-                Seasons
-              </Button>
-            ) : null}
           </div>
         </div>
       </div>
@@ -382,7 +401,7 @@ function CopyChips({
           <button
             type="button"
             onClick={() => onSelect(copy)}
-            className="pressable glass flex min-h-9 flex-wrap items-center justify-center gap-1 rounded-full border px-3 py-1 text-xs"
+            className="pressable glass flex min-h-9 flex-wrap items-center justify-center gap-1 rounded-2xl border px-3 py-1 text-xs"
           >
             {copy.mediaCondition ? (
               <Badge
@@ -412,5 +431,23 @@ function CopyChips({
         </li>
       ))}
     </ul>
+  )
+}
+
+/**
+ * Your most recent log at a glance (dates, status, platform, hours,
+ * format, season…); tap to edit it. Rating is in the stars / "Mine".
+ */
+function LastLog({ log, onSelect }: { log: LogEntry; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="pressable glass mx-auto mt-3 flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs"
+    >
+      <span className="text-muted-foreground">Last</span>
+      <span className="font-medium">{describeLogDates(log)}</span>
+      <LogBadges log={log} />
+    </button>
   )
 }

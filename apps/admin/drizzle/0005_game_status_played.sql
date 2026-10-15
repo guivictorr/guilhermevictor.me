@@ -1,0 +1,2 @@
+ALTER TABLE "game_logs" DROP CONSTRAINT "game_logs_status";--> statement-breakpoint
+ALTER TABLE "game_logs" ADD CONSTRAINT "game_logs_status" CHECK ("game_logs"."status" in ('playing', 'finished', 'completed', 'played', 'paused', 'abandoned'));

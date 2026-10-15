@@ -21,7 +21,8 @@ function ratedLog(
     case "movie":
       return { kind: "movie", mediaId: Number(item.id), rating, rewatch: false }
     case "show":
-      return { kind: "show", mediaId: Number(item.id), rating, rewatch: false }
+      // Rated per season; the swipe view shows no stars for shows.
+      return undefined
     case "game":
       return {
         kind: "game",

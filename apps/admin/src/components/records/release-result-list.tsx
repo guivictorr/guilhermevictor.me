@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import type { MediaSummary } from "@workspace/schemas"
 import { Badge } from "@workspace/ui/components/badge"
+import { cn } from "@workspace/ui/lib/utils"
 import { CheckIcon } from "lucide-react"
 import { CardBacklogBadge } from "@/components/media/backlog-button"
 import { toBacklogItem } from "@/components/media/media-rail"
@@ -19,8 +20,11 @@ const NOISE = new Set(["LP", "Album", '12"'])
  */
 export function ReleaseResultList({
   results,
+  dimOwned = false,
 }: {
   results: Array<MediaSummary>
+  /** Gray the covers of pressings you own. */
+  dimOwned?: boolean
 }) {
   const { data: index } = useQuery(indexQuery())
 
@@ -41,7 +45,10 @@ export function ReleaseResultList({
                 type="record"
                 title={r.title}
                 size="thumb"
-                className="w-16 shrink-0 self-start rounded-md"
+                className={cn(
+                  "w-16 shrink-0 self-start rounded-md",
+                  dimOwned && owned && "opacity-55 grayscale"
+                )}
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{r.title}</p>

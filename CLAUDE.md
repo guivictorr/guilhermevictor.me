@@ -1,7 +1,7 @@
 # Archive
 
 Personal archive: one place to own and log everything the owner watches, plays,
-reads, collects and flies — movies, shows (per season or whole show), games,
+reads, collects and flies — movies, shows (per season; a show's rating is its seasons' average), games,
 books, vinyl records and flights. Replaces Letterboxd/IMDb-style services: the
 data must stay fully owned and portable (export/import as JSON at any time).
 

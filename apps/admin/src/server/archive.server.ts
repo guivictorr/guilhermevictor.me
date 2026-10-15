@@ -483,6 +483,44 @@ async function upsertLoggedWork(
 }
 
 /** Deletes a work row once it has no logs and isn't in the backlog. */
+/** The work a log belongs to (its movie/show/game/book id). */
+async function loggedWorkId(
+  db: Conn,
+  type: NumericKind,
+  logId: string
+): Promise<string | number | undefined> {
+  switch (type) {
+    case "movie": {
+      const [row] = await db
+        .select({ id: movieLogs.movieId })
+        .from(movieLogs)
+        .where(eq(movieLogs.id, logId))
+      return row?.id
+    }
+    case "show": {
+      const [row] = await db
+        .select({ id: showLogs.showId })
+        .from(showLogs)
+        .where(eq(showLogs.id, logId))
+      return row?.id
+    }
+    case "game": {
+      const [row] = await db
+        .select({ id: gameLogs.gameId })
+        .from(gameLogs)
+        .where(eq(gameLogs.id, logId))
+      return row?.id
+    }
+    case "book": {
+      const [row] = await db
+        .select({ id: bookLogs.bookId })
+        .from(bookLogs)
+        .where(eq(bookLogs.id, logId))
+      return row?.id
+    }
+  }
+}
+
 async function pruneWork(db: Conn, type: NumericKind, id: string | number) {
   switch (type) {
     case "movie":
@@ -697,6 +735,31 @@ export const pgRepository: ArchiveRepository = {
       if (type !== "record") await upsertLoggedWork(tx, type, item)
       const log = await writeLog(tx, input)
       if (!log) throw new Error("Log was not saved")
+      return log
+    })
+  },
+
+  async moveLog(id, input, item) {
+    const type = mediaTypeOf(input)
+    if (type === "record") throw new Error("Plays stay with their copy")
+    return getDb().transaction(async (tx) => {
+      const from = await loggedWorkId(tx, type, id)
+      if (from === undefined) throw new Error("Log not found")
+      await upsertLoggedWork(tx, type, item)
+      // Same row, new work: the log keeps its id and created date.
+      const log = await writeLog(tx, input, id)
+      if (!log) throw new Error("Log not found")
+      if (String(from) !== String(input.mediaId)) {
+        if (type === "show")
+          // Drop the old show's cached episodes for seasons it no longer logs.
+          await tx.execute(sql`update shows s set seasons = coalesce((
+              select jsonb_object_agg(k, v) from jsonb_each(s.seasons) e(k, v)
+              where exists (select 1 from show_logs l
+                where l.show_id = s.id and l.season_number::text = e.k)
+            ), '{}'::jsonb)
+            where s.id = ${from}`)
+        await pruneWork(tx, type, from)
+      }
       return log
     })
   },

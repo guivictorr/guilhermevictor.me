@@ -60,6 +60,7 @@ type IgdbGameSummary = {
   summary?: string
   first_release_date?: number
   cover?: IgdbImage
+  platforms?: Array<{ name: string; abbreviation?: string }>
 }
 type IgdbGame = IgdbGameSummary & {
   slug: string
@@ -104,9 +105,11 @@ const summary = (g: IgdbGameSummary): MediaSummary => ({
   year: yearOf(g.first_release_date),
   poster: image(g.cover),
   overview: g.summary,
+  platforms: g.platforms?.map((p) => p.abbreviation ?? p.name),
 })
 
-const SUMMARY_FIELDS = "name,summary,first_release_date,cover.image_id"
+const SUMMARY_FIELDS =
+  "name,summary,first_release_date,cover.image_id,platforms.name,platforms.abbreviation"
 
 /** Main games, remakes, remasters, expanded editions and ports. */
 const MAIN_GAME_TYPES = "(0,8,9,10,11)"

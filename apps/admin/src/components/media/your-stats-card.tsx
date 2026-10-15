@@ -9,7 +9,7 @@ import { SideCard } from "@/components/detail-layout"
 import { StarRating } from "@/components/star-rating"
 import { formatDate } from "@/lib/format"
 import { statusLabel } from "@/lib/status"
-import { logDate } from "@/lib/repo"
+import { logDate, myRating } from "@/lib/repo"
 import { logsQuery } from "@/queries/archive"
 
 /** `logs` arrive newest first. */
@@ -22,7 +22,8 @@ function summarize(logs: Array<LogEntry>) {
     .sort()
   return {
     count: logs.length,
-    latestRating: rated.at(0),
+    // Shows: the average of their seasons' ratings.
+    latestRating: myRating(logs),
     average: rated.length
       ? rated.reduce((sum, r) => sum + r, 0) / rated.length
       : undefined,
@@ -75,7 +76,11 @@ export function YourStatsCard({ type, id }: { type: MediaType; id: WorkId }) {
       {s.latestRating !== undefined ? (
         <div className="mb-3 flex items-center gap-2">
           <StarRating rating={s.latestRating} className="text-xl" />
-          {s.average !== undefined && s.count > 1 ? (
+          {type === "show" ? (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {(s.latestRating / 2).toFixed(1)} · season average
+            </span>
+          ) : s.average !== undefined && s.count > 1 ? (
             <span className="text-xs text-muted-foreground">
               avg {(s.average / 2).toFixed(1)}
             </span>

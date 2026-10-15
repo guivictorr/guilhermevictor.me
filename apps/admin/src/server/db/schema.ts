@@ -276,7 +276,7 @@ export const gameLogs = pgTable(
     ratingCheck("game_logs_rating", t.rating),
     check(
       "game_logs_status",
-      sql`${t.status} in ('playing', 'finished', 'completed', 'paused', 'abandoned')`
+      sql`${t.status} in ('playing', 'finished', 'completed', 'played', 'paused', 'abandoned')`
     ),
   ]
 )

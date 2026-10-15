@@ -48,17 +48,8 @@ function quickActions(
         },
       ]
     case "show":
-      return [
-        {
-          label: "Finished today",
-          input: () => ({
-            kind: "show",
-            mediaId: Number(item.id),
-            finishedAt: date,
-            rewatch: again,
-          }),
-        },
-      ]
+      // Shows are logged per season: "Log with details…" opens the list.
+      return []
     case "game":
       return [
         {

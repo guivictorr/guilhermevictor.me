@@ -20,6 +20,7 @@ import { ChevronLeftIcon, StarIcon } from "lucide-react"
 import { Poster } from "./poster"
 import { imageUrl } from "@/lib/images"
 import { KINDS } from "@/lib/media-kinds"
+import { myRating } from "@/lib/repo/log-utils"
 import { logsQuery } from "@/queries/archive"
 
 /** Back that respects in-app history, falling back to a parent route on deep links. */
@@ -211,7 +212,7 @@ export function RatingsRow({
   id: WorkId
 }) {
   const { data: logs } = useQuery(logsQuery({ type, id }))
-  const mine = logs?.find((log) => log.rating !== undefined)?.rating
+  const mine = logs ? myRating(logs) : undefined
 
   if (!provider && mine === undefined) return null
   return (

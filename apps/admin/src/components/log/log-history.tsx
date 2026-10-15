@@ -80,7 +80,7 @@ export function LogHistory({
   )
 }
 
-function LogBadges({ log }: { log: LogEntry }) {
+export function LogBadges({ log }: { log: LogEntry }) {
   if (log.kind === "game") {
     const status = GAME_STATUS_OPTIONS.find(
       (o) => o.value === log.status

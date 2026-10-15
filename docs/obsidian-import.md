@@ -51,7 +51,9 @@ Places, Languages, People.
 - `rating` 0/empty = unrated; 0–5 with halves → stored ×2.
 - No `start`/`end` → log with unknown date.
 - `tags: backlog` or `wishlist` → Backlog (no separate wishlist).
-- Movies: rated or untagged → one movie log. Shows: whole-show log.
+- Movies: rated or untagged → one movie log. Shows: a whole-show log, which
+  `db:backfill-details` then moves to the show's last aired season (shows are
+  logged and rated per season).
 - Games: untagged or rated → log with status **finished** (vault has no status;
   confirmed by the owner). `playtime` ignored.
 - Books: Google Books volume by ISBN (exact), else free-text title + author (at

@@ -23,6 +23,8 @@ export const MediaSummary = z.object({
   year: z.number().int().optional(),
   poster: ImageRef.optional(),
   overview: z.string().optional(),
+  /** Games: short platform names ("PS4", "PC"), what tells ports apart. */
+  platforms: z.array(z.string()).optional(),
 })
 export type MediaSummary = z.infer<typeof MediaSummary>
 

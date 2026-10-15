@@ -1,5 +1,6 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
+import { useCallback, useState } from "react"
 import type { SeasonSummary, Show } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
 import { CheckIcon, PlusIcon } from "lucide-react"
@@ -14,7 +15,9 @@ import {
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
 import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
+import { SeasonList } from "@/components/log/season-list"
 import { useLogSheet } from "@/components/log/use-log-sheet"
+import { ResponsiveSheet } from "@/components/responsive-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import {
   LogsTabLabel,
@@ -47,7 +50,10 @@ function ShowPage() {
   const { data: show } = useSuspenseQuery(showQuery(parseId(id)))
   const navigate = Route.useNavigate()
   const sheet = useLogSheet()
-  useOpenLogFromSearch(sheet.openNew)
+  // Shows are logged and rated per season.
+  const [seasonsOpen, setSeasonsOpen] = useState(false)
+  const openSeasons = useCallback(() => setSeasonsOpen(true), [])
+  useOpenLogFromSearch(openSeasons)
   const regularSeasons = show.seasons.filter((s) => s.seasonNumber > 0).length
   const item = {
     type: "show" as const,
@@ -78,14 +84,10 @@ function ShowPage() {
         }
         actions={
           <>
-            {/* Per-season logs live on each season page; this rates the whole show. */}
-            <Button
-              size="lg"
-              className="h-11 text-base"
-              onClick={sheet.openNew}
-            >
+            {/* Shows are logged per season; the show's rating is their average. */}
+            <Button size="lg" className="h-11 text-base" onClick={openSeasons}>
               <PlusIcon />
-              Log show
+              Log season
             </Button>
             <BacklogButton item={item} />
           </>
@@ -175,6 +177,15 @@ function ShowPage() {
           </>
         }
       />
+      <ResponsiveSheet
+        open={seasonsOpen}
+        onOpenChange={setSeasonsOpen}
+        title="Seasons"
+        description={show.title}
+      >
+        <SeasonList item={item} seasons={show.seasons} />
+      </ResponsiveSheet>
+      {/* Edits whole-show logs from before seasons-only logging. */}
       <LogSheet
         open={sheet.open}
         onOpenChange={sheet.onOpenChange}

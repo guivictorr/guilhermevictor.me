@@ -9,7 +9,8 @@ import type {
   ShowLog,
 } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
-import { Trash2Icon } from "lucide-react"
+import { ArrowRightLeftIcon, Trash2Icon } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 import {
   BookLogForm,
@@ -19,7 +20,10 @@ import {
   SeasonLogForm,
   ShowLogForm,
 } from "./log-forms"
+import { MoveLogSheet } from "./move-log-sheet"
 import { ResponsiveSheet, useOpenSession } from "@/components/responsive-sheet"
+import { KINDS } from "@/lib/media-kinds"
+import { mediaTypeOf } from "@/lib/repo/log-utils"
 import type { LibraryItemInput } from "@/lib/repo"
 import { useAddLog, useDeleteLog, useUpdateLog } from "@/queries/archive"
 
@@ -93,6 +97,7 @@ export function LogSheet({
   }
 
   const session = useOpenSession(open)
+  const [moving, setMoving] = useState(false)
 
   const submitLabel = editing ? "Save changes" : "Save log"
   const formKey = `${editing?.id ?? "new"}-${session}`
@@ -156,16 +161,36 @@ export function LogSheet({
           submitLabel={submitLabel}
         />
       )}
+      {/* Plays belong to a copy you own, so they don't move. */}
+      {editing && editing.kind !== "record" ? (
+        <Button
+          variant="ghost"
+          className="mt-3 h-11 w-full"
+          onClick={() => setMoving(true)}
+        >
+          <ArrowRightLeftIcon />
+          Move to another {KINDS[mediaTypeOf(editing)].label.toLowerCase()}…
+        </Button>
+      ) : null}
       {editing ? (
         <Button
           variant="ghost"
-          className="mt-3 h-11 w-full text-destructive hover:text-destructive"
+          className="h-11 w-full text-destructive hover:text-destructive"
           onClick={handleDelete}
           disabled={deleteLog.isPending}
         >
           <Trash2Icon />
           Delete log
         </Button>
+      ) : null}
+      {editing && editing.kind !== "record" ? (
+        <MoveLogSheet
+          open={moving}
+          onOpenChange={setMoving}
+          log={editing}
+          item={target.item}
+          onMoved={() => onOpenChange(false)}
+        />
       ) : null}
     </ResponsiveSheet>
   )

@@ -73,6 +73,18 @@ export const updateLogFn = createServerFn({ method: "POST" })
   .validator(Id.extend({ input: LogInput }))
   .handler(({ data }) => repo.updateLog(data.id, data.input))
 
+/** Moves a log to another work (logged the wrong one): same log, new work. */
+export const moveLogFn = createServerFn({ method: "POST" })
+  .middleware([requireOwner])
+  .validator(Id.extend({ input: LogInput, item: ItemInput }))
+  .handler(async ({ data }) => {
+    const log = await repo.moveLog(data.id, data.input, data.item)
+    await ensureDetails(mediaTypeOf(data.input), data.input.mediaId)
+    if (data.input.kind === "season")
+      await ensureSeasonDetails(data.input.mediaId, data.input.seasonNumber)
+    return log
+  })
+
 export const deleteLogFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
   .validator(Id)

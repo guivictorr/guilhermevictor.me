@@ -11,6 +11,7 @@ import {
   compareLogsDesc,
   logDate,
   mediaTypeOf,
+  myRating,
 } from "./log-utils"
 import type {
   ArchiveIndex,
@@ -66,7 +67,7 @@ export function deriveLibrary(
           ...item,
           logCount: itemLogs.length,
           lastLoggedAt: logDate(latest),
-          rating: itemLogs.find((l) => l.rating !== undefined)?.rating,
+          rating: myRating(itemLogs),
           status:
             latest.kind === "game" || latest.kind === "book"
               ? latest.status

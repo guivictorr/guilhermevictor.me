@@ -267,16 +267,20 @@ export async function computeFacts(): Promise<Array<Fact>> {
     (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
   ))
     latestGame.set(l.gameId, l)
-  const finished = [...latestGame.values()].filter(
+  // "Played" games have nothing to finish, so they don't count either way.
+  const finishable = [...latestGame.values()].filter(
+    (l) => l.status !== "played"
+  )
+  const finished = finishable.filter(
     (l) => l.status === "finished" || l.status === "completed"
   ).length
-  if (latestGame.size >= 3)
+  if (finishable.length >= 3)
     add({
       id: "game-finish-rate",
       kind: "game",
       label: "Games you finish",
-      value: `${Math.round((finished / latestGame.size) * 100)}%`,
-      detail: `${finished} of ${latestGame.size} started`,
+      value: `${Math.round((finished / finishable.length) * 100)}%`,
+      detail: `${finished} of ${finishable.length} started`,
       numeric: true,
     })
   const platform = countBy(gameLogRows, (l) => l.platform ?? undefined)[0]

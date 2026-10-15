@@ -129,6 +129,22 @@ export function useUpdateLog() {
   })
 }
 
+export function useMoveLog() {
+  const invalidate = useInvalidateArchive()
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+      item,
+    }: {
+      id: string
+      input: LogInput
+      item: LibraryItemInput
+    }) => repo.moveLog(id, input, item),
+    onSuccess: invalidate,
+  })
+}
+
 export function useDeleteLog() {
   const invalidate = useInvalidateArchive()
   return useMutation({

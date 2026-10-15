@@ -43,14 +43,6 @@ const works = rows.map((w) => ({
   type: w.type,
   id: w.type === "book" ? w.id : Number(w.id),
 }))
-const { rows: seasons } = await db.execute<{
-  show_id: number
-  season_number: number
-}>(sql`
-  select distinct show_id, season_number from show_logs
-  where season_number is not null
-`)
-
 // One queue per provider, each paced to stay under its rate limit.
 const PROVIDER: Record<MediaType, string> = {
   movie: "tmdb",
@@ -75,27 +67,60 @@ for (const w of works.filter((work) => wanted(work.type)))
     label: `${w.type}:${w.id}`,
     run: () => ensureDetails(w.type, w.id, { refresh }),
   })
+const failed: Array<string> = []
+let done = 0
+let total = [...queues.values()].reduce((n, q) => n + q.length, 0)
+console.log(`Checking ${total} works…`)
+
+async function runQueues() {
+  await Promise.all(
+    [...queues.entries()].map(async ([provider, jobs]) => {
+      for (const job of jobs) {
+        if (!(await job.run())) failed.push(job.label)
+        done++
+        if (done % 50 === 0) console.log(`${done}/${total}`)
+        await sleep(DELAY_MS[provider] ?? 200)
+      }
+    })
+  )
+  queues.clear()
+}
+await runQueues()
+
+// Shows are logged per season. Whole-show logs (e.g. from the Obsidian
+// import) move to the show's last aired season now that its details are
+// stored; same rule as migration 0004.
+const promoted = await db.execute(sql`
+  update show_logs as l set season_number = coalesce(
+    (select max((s ->> 'seasonNumber')::int)
+      from shows as sh, jsonb_array_elements(sh.data -> 'seasons') as s
+      where sh.id = l.show_id and (s ->> 'seasonNumber')::int > 0
+        and (s ->> 'airDate') is not null
+        and (s ->> 'airDate')::date <= current_date),
+    (select max((s ->> 'seasonNumber')::int)
+      from shows as sh, jsonb_array_elements(sh.data -> 'seasons') as s
+      where sh.id = l.show_id and (s ->> 'seasonNumber')::int > 0),
+    1),
+    updated_at = now()
+  where l.season_number is null`)
+if (promoted.rowCount)
+  console.log(`Moved ${promoted.rowCount} whole-show logs to seasons.`)
+
+// Then the episodes of every logged season.
+const { rows: seasons } = await db.execute<{
+  show_id: number
+  season_number: number
+}>(sql`
+  select distinct show_id, season_number from show_logs
+  where season_number is not null
+`)
 for (const s of seasons.filter(() => wanted("season")))
   enqueue("tmdb", {
     label: `show:${s.show_id}/season ${s.season_number}`,
     run: () => ensureSeasonDetails(s.show_id, s.season_number, { refresh }),
   })
-
-const failed: Array<string> = []
-let done = 0
-const total = [...queues.values()].reduce((n, q) => n + q.length, 0)
-console.log(`Checking ${total} works and seasons…`)
-
-await Promise.all(
-  [...queues.entries()].map(async ([provider, jobs]) => {
-    for (const job of jobs) {
-      if (!(await job.run())) failed.push(job.label)
-      done++
-      if (done % 50 === 0) console.log(`${done}/${total}`)
-      await sleep(DELAY_MS[provider] ?? 200)
-    }
-  })
-)
+total += seasons.filter(() => wanted("season")).length
+await runQueues()
 
 console.log(`Done: ${total - failed.length}/${total} stored.`)
 if (failed.length) console.log(`Failed (re-run later): ${failed.join(", ")}`)

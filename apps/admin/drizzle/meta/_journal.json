@@ -29,6 +29,20 @@
       "when": 1792073201441,
       "tag": "0003_aircraft_type",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792088543746,
+      "tag": "0004_show_logs_to_seasons",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792090774813,
+      "tag": "0005_game_status_played",
+      "breakpoints": true
     }
   ]
 }
