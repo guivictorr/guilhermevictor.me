@@ -28,6 +28,7 @@ pnpm lint
 pnpm --filter admin build
 pnpm --filter admin exec tsr generate      # regenerate routeTree.gen.ts after adding routes
 pnpm --filter admin build-airports         # rebuild public/data/airports.json
+pnpm --filter admin build-aircraft         # rebuild public/data/aircraft.json (ICAO types)
 pnpm dlx shadcn@latest add <name> -c apps/admin        # UI components → packages/ui
 ```
 
@@ -49,7 +50,7 @@ apps/admin/          TanStack Start PWA (the only app so far)
   src/lib/           media-kinds.ts (kind registry), images, flight-math, airports, format…
   src/queries/       TanStack Query options/mutations (media.ts = providers, archive.ts = repo)
   src/components/    app components (detail-layout, log/, media/, records/, flights/, form/)
-  scripts/           seed.ts, backfill-details.ts, build-airports.mjs,
+  scripts/           seed.ts, backfill-details.ts, build-airports.mjs, build-aircraft.mjs,
                      import-obsidian.ts (vault → export v2)
   public/            sw.js (hand-written), manifest, icons, data/airports.json
 packages/schemas/    Zod schemas = the data contract (shared with the future API)

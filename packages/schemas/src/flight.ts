@@ -38,7 +38,15 @@ export const FlightInput = z.object({
     .transform((v) => v.replace(/\s+/g, ""))
     .optional(),
   airline: optionalShort,
+  /** Free-text name or variant, e.g. "737-800 Sky Interior". */
   aircraft: optionalShort,
+  /** ICAO type designator, e.g. "B738"; what stats group by. */
+  aircraftType: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{2,4}$/, "Pick an aircraft type")
+    .optional(),
   /** Tail number, e.g. "PR-GXA". */
   registration: optionalShort,
   seat: z.string().trim().toUpperCase().max(5).optional(),

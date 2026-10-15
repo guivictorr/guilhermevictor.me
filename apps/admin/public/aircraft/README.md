@@ -4,8 +4,8 @@ Drop images here and the flight page shows them for matching aircraft.
 
 - **Format:** `.webp`, landscape, about 1200×600, the plane on a transparent or
   plain background works best.
-- **Name:** a slug of the aircraft name as you type it in the flight form:
-  lowercase, words joined by `-`.
+- **Name:** a slug of the aircraft type's name (as the flight form's picker shows
+  it, from `public/data/aircraft.json`): lowercase, words joined by `-`.
   - "Boeing 737 MAX 8" → `boeing-737-max-8.webp`
   - "Airbus A320neo" → `airbus-a320neo.webp`
   - "Embraer E195-E2" → `embraer-e195-e2.webp`

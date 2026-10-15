@@ -341,6 +341,8 @@ export const flights = pgTable(
     flightNumber: text("flight_number"),
     airline: text("airline"),
     aircraft: text("aircraft"),
+    /** ICAO type designator ("B738") from public/data/aircraft.json. */
+    aircraftType: text("aircraft_type"),
     registration: text("registration"),
     seat: text("seat"),
     cabin: text("cabin"),

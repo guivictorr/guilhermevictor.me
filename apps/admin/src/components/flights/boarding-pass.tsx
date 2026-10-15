@@ -2,6 +2,7 @@ import type { Flight } from "@workspace/schemas"
 import { cn } from "@workspace/ui/lib/utils"
 import { PlaneIcon } from "lucide-react"
 import { useState } from "react"
+import { aircraftName, useAircraftTypes } from "@/lib/aircraft-types"
 import { formatDate } from "@/lib/format"
 import {
   airlineCode,
@@ -57,6 +58,7 @@ export function BoardingPass({
   className?: string
 }) {
   const position = seatPosition(flight.seat)
+  const aircraftTypes = useAircraftTypes()
   const stub = [
     [
       "Seat",
@@ -64,7 +66,7 @@ export function BoardingPass({
         ? `${flight.seat}${position ? ` · ${position}` : ""}`
         : undefined,
     ],
-    ["Aircraft", flight.aircraft],
+    ["Aircraft", aircraftName(flight, aircraftTypes)],
     ["Class", flight.cabin ? CABIN_LABEL[flight.cabin] : undefined],
     ["Booking", flight.reservation],
     ["Registration", flight.registration],
@@ -85,18 +87,13 @@ export function BoardingPass({
         style={{ backgroundImage: GRAIN }}
       />
       <div className={cn("px-4", compact ? "py-3" : "py-4")}>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <AirlineMark flight={flight} />
-            {flight.flightNumber ? (
-              <span className="text-xs font-medium text-muted-foreground tabular-nums">
-                {flight.flightNumber}
-              </span>
-            ) : null}
-          </div>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {formatDate(localDate(flight.departure))}
-          </span>
+        <div className="flex min-w-0 items-center gap-2">
+          <AirlineMark flight={flight} />
+          {flight.flightNumber ? (
+            <span className="text-xs font-medium text-muted-foreground tabular-nums">
+              {flight.flightNumber}
+            </span>
+          ) : null}
         </div>
 
         <div
@@ -107,8 +104,9 @@ export function BoardingPass({
         >
           <Endpoint
             code={flight.from}
-            city={facts.from?.city}
+            city={facts.from?.city || facts.from?.name}
             time={localTime(flight.departure)}
+            date={formatDate(localDate(flight.departure))}
             compact={compact}
           />
           <div className="flex min-w-16 flex-col items-center gap-1 text-[0.6875rem] text-muted-foreground">
@@ -128,8 +126,12 @@ export function BoardingPass({
           </div>
           <Endpoint
             code={flight.to}
-            city={facts.to?.city}
+            city={facts.to?.city || facts.to?.name}
             time={flight.arrival ? localTime(flight.arrival) : undefined}
+            // Each end shows its own local date: overnight arrivals land a day later.
+            date={
+              flight.arrival ? formatDate(localDate(flight.arrival)) : undefined
+            }
             align="end"
             compact={compact}
           />
@@ -165,12 +167,14 @@ function Endpoint({
   code,
   city,
   time,
+  date,
   align = "start",
   compact,
 }: {
   code: string
   city?: string
   time?: string
+  date?: string
   align?: "start" | "end"
   compact: boolean
 }) {
@@ -190,6 +194,7 @@ function Endpoint({
         {city ? `${city}, ` : ""}
         {code}
         {time ? ` at ${time}` : ""}
+        {date ? ` on ${date}` : ""}
       </span>
       {time ? (
         <div
@@ -201,6 +206,14 @@ function Endpoint({
           )}
         >
           {time}
+        </div>
+      ) : null}
+      {date ? (
+        <div
+          aria-hidden
+          className="mt-0.5 truncate text-xs font-medium tabular-nums"
+        >
+          {date}
         </div>
       ) : null}
       <div aria-hidden className="truncate text-xs text-muted-foreground">

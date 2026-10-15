@@ -18,6 +18,7 @@ import { FlightMap, routeKey } from "@/components/flights/flight-map"
 import { FlightSheet, useFlightSheet } from "@/components/flights/flight-sheet"
 import { LibraryNav } from "@/components/library/library-nav"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { aircraftName, useAircraftTypes } from "@/lib/aircraft-types"
 import { airportsQuery, countryName } from "@/lib/airports"
 import {
   EARTH_CIRCUMFERENCE_KM,
@@ -152,6 +153,7 @@ function Totals({ stats }: { stats: FlightStats }) {
 }
 
 function Highlights({ stats }: { stats: FlightStats }) {
+  const aircraftTypes = useAircraftTypes()
   const top = (list: Array<[string, number]>) =>
     list[0] ? `${list[0][0]} · ${list[0][1]}×` : undefined
   const seats = stats.seats
@@ -178,7 +180,15 @@ function Highlights({ stats }: { stats: FlightStats }) {
     ],
     ["Top airport", top(stats.topAirports)],
     ["Top airline", top(stats.topAirlines)],
-    ["Top aircraft", top(stats.topAircraft)],
+    [
+      "Top aircraft",
+      top(
+        stats.topAircraft.map(([key, n]) => [
+          aircraftName({ aircraftType: key }, aircraftTypes) ?? key,
+          n,
+        ])
+      ),
+    ],
     [
       "Seat",
       seatTotal

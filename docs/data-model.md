@@ -53,8 +53,11 @@ plus a release snapshot (title, artist, label, catno, format, cover…).
 ## Flights (`flight.ts`)
 
 `from`/`to` IATA, `departure`/`arrival?` as **local** `YYYY-MM-DDTHH:mm`,
-`flightNumber?` (e.g. `G32054`), `airline?`, `aircraft?`, `registration?`, `seat?`,
-`cabin?`, `reservation?`, `notes?`. Distance and duration are derived from
+`flightNumber?` (e.g. `G32054`), `airline?`, `aircraftType?`, `aircraft?`,
+`registration?`, `seat?`, `cabin?`, `reservation?`, `notes?`. `aircraftType` is
+the ICAO designator (`B738`) from `public/data/aircraft.json` (OpenFlights, built
+by `scripts/build-aircraft.mjs`); stats group by it. `aircraft` is free text, kept
+only for names that match no type (`lib/aircraft-types.ts` `matchAircraft`). Distance and duration are derived from
 `public/data/airports.json` (coords + IANA tz) in `lib/flight-math.ts`; nothing
 derived is stored.
 

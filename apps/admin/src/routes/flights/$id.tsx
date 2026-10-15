@@ -14,6 +14,7 @@ import { NotFound } from "@/components/not-found"
 import { airportsQuery } from "@/lib/airports"
 import type { AirportIndex } from "@/lib/airports"
 import { aircraftImageCandidates } from "@/lib/aircraft"
+import { aircraftName, useAircraftTypes } from "@/lib/aircraft-types"
 import { groundMinutes } from "@/lib/flight-trips"
 import { formatDate } from "@/lib/format"
 import { flightFacts, formatDuration, localDate } from "@/lib/flight-math"
@@ -28,6 +29,7 @@ function FlightPage() {
   const { id } = Route.useParams()
   const { data: flights, isPending } = useQuery(flightsQuery())
   const { data: airports } = useQuery(airportsQuery())
+  const aircraftTypes = useAircraftTypes()
   const sheet = useFlightSheet()
 
   if (isPending)
@@ -111,7 +113,10 @@ function FlightPage() {
             />
           ) : null}
         </div>
-        <AircraftPhoto key={flight.id} aircraft={flight.aircraft} />
+        <AircraftPhoto
+          key={flight.id}
+          aircraft={aircraftName(flight, aircraftTypes)}
+        />
         {flight.notes ? (
           <section>
             <h2 className="type-heading mb-2 text-lg">Notes</h2>

@@ -20,6 +20,7 @@ import type { z } from "zod"
 import { useAppForm, useFieldContext } from "@/components/form/form-hook"
 import { FormShell } from "@/components/log/log-forms"
 import { ResponsiveSheet, useOpenSession } from "@/components/responsive-sheet"
+import { aircraftTypesQuery, searchAircraft } from "@/lib/aircraft-types"
 import { airportsQuery, searchAirports } from "@/lib/airports"
 import { airlineCode } from "@/lib/flight-math"
 import { connectionTemplate } from "@/lib/flight-trips"
@@ -96,6 +97,63 @@ function AirportField({ label, flown }: { label: string; flown: Set<string> }) {
                   {a.city}
                   <span className="text-muted-foreground"> · {a.name}</span>
                 </span>
+              </ComboboxItem>
+            ))}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+      <FieldError errors={errors} />
+    </Field>
+  )
+}
+
+/** Searchable aircraft type picker (ICAO codes); types you've flown first. */
+function AircraftField({ flown }: { flown: Set<string> }) {
+  const { field, errors, invalid } = useFieldErrorsOf<string | undefined>()
+  const { data: types } = useQuery(aircraftTypesQuery())
+  const [typed, setTyped] = useState<string>()
+  const query = typed ?? ""
+  const results = useMemo(
+    () => (types ? searchAircraft(types, query, flown) : []),
+    [types, query, flown]
+  )
+  const toLabel = (code: string | null) => {
+    if (!code) return ""
+    const type = types?.byCode.get(code)
+    return type ? `${type.name} · ${code}` : code
+  }
+
+  return (
+    <Field data-invalid={invalid || undefined}>
+      <FieldLabel htmlFor={field.name}>Aircraft</FieldLabel>
+      <Combobox
+        items={results.map((t) => t.icao)}
+        filter={null}
+        value={field.state.value ?? null}
+        onValueChange={(code) => field.handleChange(code ?? undefined)}
+        inputValue={typed ?? toLabel(field.state.value ?? null)}
+        onInputValueChange={setTyped}
+        itemToStringLabel={toLabel}
+      >
+        <ComboboxInput
+          id={field.name}
+          placeholder={types ? "Boeing 737-800, B738…" : "Loading aircraft…"}
+          disabled={!types}
+          aria-invalid={invalid || undefined}
+          onBlur={field.handleBlur}
+          autoCorrect="off"
+          className="w-full"
+          showClear
+        />
+        <ComboboxContent>
+          <ComboboxEmpty>No aircraft found</ComboboxEmpty>
+          <ComboboxList>
+            {results.map((t) => (
+              <ComboboxItem key={t.icao} value={t.icao}>
+                <span className="w-11 shrink-0 font-semibold tabular-nums">
+                  {t.icao}
+                </span>
+                <span className="min-w-0 truncate">{t.name}</span>
               </ComboboxItem>
             ))}
           </ComboboxList>
@@ -257,6 +315,10 @@ function FlightForm({
     () => new Set(history.flatMap((f) => [f.from, f.to])),
     [history]
   )
+  const flownTypes = useMemo(
+    () => new Set(history.flatMap((f) => f.aircraftType ?? [])),
+    [history]
+  )
   // Remember which airline goes with each flight-number prefix you've used.
   const airlineByCode = useMemo(() => {
     const map = new Map<string, string>()
@@ -276,6 +338,7 @@ function FlightForm({
     flightNumber: base?.flightNumber,
     airline: base?.airline,
     aircraft: base?.aircraft,
+    aircraftType: base?.aircraftType,
     registration: base?.registration,
     seat: base?.seat,
     cabin: base?.cabin,
@@ -337,15 +400,21 @@ function FlightForm({
           )}
         </form.AppField>
       </div>
-      <form.AppField name="aircraft">
-        {(f) => <f.TextField label="Aircraft" placeholder="Boeing 737 MAX 8" />}
+      <form.AppField name="aircraftType">
+        {() => <AircraftField flown={flownTypes} />}
       </form.AppField>
+      {/* Older flights may carry a name that matched no type; keep it editable. */}
+      {base?.aircraft ? (
+        <form.AppField name="aircraft">
+          {(f) => <f.TextField label="Aircraft (as typed)" />}
+        </form.AppField>
+      ) : null}
       <div className="grid grid-cols-2 gap-3">
         <form.AppField name="registration">
           {(f) => <f.TextField label="Registration" placeholder="PR-GXA" />}
         </form.AppField>
         <form.AppField name="reservation">
-          {(f) => <f.TextField label="Booking code" placeholder="LLMIVR" />}
+          {(f) => <f.TextField label="Booking code" placeholder="ABC123" />}
         </form.AppField>
       </div>
       <form.AppField name="notes">

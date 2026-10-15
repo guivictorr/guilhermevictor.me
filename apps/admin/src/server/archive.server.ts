@@ -605,6 +605,7 @@ function flightValues(input: FlightInput) {
     flightNumber: input.flightNumber ?? null,
     airline: input.airline ?? null,
     aircraft: input.aircraft ?? null,
+    aircraftType: input.aircraftType ?? null,
     registration: input.registration ?? null,
     seat: input.seat ?? null,
     cabin: input.cabin ?? null,

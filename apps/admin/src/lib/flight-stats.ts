@@ -76,7 +76,11 @@ export function computeFlightStats(
       (x) => x
     ),
     topAirlines: countBy(rows, (r) => r.flight.airline),
-    topAircraft: countBy(rows, (r) => r.flight.aircraft),
+    // By ICAO type, so "BOEING 737-800 JET" and "Boeing 737-800" are one.
+    topAircraft: countBy(
+      rows,
+      (r) => r.flight.aircraftType ?? r.flight.aircraft
+    ),
     seats: Object.fromEntries(seats) as Partial<
       Record<"window" | "aisle" | "middle", number>
     >,

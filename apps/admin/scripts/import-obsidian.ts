@@ -35,6 +35,7 @@ import type {
   WorkId,
 } from "@workspace/schemas"
 import type { z } from "zod"
+import { aircraftIndex, matchAircraft } from "../src/lib/aircraft-types"
 import { fetchBook, searchGoogleBooks } from "../src/server/googlebooks.server"
 
 // ---------------------------------------------------------------- setup
@@ -43,6 +44,17 @@ const vault = path.resolve(process.argv[2] ?? "../../References")
 const outDir = path.join(vault, ".import")
 const envFile = path.resolve(import.meta.dirname, "../.env")
 if (existsSync(envFile)) process.loadEnvFile(envFile)
+
+const aircraftTypes = aircraftIndex(
+  (
+    JSON.parse(
+      await readFile(
+        path.resolve(import.meta.dirname, "../public/data/aircraft.json"),
+        "utf8"
+      )
+    ) as { rows: Parameters<typeof aircraftIndex>[0] }
+  ).rows
+)
 
 const env = (key: string) => process.env[key]?.trim() || undefined
 const now = new Date().toISOString()
@@ -107,6 +119,34 @@ const rating = (v?: string) => {
  * Obsidian replaces ":", "'" and "?" in file names with "_"; undo the
  * common cases and drop a trailing "(2022)" disambiguator.
  */
+/** Bytes 0x80–0xFF of code page 850 (Windows' DOS encoding, used by zip). */
+const CP850 =
+  "ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»░▒▓│┤ÁÂÀ©╣║╗╝¢¥┐└┴┬├─┼ãÃ╚╔╩╦╠═╬¤ðÐÊËÈıÍÎÏ┘┌█▄¦Ì▀ÓßÔÒõÕµþÞÚÛÙýÝ¯´\u00ad±‗¾¶§÷¸°¨·¹³²■\u00a0"
+
+/**
+ * Zips made on a Mac and unzipped on Windows read UTF-8 names as code page
+ * 850: "Léon.md" arrives as "Le╠üon.md". Undo that; names that aren't
+ * garbled (or aren't valid UTF-8 once reversed) stay as they are.
+ */
+function fixFileName(name: string) {
+  if (!/[\u0080-\uffff]/.test(name)) return name
+  const bytes: Array<number> = []
+  for (const char of name) {
+    const code = char.charCodeAt(0)
+    const high = CP850.indexOf(char)
+    if (code < 0x80) bytes.push(code)
+    else if (high !== -1) bytes.push(0x80 + high)
+    else return name.normalize("NFC")
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true })
+      .decode(new Uint8Array(bytes))
+      .normalize("NFC")
+  } catch {
+    return name.normalize("NFC")
+  }
+}
+
 const titleFromFile = (file: string) =>
   file
     .replace(/\.md$/, "")
@@ -493,7 +533,10 @@ async function main() {
   const files = (await readdir(vault)).filter((f) => f.endsWith(".md"))
   const notes: Array<Note> = []
   for (const file of files) {
-    const note = parseNote(file, await readFile(path.join(vault, file), "utf8"))
+    const note = parseNote(
+      fixFileName(file),
+      await readFile(path.join(vault, file), "utf8")
+    )
     if (note) notes.push(note)
   }
 
@@ -802,6 +845,8 @@ async function main() {
           ? [named[0]!, named.at(-1)!]
           : list(note.fm.loc).map((code) => code.toUpperCase())
       const departure = scalar(note.fm.departure)?.slice(0, 16)
+      const aircraftText = scalar(note.fm.aircraft)
+      const aircraftType = matchAircraft(aircraftTypes, aircraftText)
       if (loc.length < 2 || !departure) {
         report.push({
           file: note.file,
@@ -818,7 +863,9 @@ async function main() {
         arrival: scalar(note.fm.arrival)?.slice(0, 16),
         flightNumber: scalar(note.fm.code)?.replace(/\s+/g, "").toUpperCase(),
         airline: list(note.fm.companies)[0],
-        aircraft: scalar(note.fm.aircraft),
+        // A known type is stored as its ICAO code; anything else as typed.
+        aircraftType: aircraftType?.icao,
+        aircraft: aircraftType ? undefined : aircraftText,
         seat: scalar(note.fm.seat)?.toUpperCase(),
         reservation: scalar(note.fm.reservation)?.toUpperCase(),
         notes:
