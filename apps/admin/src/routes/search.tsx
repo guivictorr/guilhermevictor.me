@@ -35,8 +35,11 @@ import {
   MediaGridSkeleton,
 } from "@/components/media-card"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { SwipeButton } from "@/components/swipe/swipe-button"
+import { SwipeDeck } from "@/components/swipe/swipe-deck"
+import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
 import { SegmentedControl } from "@/components/segmented-control"
-import { CardBacklogBadge } from "@/components/media/backlog-button"
+import { CardBadges } from "@/components/media/card-log-menu"
 import { toBacklogItem } from "@/components/media/media-rail"
 import { ReleaseResultList } from "@/components/records/release-result-list"
 import { FilterSheet } from "@/components/search/filter-sheet"
@@ -61,6 +64,7 @@ const SearchParams = z
     q: z.coerce.string().catch("").default(""),
   })
   .extend(SearchFilters.shape)
+  .extend(swipeSearch.shape)
 
 const TYPE_OPTIONS = [
   { value: "movie", label: "Movies" },
@@ -132,6 +136,7 @@ function SearchPage() {
     ...searchQuery(type, q, filters),
     placeholderData: keepPreviousData,
   })
+  const swipe = useSwipe("results")
 
   return (
     <>
@@ -228,6 +233,18 @@ function SearchPage() {
                   : "transition-opacity"
               }
             >
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground tabular-nums">
+                  {data.length} result{data.length === 1 ? "" : "s"}
+                </p>
+                <SwipeButton onClick={swipe.openDeck} />
+              </div>
+              <SwipeDeck
+                open={swipe.open}
+                items={data}
+                title={q ? `“${q}”` : "Results"}
+                onClose={swipe.close}
+              />
               {type === "record" ? (
                 <ReleaseResultList results={data} />
               ) : (
@@ -236,7 +253,7 @@ function SearchPage() {
                     <MediaCard
                       key={`${media.type}-${media.id}`}
                       media={media}
-                      badge={<CardBacklogBadge item={toBacklogItem(media)} />}
+                      badge={<CardBadges item={toBacklogItem(media)} />}
                     />
                   ))}
                 </MediaGrid>
@@ -362,6 +379,7 @@ const TRENDING_TITLE: Record<MediaType, string> = {
 }
 
 function Trending({ type }: { type: MediaType }) {
+  const swipe = useSwipe("trending")
   // Discogs has no trending list: show your own latest additions instead.
   const trending = useQuery({
     ...trendingQuery(type),
@@ -399,9 +417,18 @@ function Trending({ type }: { type: MediaType }) {
 
   return (
     <section>
-      <h2 className="mb-3 font-heading text-lg font-semibold">
-        {TRENDING_TITLE[type]}
-      </h2>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="font-heading text-lg font-semibold">
+          {TRENDING_TITLE[type]}
+        </h2>
+        {data.length ? <SwipeButton onClick={swipe.openDeck} /> : null}
+      </div>
+      <SwipeDeck
+        open={swipe.open}
+        items={data}
+        title={TRENDING_TITLE[type]}
+        onClose={swipe.close}
+      />
       {isPending ? (
         <MediaGridSkeleton />
       ) : (
@@ -410,7 +437,7 @@ function Trending({ type }: { type: MediaType }) {
             <MediaCard
               key={`${media.type}-${media.id}`}
               media={media}
-              badge={<CardBacklogBadge item={toBacklogItem(media)} />}
+              badge={<CardBadges item={toBacklogItem(media)} />}
             />
           ))}
         </MediaGrid>

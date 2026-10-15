@@ -14,6 +14,17 @@ function seeded(seed: string) {
   }
 }
 
+/** A copy of `items` in a random order that's the same for the same seed. */
+export function shuffle<T>(items: ReadonlyArray<T>, seed: string): Array<T> {
+  const random = seeded(seed)
+  const out = [...items]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    ;[out[i], out[j]] = [out[j]!, out[i]!]
+  }
+  return out
+}
+
 /**
  * Today's suggestions from the backlog: shuffled with the date as seed (same
  * all day, new tomorrow) and interleaved across kinds so it's a mix.

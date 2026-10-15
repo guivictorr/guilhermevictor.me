@@ -2,14 +2,18 @@ import { createFileRoute, stripSearchParams } from "@tanstack/react-router"
 import { z } from "zod"
 import { LibraryNav } from "@/components/library/library-nav"
 import { LibraryView } from "@/components/library/library-view"
+import { SteamSyncButton } from "@/components/library/steam-sync-button"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { swipeSearch } from "@/components/swipe/swipe-search"
 
 export const Route = createFileRoute("/games/")({
   // Keep URLs clean: defaults are implied, not written.
   search: { middlewares: [stripSearchParams({ view: "grid" })] },
-  validateSearch: z.object({
-    view: z.enum(["grid", "table"]).catch("grid").default("grid"),
-  }),
+  validateSearch: z
+    .object({
+      view: z.enum(["grid", "table"]).catch("grid").default("grid"),
+    })
+    .extend(swipeSearch.shape),
   head: () => ({ meta: [{ title: "Games · Archive" }] }),
   component: GamesPage,
 })
@@ -19,7 +23,7 @@ function GamesPage() {
   const navigate = Route.useNavigate()
   return (
     <>
-      <PageHeader title="Games" />
+      <PageHeader title="Games" actions={<SteamSyncButton />} />
       <PageBody className="space-y-4">
         <LibraryNav />
         <LibraryView

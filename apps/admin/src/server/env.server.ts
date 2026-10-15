@@ -36,6 +36,16 @@ const GoogleBooksEnv = z.object({ GOOGLE_BOOKS_KEY: z.string().min(1) })
 
 export const getGoogleBooksEnv = () => readEnv(GoogleBooksEnv)
 
+const SteamEnv = z.object({
+  STEAM_API_KEY: z.string().min(1),
+  /** Your SteamID64, e.g. 76561197960287930. */
+  STEAM_ID: z
+    .string()
+    .regex(/^\d{17}$/, "STEAM_ID must be a 17-digit SteamID64"),
+})
+
+export const getSteamEnv = () => readEnv(SteamEnv)
+
 const DatabaseEnv = z.object({ DATABASE_URL: z.url() })
 
 export const getDatabaseUrl = () => readEnv(DatabaseEnv).DATABASE_URL

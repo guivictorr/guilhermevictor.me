@@ -13,6 +13,7 @@ import {
 } from "@/components/detail-layout"
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
+import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
 import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import {
@@ -21,6 +22,7 @@ import {
   TrailerSection,
 } from "@/components/media/detail-sections"
 import { MediaRail, ScrollRow } from "@/components/media/media-rail"
+import { SwipeAction } from "@/components/swipe/swipe-button"
 import { PeopleGrid } from "@/components/media/people-grid"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { Poster } from "@/components/poster"
@@ -30,6 +32,7 @@ import { logsQuery } from "@/queries/archive"
 import { showQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/shows/$id/")({
+  validateSearch: logSearch,
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(showQuery(parseId(params.id))),
   head: ({ loaderData }) => ({
@@ -44,6 +47,7 @@ function ShowPage() {
   const { data: show } = useSuspenseQuery(showQuery(parseId(id)))
   const navigate = Route.useNavigate()
   const sheet = useLogSheet()
+  useOpenLogFromSearch(sheet.openNew)
   const regularSeasons = show.seasons.filter((s) => s.seasonNumber > 0).length
   const item = {
     type: "show" as const,
@@ -99,7 +103,16 @@ function ShowPage() {
                 <SeasonsSection show={show} />
                 <TrailerSection video={show.trailer} />
                 {show.recommendations.length ? (
-                  <DetailSection title="Recommendations">
+                  <DetailSection
+                    title="Recommendations"
+                    action={
+                      <SwipeAction
+                        id="recommendations"
+                        items={show.recommendations}
+                        title={`Like ${show.title}`}
+                      />
+                    }
+                  >
                     <MediaRail items={show.recommendations} />
                   </DetailSection>
                 ) : null}

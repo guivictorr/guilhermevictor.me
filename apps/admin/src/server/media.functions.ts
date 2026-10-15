@@ -11,7 +11,12 @@ import {
   fetchMaster,
   searchDiscogs,
 } from "./discogs.server"
-import { fetchPopularGames, searchIgdb } from "./igdb.server"
+import {
+  fetchPopularGames,
+  igdbIdsForSteamApps,
+  searchIgdb,
+} from "./igdb.server"
+import { fetchSteamPlaytime } from "./steam.server"
 import { fetchTrendingBooks, searchGoogleBooks } from "./googlebooks.server"
 import {
   discoverTmdb,
@@ -145,3 +150,19 @@ export const getBook = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(z.object({ id: z.string().regex(/^[\w-]{1,64}$/) }))
   .handler(({ data }) => liveOrStored("book", data.id))
+
+/**
+ * Your played Steam games matched to IGDB ids (through IGDB's Steam links);
+ * the client hands the matches to `fillFromSteam`.
+ */
+export const fetchSteamLibrary = createServerFn({ method: "POST" })
+  .middleware([requireOwner])
+  .handler(async () => {
+    const played = await fetchSteamPlaytime()
+    const igdbIds = await igdbIdsForSteamApps(played.map((g) => g.appId))
+    const matched = played.flatMap((g) => {
+      const gameId = igdbIds.get(g.appId)
+      return gameId ? [{ gameId, minutes: g.minutes }] : []
+    })
+    return { played: played.length, matched }
+  })

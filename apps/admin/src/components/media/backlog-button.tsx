@@ -11,7 +11,7 @@ import {
   useRemoveFromBacklog,
 } from "@/queries/archive"
 
-function useBacklogToggle(item: LibraryItemInput) {
+export function useBacklogToggle(item: LibraryItemInput) {
   const { data: index } = useQuery(indexQuery())
   const add = useAddToBacklog()
   const remove = useRemoveFromBacklog()

@@ -14,6 +14,7 @@ import {
 } from "@/components/detail-layout"
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
+import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
 import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import {
@@ -21,6 +22,7 @@ import {
   SynopsisSection,
 } from "@/components/media/detail-sections"
 import { MediaRail, ScrollRow } from "@/components/media/media-rail"
+import { SwipeAction } from "@/components/swipe/swipe-button"
 import {
   TimeToBeatCard,
   YourStatsCard,
@@ -32,6 +34,7 @@ import { parseId } from "@/lib/params"
 import { gameQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/games/$id")({
+  validateSearch: logSearch,
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(gameQuery(parseId(params.id))),
   head: ({ loaderData }) => ({
@@ -45,6 +48,7 @@ function GamePage() {
   const { id } = Route.useParams()
   const { data: game } = useSuspenseQuery(gameQuery(parseId(id)))
   const sheet = useLogSheet()
+  useOpenLogFromSearch(sheet.openNew)
   const item = {
     type: "game" as const,
     id: game.id,
@@ -120,7 +124,16 @@ function GamePage() {
                   </DetailSection>
                 ) : null}
                 {game.similar.length ? (
-                  <DetailSection title="Similar games">
+                  <DetailSection
+                    title="Similar games"
+                    action={
+                      <SwipeAction
+                        id="similar"
+                        items={game.similar}
+                        title={`Like ${game.title}`}
+                      />
+                    }
+                  >
                     <MediaRail items={game.similar} />
                   </DetailSection>
                 ) : null}

@@ -63,6 +63,10 @@ import {
   MediaGridSkeleton,
   MediaLink,
 } from "@/components/media-card"
+import { CardLogBadge } from "@/components/media/card-log-menu"
+import { SwipeButton } from "@/components/swipe/swipe-button"
+import { SwipeDeck } from "@/components/swipe/swipe-deck"
+import { useSwipe } from "@/components/swipe/swipe-search"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { useIsDesktop } from "@/hooks/use-media-query"
@@ -174,6 +178,7 @@ export function LibraryView({
     { id: "lastLoggedAt", desc: true },
   ])
   const isDesktop = useIsDesktop()
+  const swipe = useSwipe("list")
   const showTable = isDesktop && layout === "table"
 
   const filtered = useMemo(() => {
@@ -290,7 +295,15 @@ export function LibraryView({
             <ListIcon />
           </ToggleGroupItem>
         </ToggleGroup>
+        {rows.length ? <SwipeButton toolbar onClick={swipe.openDeck} /> : null}
       </div>
+      {/* Same filter and order as the grid. */}
+      <SwipeDeck
+        open={swipe.open}
+        items={rows.map((row) => row.original)}
+        title={kind.plural}
+        onClose={swipe.close}
+      />
 
       {rows.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
@@ -363,6 +376,7 @@ export function LibraryView({
               >
                 <MediaCard
                   media={entry}
+                  badge={<CardLogBadge item={entry} />}
                   meta={
                     <>
                       {entry.rating !== undefined ? (

@@ -55,6 +55,9 @@ import {
   showColumns,
 } from "./details.server"
 
+/** IGDB's name for Windows PCs, as the game log form lists it. */
+const STEAM_PLATFORM = "PC (Microsoft Windows)"
+
 /*
  * The archive in Postgres: one table per kind of work (movies, shows,
  * games, books, records), one log table per kind, and flights. Rows are
@@ -1047,6 +1050,45 @@ export const pgRepository: ArchiveRepository = {
         skipped: drafts.length - added.length - linked,
       }
     })
+  },
+
+  async fillFromSteam(entries) {
+    const result = { filled: 0, unchanged: 0, notLogged: 0 }
+    await getDb().transaction(async (tx) => {
+      for (const { gameId, minutes } of entries) {
+        // The latest log, same order as the app (finished/started, then created).
+        const [latest] = await tx
+          .select()
+          .from(gameLogs)
+          .where(eq(gameLogs.gameId, gameId))
+          .orderBy(
+            sql`coalesce(${gameLogs.finishedAt}, ${gameLogs.startedAt}) desc nulls last`,
+            desc(gameLogs.createdAt)
+          )
+          .limit(1)
+        if (!latest) {
+          result.notLogged++
+          continue
+        }
+        // Only what's empty: your own hours and platform always win.
+        const set = {
+          ...(latest.hoursPlayed === null && {
+            hoursPlayed: Math.round(minutes / 6) / 10,
+          }),
+          ...(!latest.platform && { platform: STEAM_PLATFORM }),
+        }
+        if (!Object.keys(set).length) {
+          result.unchanged++
+          continue
+        }
+        await tx
+          .update(gameLogs)
+          .set({ ...set, updatedAt: now() })
+          .where(eq(gameLogs.id, latest.id))
+        result.filled++
+      }
+    })
+    return result
   },
 
   async listFlights() {

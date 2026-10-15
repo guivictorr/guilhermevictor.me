@@ -11,7 +11,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { cn } from "@workspace/ui/lib/utils"
 import { BookmarkIcon, ChevronRightIcon, DicesIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -20,12 +19,17 @@ import {
   MediaGrid,
   MediaGridSkeleton,
 } from "@/components/media-card"
+import { KindFilter } from "@/components/kind-filter"
+import { CardLogBadge } from "@/components/media/card-log-menu"
 import { ScrollRow } from "@/components/media/media-rail"
 import {
   RandomPickSheet,
   useRandomPick,
 } from "@/components/media/random-pick-sheet"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { SwipeButton } from "@/components/swipe/swipe-button"
+import { SwipeDeck } from "@/components/swipe/swipe-deck"
+import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
 import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
 import {
   backlogQuery,
@@ -35,7 +39,9 @@ import {
 
 export const Route = createFileRoute("/backlog")({
   /** One kind's full grid; without it, a row per kind. */
-  validateSearch: z.object({ kind: MediaType.optional().catch(undefined) }),
+  validateSearch: z
+    .object({ kind: MediaType.optional().catch(undefined) })
+    .extend(swipeSearch.shape),
   head: () => ({ meta: [{ title: "Backlog · Archive" }] }),
   component: BacklogPage,
 })
@@ -85,6 +91,7 @@ function BacklogPage() {
           <>
             {sections.length > 1 ? (
               <KindFilter
+                to="/backlog"
                 active={current?.type}
                 total={backlog.length}
                 counts={sections.map((s) => [s.type, s.items.length] as const)}
@@ -132,57 +139,6 @@ function BacklogPage() {
   )
 }
 
-/** Same pills as the library's kind switcher, with how many are waiting. */
-function KindFilter({
-  active,
-  total,
-  counts,
-}: {
-  active?: MediaType
-  total: number
-  counts: Array<readonly [MediaType, number]>
-}) {
-  const pill = (selected: boolean) =>
-    cn(
-      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors",
-      selected
-        ? "border-primary bg-primary text-primary-foreground"
-        : "text-muted-foreground hover:text-foreground"
-    )
-  const count = (n: number) => (
-    <span className="tabular-nums opacity-70">{n}</span>
-  )
-  return (
-    <nav aria-label="Backlog kinds">
-      <ScrollRow className="snap-none gap-2 pb-1">
-        <Link
-          to="/backlog"
-          search={{}}
-          aria-current={active ? undefined : "page"}
-          className={pill(!active)}
-        >
-          All {count(total)}
-        </Link>
-        {counts.map(([type, n]) => {
-          const { plural, icon: Icon } = KINDS[type]
-          return (
-            <Link
-              key={type}
-              to="/backlog"
-              search={{ kind: type }}
-              aria-current={active === type ? "page" : undefined}
-              className={pill(active === type)}
-            >
-              <Icon className="size-4" />
-              {plural} {count(n)}
-            </Link>
-          )
-        })}
-      </ScrollRow>
-    </nav>
-  )
-}
-
 function SectionHeader({
   type,
   title,
@@ -196,8 +152,9 @@ function SectionHeader({
   onSurprise: () => void
   seeAll?: boolean
 }) {
+  const swipe = useSwipe(type)
   return (
-    <div className="mb-3 flex items-center gap-3">
+    <div className="mb-3 flex items-center gap-2">
       <h2 className="font-heading text-lg font-semibold">
         {title}{" "}
         <span className="font-normal text-muted-foreground tabular-nums">
@@ -212,9 +169,17 @@ function SectionHeader({
           onClick={onSurprise}
         >
           <DicesIcon />
-          Surprise me
+          {/* Icon-only on phones, so the header fits with Swipe and See all. */}
+          <span className="max-sm:sr-only">Surprise me</span>
         </Button>
       ) : null}
+      <SwipeButton onClick={swipe.openDeck} />
+      <SwipeDeck
+        open={swipe.open}
+        items={items}
+        title={`${title} · Backlog`}
+        onClose={swipe.close}
+      />
       {seeAll ? (
         <Link
           to="/backlog"
@@ -230,7 +195,17 @@ function SectionHeader({
 }
 
 function BacklogCard({ item }: { item: BacklogItem }) {
-  return <MediaCard media={item} badge={<RemoveButton item={item} />} />
+  return (
+    <MediaCard
+      media={item}
+      badge={
+        <>
+          <CardLogBadge item={item} />
+          <RemoveButton item={item} />
+        </>
+      }
+    />
+  )
 }
 
 function RemoveButton({ item }: { item: BacklogItem }) {

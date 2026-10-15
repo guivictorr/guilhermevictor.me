@@ -135,6 +135,22 @@ export const importCollectionFn = createServerFn({ method: "POST" })
   .validator(z.object({ drafts: z.array(CollectionItemDraft).max(10_000) }))
   .handler(({ data }) => repo.importCollection(data.drafts))
 
+export const fillFromSteamFn = createServerFn({ method: "POST" })
+  .middleware([requireOwner])
+  .validator(
+    z.object({
+      entries: z
+        .array(
+          z.object({
+            gameId: z.number().int().positive(),
+            minutes: z.number().int().positive(),
+          })
+        )
+        .max(20_000),
+    })
+  )
+  .handler(({ data }) => repo.fillFromSteam(data.entries))
+
 export const listFlightsFn = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .handler(() => repo.listFlights())

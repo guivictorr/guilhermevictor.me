@@ -221,6 +221,30 @@ const GAME_FIELDS = [
   "external_games.external_game_source",
 ].join(",")
 
+/**
+ * IGDB game ids for Steam app ids, via IGDB's own store links
+ * (`external_games` with source 1 = Steam). Apps IGDB doesn't link are
+ * left out; nothing is matched by name.
+ */
+export async function igdbIdsForSteamApps(
+  appIds: Array<number>
+): Promise<Map<number, number>> {
+  const ids = new Map<number, number>()
+  for (let i = 0; i < appIds.length; i += 500) {
+    const uids = appIds
+      .slice(i, i + 500)
+      .map((id) => `"${id}"`)
+      .join(",")
+    const rows = await igdb<Array<{ uid?: string; game?: number }>>(
+      "external_games",
+      `fields uid,game; where external_game_source = 1 & uid = (${uids}); limit 500;`
+    )
+    for (const row of rows)
+      if (row.uid && row.game) ids.set(Number(row.uid), row.game)
+  }
+  return ids
+}
+
 /** IGDB `external_game_sources` ids worth keeping for matching elsewhere. */
 const EXTERNAL_SOURCES: Partial<Record<number, string>> = {
   1: "steam",

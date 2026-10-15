@@ -15,15 +15,18 @@ import {
 } from "@/components/detail-layout"
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
+import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
 import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import { LogsTabLabel } from "@/components/media/detail-sections"
 import { MediaRail } from "@/components/media/media-rail"
+import { SwipeAction } from "@/components/swipe/swipe-button"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { formatDate, joinDefined } from "@/lib/format"
 import { bookQuery, searchQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/books/$id")({
+  validateSearch: logSearch,
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(bookQuery(params.id)),
   head: ({ loaderData }) => ({
@@ -51,6 +54,7 @@ function BookPage() {
   const { id } = Route.useParams()
   const { data: book } = useSuspenseQuery(bookQuery(id))
   const sheet = useLogSheet()
+  useOpenLogFromSearch(sheet.openNew)
   const authors = book.authors.join(", ")
   const item = {
     type: "book" as const,
@@ -185,7 +189,10 @@ function MoreByAuthor({
   const books = (data ?? []).filter((b) => b.id !== currentId).slice(0, 20)
   if (!books.length) return null
   return (
-    <DetailSection title={`More by ${name}`}>
+    <DetailSection
+      title={`More by ${name}`}
+      action={<SwipeAction id="author" items={books} title={`By ${name}`} />}
+    >
       <MediaRail items={books} />
     </DetailSection>
   )

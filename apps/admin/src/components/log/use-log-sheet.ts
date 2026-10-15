@@ -1,5 +1,5 @@
 import type { LogEntry } from "@workspace/schemas"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 
 /**
  * Sheet state for "new log" vs "edit log". `editing` is only replaced on
@@ -9,17 +9,15 @@ export function useLogSheet() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<LogEntry | undefined>()
 
-  return {
-    open,
-    editing,
-    onOpenChange: setOpen,
-    openNew: () => {
-      setEditing(undefined)
-      setOpen(true)
-    },
-    openEdit: (log: LogEntry) => {
-      setEditing(log)
-      setOpen(true)
-    },
-  }
+  // Stable, so effects can depend on them (e.g. opening from `?log=new`).
+  const openNew = useCallback(() => {
+    setEditing(undefined)
+    setOpen(true)
+  }, [])
+  const openEdit = useCallback((log: LogEntry) => {
+    setEditing(log)
+    setOpen(true)
+  }, [])
+
+  return { open, editing, onOpenChange: setOpen, openNew, openEdit }
 }

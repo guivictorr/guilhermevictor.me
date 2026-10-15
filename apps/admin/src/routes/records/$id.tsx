@@ -1,7 +1,6 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import type { CollectionItem, Release } from "@workspace/schemas"
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { ExternalLinkIcon, PlusIcon } from "lucide-react"
 import { useState } from "react"
@@ -17,12 +16,14 @@ import {
 } from "@/components/detail-layout"
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
+import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
 import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import { LogsTabLabel } from "@/components/media/detail-sections"
 import { ScrollRow } from "@/components/media/media-rail"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { CopySheet } from "@/components/records/copy-sheet"
+import { Copies, copyOptions, snapshotOf } from "@/components/records/copies"
 import {
   OtherVersionsSection,
   PlayReleaseButton,
@@ -36,11 +37,11 @@ import { formatDate, joinDefined } from "@/lib/format"
 import { formatMoney } from "@/lib/grades"
 import { imageUrl } from "@/lib/images"
 import { parseId } from "@/lib/params"
-import type { CollectionSnapshot } from "@/lib/repo"
 import { collectionQuery } from "@/queries/archive"
 import { releaseQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/records/$id")({
+  validateSearch: logSearch,
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(releaseQuery(parseId(params.id))),
   head: ({ loaderData }) => ({
@@ -56,29 +57,13 @@ export const Route = createFileRoute("/records/$id")({
   component: RecordPage,
 })
 
-function snapshotOf(release: Release): CollectionSnapshot {
-  const label = release.labels[0]
-  return {
-    type: "record",
-    releaseId: release.id,
-    title: release.title,
-    artist: release.artists.join(", "),
-    year: release.year,
-    format: release.format,
-    label: label?.name,
-    catno: label?.catno,
-    genres: release.genres,
-    styles: release.styles,
-    cover: release.cover,
-  }
-}
-
 function RecordPage() {
   const { id } = Route.useParams()
   const { data: release } = useSuspenseQuery(releaseQuery(parseId(id)))
   const { data: collection } = useQuery(collectionQuery())
   const copies = (collection ?? []).filter((c) => c.releaseId === release.id)
   const logSheet = useLogSheet()
+  useOpenLogFromSearch(logSheet.openNew)
   const [copySheet, setCopySheet] = useState<{
     open: boolean
     editing?: CollectionItem
@@ -237,15 +222,7 @@ function RecordPage() {
         target={{
           kind: "record",
           item,
-          copies: copies.map((copy, i) => ({
-            value: copy.id,
-            label:
-              joinDefined([
-                copy.variant,
-                copy.mediaCondition,
-                formatDate(copy.acquiredAt),
-              ]) || `Copy ${i + 1}`,
-          })),
+          copies: copyOptions(copies),
         }}
       />
       <CopySheet
@@ -293,72 +270,5 @@ function StatisticsCard({ release }: { release: Release }) {
         </a>
       ) : null}
     </SideCard>
-  )
-}
-
-function Copies({
-  copies,
-  onSelect,
-  onAdd,
-}: {
-  copies: Array<CollectionItem>
-  onSelect: (copy: CollectionItem) => void
-  onAdd: () => void
-}) {
-  return (
-    <div className="space-y-3">
-      {copies.length ? (
-        <ul className="divide-y overflow-hidden rounded-xl border bg-card">
-          {copies.map((copy) => (
-            <li key={copy.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(copy)}
-                className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  {copy.mediaCondition ? (
-                    <Badge variant="secondary">
-                      Media {copy.mediaCondition}
-                    </Badge>
-                  ) : null}
-                  {copy.sleeveCondition ? (
-                    <Badge variant="secondary">
-                      Sleeve {copy.sleeveCondition}
-                    </Badge>
-                  ) : null}
-                  {copy.discogsInstanceId !== undefined ? (
-                    <Badge variant="outline">From Discogs</Badge>
-                  ) : null}
-                </div>
-                <p className="mt-1.5 text-sm">
-                  {joinDefined([
-                    copy.variant,
-                    copy.acquiredAt
-                      ? `Acquired ${formatDate(copy.acquiredAt)}`
-                      : `Added ${formatDate(copy.addedAt)}`,
-                    formatMoney(copy.price),
-                    copy.store,
-                  ]) || "No details yet"}
-                </p>
-                {copy.notes ? (
-                  <p className="mt-1 line-clamp-2 text-sm whitespace-pre-line text-muted-foreground">
-                    {copy.notes}
-                  </p>
-                ) : null}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          This pressing isn't in your collection.
-        </p>
-      )}
-      <Button variant="outline" onClick={onAdd}>
-        <PlusIcon />
-        {copies.length ? "Add another copy" : "Add to collection"}
-      </Button>
-    </div>
   )
 }

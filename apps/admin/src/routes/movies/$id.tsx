@@ -12,6 +12,7 @@ import {
 } from "@/components/detail-layout"
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
+import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
 import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
 import {
@@ -21,6 +22,7 @@ import {
   TrailerSection,
 } from "@/components/media/detail-sections"
 import { MediaRail } from "@/components/media/media-rail"
+import { SwipeAction } from "@/components/swipe/swipe-button"
 import { PeopleGrid } from "@/components/media/people-grid"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { formatDate, formatRuntime, joinDefined } from "@/lib/format"
@@ -28,6 +30,7 @@ import { parseId } from "@/lib/params"
 import { movieQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/movies/$id")({
+  validateSearch: logSearch,
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(movieQuery(parseId(params.id))),
   head: ({ loaderData }) => ({
@@ -41,6 +44,7 @@ function MoviePage() {
   const { id } = Route.useParams()
   const { data: movie } = useSuspenseQuery(movieQuery(parseId(id)))
   const sheet = useLogSheet()
+  useOpenLogFromSearch(sheet.openNew)
   const item = {
     type: "movie" as const,
     id: movie.id,
@@ -98,7 +102,16 @@ function MoviePage() {
                 <TrailerSection video={movie.trailer} />
                 <CollectionSection collection={movie.collection} />
                 {movie.recommendations.length ? (
-                  <DetailSection title="Recommendations">
+                  <DetailSection
+                    title="Recommendations"
+                    action={
+                      <SwipeAction
+                        id="recommendations"
+                        items={movie.recommendations}
+                        title={`Like ${movie.title}`}
+                      />
+                    }
+                  >
                     <MediaRail items={movie.recommendations} />
                   </DetailSection>
                 ) : null}

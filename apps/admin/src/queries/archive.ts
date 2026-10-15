@@ -13,6 +13,7 @@ import type {
 } from "@workspace/schemas"
 import { repo } from "@/lib/repo"
 import type {
+  SteamPlaytimeMatch,
   CollectionSnapshot,
   LibraryItemInput,
   LogTarget,
@@ -204,6 +205,15 @@ export function useImportCollection() {
   return useMutation({
     mutationFn: (drafts: Array<CollectionItemDraft>) =>
       repo.importCollection(drafts),
+    onSuccess: invalidate,
+  })
+}
+
+export function useFillFromSteam() {
+  const invalidate = useInvalidateArchive()
+  return useMutation({
+    mutationFn: (entries: Array<SteamPlaytimeMatch>) =>
+      repo.fillFromSteam(entries),
     onSuccess: invalidate,
   })
 }

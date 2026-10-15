@@ -13,7 +13,7 @@ export type CardMedia = {
   poster?: ImageRef
 }
 
-const DETAIL_ROUTE = {
+export const DETAIL_ROUTE = {
   movie: "/movies/$id",
   show: "/shows/$id",
   game: "/games/$id",

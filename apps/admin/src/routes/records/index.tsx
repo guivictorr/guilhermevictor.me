@@ -33,11 +33,15 @@ import {
   MediaGridSkeleton,
 } from "@/components/media-card"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { SwipeButton } from "@/components/swipe/swipe-button"
+import { SwipeDeck } from "@/components/swipe/swipe-deck"
+import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
 import { collectionQuery, useImportCollection } from "@/queries/archive"
 import { collectionValueQuery } from "@/queries/media"
 import { importDiscogsCollection } from "@/server/media.functions"
 
 export const Route = createFileRoute("/records/")({
+  validateSearch: swipeSearch,
   head: () => ({ meta: [{ title: "Records · Archive" }] }),
   component: RecordsPage,
 })
@@ -95,6 +99,15 @@ function RecordsPage() {
   }, [collection, filter, sort])
 
   const hasCollection = Boolean(collection?.length)
+  const swipe = useSwipe("list")
+  const cards = entries.map((entry) => ({
+    type: "record" as const,
+    id: entry.releaseId,
+    title: entry.title,
+    subtitle: entry.artist,
+    year: entry.year,
+    poster: entry.cover,
+  }))
 
   return (
     <>
@@ -160,27 +173,29 @@ function RecordsPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {cards.length ? (
+                <SwipeButton toolbar onClick={swipe.openDeck} />
+              ) : null}
             </div>
+            <SwipeDeck
+              open={swipe.open}
+              items={cards}
+              title="Records"
+              onClose={swipe.close}
+            />
             {entries.length === 0 ? (
               <p className="py-12 text-center text-sm text-muted-foreground">
                 No records match “{filter}”.
               </p>
             ) : (
               <MediaGrid>
-                {entries.map((entry) => (
+                {entries.map((entry, i) => (
                   <div
                     key={entry.releaseId}
                     className="[contain-intrinsic-size:auto_14rem] [content-visibility:auto]"
                   >
                     <MediaCard
-                      media={{
-                        type: "record",
-                        id: entry.releaseId,
-                        title: entry.title,
-                        subtitle: entry.artist,
-                        year: entry.year,
-                        poster: entry.cover,
-                      }}
+                      media={cards[i]!}
                       badge={
                         entry.copies > 1 ? (
                           <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-semibold tabular-nums shadow-md backdrop-blur-md">

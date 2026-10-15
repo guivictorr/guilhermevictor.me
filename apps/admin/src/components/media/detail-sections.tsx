@@ -7,6 +7,7 @@ import type {
 } from "@workspace/schemas"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { MediaRail } from "./media-rail"
+import { SwipeAction } from "@/components/swipe/swipe-button"
 import { YouTubeVideo } from "./youtube"
 import { DetailSection } from "@/components/detail-layout"
 import { logsQuery, indexQuery, mediaKey } from "@/queries/archive"
@@ -51,9 +52,16 @@ export function CollectionSection({
       title={collection.name}
       action={
         parts.length ? (
-          <span className="text-sm text-muted-foreground tabular-nums">
-            {logged}/{parts.length} logged
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {logged}/{parts.length} logged
+            </span>
+            <SwipeAction
+              id="collection"
+              items={parts}
+              title={collection.name}
+            />
+          </div>
         ) : null
       }
     >

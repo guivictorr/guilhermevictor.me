@@ -111,6 +111,13 @@ export interface ArchiveRepository {
   importCollection: (
     drafts: Array<CollectionItemDraft>
   ) => Promise<{ added: number; linked: number; skipped: number }>
+  /**
+   * Fills the latest log of each game from Steam: hours played and the PC
+   * platform, only where those are empty. Never creates logs.
+   */
+  fillFromSteam: (
+    entries: Array<SteamPlaytimeMatch>
+  ) => Promise<SteamFillResult>
   listFlights: () => Promise<Array<Flight>>
   addFlight: (input: FlightInput) => Promise<Flight>
   updateFlight: (id: string, input: FlightInput) => Promise<Flight>
@@ -118,4 +125,16 @@ export interface ArchiveRepository {
   exportAll: () => Promise<ArchiveExport>
   importAll: (data: ArchiveExport) => Promise<void>
   clear: () => Promise<void>
+}
+
+/** A Steam game you played, matched to its IGDB id. */
+export type SteamPlaytimeMatch = { gameId: number; minutes: number }
+
+export type SteamFillResult = {
+  /** Latest logs that got hours and/or a platform. */
+  filled: number
+  /** Already had both. */
+  unchanged: number
+  /** Matched on Steam but not logged in the archive. */
+  notLogged: number
 }

@@ -47,6 +47,15 @@ All calls happen server-side (`apps/admin/src/server/*.server.ts`). Env vars in
   get a cover (otherwise Google serves an "image not available" placeholder).
 - No trending endpoint: the search page shows newest fiction instead.
 
+## Steam — game playtime (`STEAM_API_KEY`, `STEAM_ID`, optional)
+
+"Sync Steam" on Games (`steam.server.ts` → `fetchSteamLibrary` → `fillFromSteam`):
+your played Steam games (`IPlayerService/GetOwnedGames`, needs Profile → Privacy →
+Game details: Public) are matched to IGDB ids through IGDB's own Steam links
+(`external_games`, source 1); no name matching. Each matched game's **latest log**
+gets the Steam hours and the platform "PC (Microsoft Windows)" **only where empty**.
+It never creates logs or overwrites what you entered.
+
 ## Search filters (`src/lib/search-filters.ts`)
 
 - TMDB: text search only supports a year, so other filters narrow the first 3

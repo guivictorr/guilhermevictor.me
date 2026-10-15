@@ -16,6 +16,9 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Horizontal decks start at their first item on a new page (the router
+    // would otherwise carry the old position over); reloads still restore.
+    scrollToTopSelectors: ["[data-scroll-deck]"],
     defaultPreload: "intent",
     // Query owns caching; the router should always ask it.
     defaultPreloadStaleTime: 0,

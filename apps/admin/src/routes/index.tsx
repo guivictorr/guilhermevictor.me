@@ -20,9 +20,11 @@ import {
 import { describeLogDates } from "@/components/log/log-history"
 import { MediaCard, MediaLink } from "@/components/media-card"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { swipeSearch } from "@/components/swipe/swipe-search"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { MediaRail } from "@/components/media/media-rail"
+import { SwipeAction } from "@/components/swipe/swipe-button"
 import { FactsDeck } from "@/components/home/facts-deck"
 import { dailyPicks } from "@/lib/daily-picks"
 import { today } from "@/lib/format"
@@ -37,6 +39,7 @@ import {
 } from "@/queries/archive"
 
 export const Route = createFileRoute("/")({
+  validateSearch: swipeSearch,
   head: () => ({ meta: [{ title: "Archive" }] }),
   component: HomePage,
 })
@@ -72,7 +75,13 @@ function HomePage() {
 
         {playing.length > 0 ? (
           <section>
-            <SectionTitle title="Now playing" to="/games" />
+            <SectionTitle
+              title="Now playing"
+              to="/games"
+              swipe={
+                <SwipeAction id="playing" items={playing} title="Now playing" />
+              }
+            />
             <div className="-mx-4 flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 md:mx-0 md:px-0">
               {playing.map((game) => (
                 <div key={game.id} className="w-28 shrink-0 snap-start md:w-32">
@@ -161,13 +170,16 @@ function HomePage() {
 function SectionTitle({
   title,
   to,
+  swipe,
 }: {
   title: string
   to?: "/games" | "/backlog"
+  swipe?: React.ReactNode
 }) {
   return (
-    <div className="mb-3 flex items-center justify-between">
-      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+    <div className="mb-3 flex items-center gap-3">
+      <h2 className="mr-auto font-heading text-lg font-semibold">{title}</h2>
+      {swipe}
       {to ? (
         <Link
           to={to}
@@ -190,7 +202,11 @@ function ForToday() {
   if (!backlog?.length) return null
   return (
     <section>
-      <SectionTitle title="For today" to="/backlog" />
+      <SectionTitle
+        title="For today"
+        to="/backlog"
+        swipe={<SwipeAction id="today" items={picks} title="For today" />}
+      />
       <MediaRail items={picks} />
     </section>
   )
