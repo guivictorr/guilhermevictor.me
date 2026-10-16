@@ -191,7 +191,7 @@ function DateTimeField({
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-1.5">
+      <div className="grid grid-cols-[minmax(0,1fr)_6.5rem] gap-1.5">
         <DatePicker
           id={field.name}
           value={date}
@@ -207,7 +207,10 @@ function DateTimeField({
           disabled={!date}
           onBlur={field.handleBlur}
           onChange={(e) => set(date, e.target.value)}
-          className="px-2 tabular-nums"
+          // iOS draws time inputs natively: taller than h-10 and with a
+          // min width wider than this column. Drop its appearance so the
+          // box matches the date button and stays inside the sheet.
+          className="w-full min-w-0 appearance-none px-2 text-center tabular-nums [&::-webkit-date-and-time-value]:min-h-[1lh] [&::-webkit-date-and-time-value]:text-center"
         />
       </div>
       <FieldError errors={errors} />

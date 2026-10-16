@@ -98,7 +98,7 @@ export function BoardingPass({
 
         <div
           className={cn(
-            "grid grid-cols-[1fr_auto_1fr] items-center gap-3",
+            "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3",
             compact ? "mt-2" : "mt-4"
           )}
         >

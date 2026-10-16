@@ -150,6 +150,8 @@ function SearchPage() {
   const swipe = useSwipe("results")
   const [dimHave, setDimHave] = useDimHave()
   const have = useHave()
+  // With "Gray out what I already have" on, swiping skips those too.
+  const swipeItems = dimHave ? data.filter((m) => !have(m)) : data
 
   return (
     <>
@@ -256,11 +258,13 @@ function SearchPage() {
                   {hasNextPage ? "+" : ""} result
                   {data.length === 1 && !hasNextPage ? "" : "s"}
                 </p>
-                <SwipeButton onClick={swipe.openDeck} />
+                {swipeItems.length ? (
+                  <SwipeButton onClick={swipe.openDeck} />
+                ) : null}
               </div>
               <SwipeDeck
                 open={swipe.open}
-                items={data}
+                items={swipeItems}
                 title={q ? `“${q}”` : "Results"}
                 onClose={swipe.close}
                 hasMore={hasNextPage}
@@ -540,6 +544,8 @@ function Trending({
             poster: c.cover,
           }))
       : (trending.data ?? [])
+  // Grayed-out covers (already in your archive) are left out of swipe.
+  const swipeItems = dim ? data.filter((m) => !dim(m)) : data
 
   if (isError || (!isPending && data.length === 0))
     return (
@@ -556,11 +562,11 @@ function Trending({
         <h2 className="font-heading text-lg font-semibold">
           {TRENDING_TITLE[type]}
         </h2>
-        {data.length ? <SwipeButton onClick={swipe.openDeck} /> : null}
+        {swipeItems.length ? <SwipeButton onClick={swipe.openDeck} /> : null}
       </div>
       <SwipeDeck
         open={swipe.open}
-        items={data}
+        items={swipeItems}
         title={TRENDING_TITLE[type]}
         onClose={swipe.close}
       />

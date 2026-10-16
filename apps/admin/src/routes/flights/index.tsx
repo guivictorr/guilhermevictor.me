@@ -91,7 +91,7 @@ function FlightsPage() {
         ) : (
           <>
             <Totals stats={stats} />
-            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
               <div className="space-y-6 lg:sticky lg:top-6 lg:order-2">
                 <FlightMap routes={stats.routes} highlight={highlight} />
                 <Highlights stats={stats} />
@@ -243,7 +243,7 @@ function FlightList({
               {trips.reduce((n, t) => n + t.legs.length, 0)}
             </span>
           </h2>
-          <ul className="grid items-start gap-3 md:grid-cols-2 lg:grid-cols-1">
+          <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-1">
             {trips.map((trip) => {
               const keys = new Set(
                 trip.legs.map((l) => routeKey(l.flight.from, l.flight.to))
