@@ -1,6 +1,13 @@
 import { ChevronLeftIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  Component,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { createPortal } from "react-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { SwipeSlide } from "./swipe-slide"
@@ -22,8 +29,9 @@ const toItem = (media: CardMedia): LibraryItemInput => ({
 })
 
 /**
- * A list as full-screen cards: swipe (or ←/→) to the next item, Esc or the
- * back button to leave. Covers the tab bar and sidebar (z-45) but stays
+ * A list as full-screen cards: swipe up (or ↓/→) for the next item, Esc or
+ * the back button to leave. It reopens on the card you left (per URL, for
+ * this browser session). Covers the tab bar and sidebar (z-45) but stays
  * under sheets and menus (z-50), so logging opens on top. Only the current
  * card and its neighbours render.
  */
@@ -62,15 +70,50 @@ const keyOf = (m: CardMedia) => `${m.type}:${m.id}`
 /** Cards to warm around the current one. */
 const PREFETCH = [1, 2, -1]
 const preloaded = new Set<string>()
+/**
+ * Fetches a cover into the HTTP cache without keeping a decoded bitmap
+ * around: decoded full-screen images add up fast on a phone, and iOS
+ * reloads the page when memory runs out.
+ */
 function preloadImage(src: string | undefined) {
   if (!src || preloaded.has(src)) return
   preloaded.add(src)
   const img = new Image()
-  img.decoding = "async"
+  img.fetchPriority = "low"
   img.src = src
-  // Decoded off-screen, so the swipe lands on a painted card.
-  img.decode().catch(() => preloaded.delete(src))
 }
+
+/**
+ * Where each deck was, by its URL (taken when it opens), for this browser
+ * session: a remount or reload resumes on the same card.
+ */
+const positionKey = () => `archive:swipe:${location.pathname}${location.search}`
+const storage = {
+  read: (key: string) => {
+    try {
+      return sessionStorage.getItem(key) ?? undefined
+    } catch {
+      return undefined
+    }
+  },
+  write: (key: string, value: string) => {
+    try {
+      sessionStorage.setItem(key, value)
+    } catch {
+      // Storage blocked: the deck just starts at the top.
+    }
+  },
+  remove: (key: string) => {
+    try {
+      sessionStorage.removeItem(key)
+    } catch {
+      // Nothing to forget.
+    }
+  },
+}
+
+const NEXT_KEYS = new Set(["ArrowDown", "ArrowRight", "PageDown", "j"])
+const PREV_KEYS = new Set(["ArrowUp", "ArrowLeft", "PageUp", "k"])
 /** Start loading the next page this many cards before the end. */
 const NEAR_END = 3
 
@@ -95,7 +138,33 @@ function Deck({
     return [...snapshot, ...live.filter((m) => !seen.has(keyOf(m)))]
   }, [snapshot, live])
   const scroller = useRef<HTMLDivElement>(null)
-  const [index, setIndex] = useState(0)
+  // Resume on the card you were on (after a reload, or when the list
+  // behind remounted), else start at the top.
+  const [storageKey] = useState(positionKey)
+  const [index, setIndex] = useState(() => {
+    const saved = storage.read(storageKey)
+    return Math.max(0, saved ? items.findIndex((m) => keyOf(m) === saved) : 0)
+  })
+  const start = useRef(index)
+  useLayoutEffect(() => {
+    const el = scroller.current
+    if (el && start.current > 0)
+      el.scrollTo({ top: start.current * el.clientHeight, behavior: "instant" })
+  }, [])
+  useEffect(() => {
+    const media = items[index]
+    if (media) storage.write(storageKey, keyOf(media))
+  }, [index, items, storageKey])
+  // Closed while staying on this page (Close, Esc, Back): start fresh next
+  // time. Leaving for a detail page, or a reload, keeps the position.
+  useEffect(() => {
+    const path = location.pathname
+    return () => {
+      const params = new URLSearchParams(location.search)
+      if (location.pathname === path && !params.has("swipe"))
+        storage.remove(storageKey)
+    }
+  }, [storageKey])
 
   // The next two cards (and the previous one) are ready before you get
   // there: details, your logs and the cover image, so nothing fills in late.
@@ -137,12 +206,12 @@ function Deck({
     const target = Math.max(0, Math.min(items.length - 1, next))
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     el.scrollTo({
-      left: target * el.clientWidth,
+      top: target * el.clientHeight,
       behavior: reduce ? "instant" : "smooth",
     })
   }
 
-  // ←/→ and Esc, unless typing or a sheet/menu is open.
+  // ↑/↓ (and ←/→) and Esc, unless typing or a sheet/menu is open.
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null
@@ -154,9 +223,9 @@ function Deck({
         return
       if (document.querySelector("[role=dialog], [role=menu]")) return
       if (event.key === "Escape") onClose()
-      else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      else if (NEXT_KEYS.has(event.key) || PREV_KEYS.has(event.key)) {
         event.preventDefault()
-        go(index + (event.key === "ArrowRight" ? 1 : -1))
+        go(index + (NEXT_KEYS.has(event.key) ? 1 : -1))
       }
     }
     window.addEventListener("keydown", onKey)
@@ -175,20 +244,22 @@ function Deck({
         data-scroll-deck
         onScroll={(event) => {
           const el = event.currentTarget
-          const next = Math.round(el.scrollLeft / el.clientWidth)
+          const next = Math.round(el.scrollTop / el.clientHeight)
           if (next !== index) setIndex(next)
         }}
-        className="flex h-full snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-contain"
+        className="flex h-full snap-y snap-mandatory [scrollbar-width:none] flex-col overflow-y-auto overscroll-contain"
       >
         {items.map((media, i) => (
           <section
             key={`${media.type}-${media.id}`}
             aria-roledescription="slide"
             aria-label={`${i + 1} of ${items.length}: ${media.title}`}
-            className="h-full w-full shrink-0 snap-center snap-always"
+            className="h-full w-full shrink-0 snap-start snap-always"
           >
             {Math.abs(i - index) <= 1 ? (
-              <SwipeSlide item={toItem(media)} />
+              <SlideBoundary>
+                <SwipeSlide item={toItem(media)} />
+              </SlideBoundary>
             ) : null}
           </section>
         ))}
@@ -220,4 +291,29 @@ function Deck({
       </div>
     </div>
   )
+}
+
+/**
+ * One card failing (odd provider data, a render bug) shows a note in its
+ * place instead of taking the whole deck, and your position, with it.
+ */
+class SlideBoundary extends Component<
+  { children: React.ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch(error: unknown) {
+    console.error("Swipe card failed", error)
+  }
+  render() {
+    if (!this.state.failed) return this.props.children
+    return (
+      <div className="flex h-full items-center justify-center p-8 text-center text-sm text-muted-foreground">
+        Couldn't show this card. Swipe on to the next one.
+      </div>
+    )
+  }
 }

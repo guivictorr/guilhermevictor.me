@@ -69,7 +69,8 @@ mutations), `src/components/loaders.tsx` (Suspense helpers, skeletons, image rev
 - Links prefetch their route on hover/touch (`defaultPreload: "intent"`), which runs
   the loader above.
 - The swipe deck warms the next two cards and the previous one: details, logs and the
-  decoded cover image.
+  cover image (fetched into the HTTP cache, not kept decoded: phones reload the page
+  when memory runs out).
 - A long press or right-click on a cover warms what the log sheet needs (platforms,
   copies, seasons) before the sheet opens.
 

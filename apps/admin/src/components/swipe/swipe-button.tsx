@@ -1,6 +1,6 @@
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
-import { GalleryHorizontalEndIcon } from "lucide-react"
+import { GalleryVerticalEndIcon } from "lucide-react"
 import { SwipeDeck } from "./swipe-deck"
 import { useSwipe } from "./swipe-search"
 import type { CardMedia } from "@/components/media-card"
@@ -26,7 +26,7 @@ export function SwipeButton({
         className={cn("size-10 shrink-0 rounded-xl", className)}
         onClick={onClick}
       >
-        <GalleryHorizontalEndIcon />
+        <GalleryVerticalEndIcon />
       </Button>
     )
   return (
@@ -36,7 +36,7 @@ export function SwipeButton({
       className={cn("shrink-0 rounded-full", className)}
       onClick={onClick}
     >
-      <GalleryHorizontalEndIcon />
+      <GalleryVerticalEndIcon />
       Swipe
     </Button>
   )

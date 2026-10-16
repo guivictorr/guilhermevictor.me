@@ -148,10 +148,16 @@ function SearchPage() {
     [results.data]
   )
   const swipe = useSwipe("results")
-  const [dimHave, setDimHave] = useDimHave()
+  const [dimHave, setDimHave] = useSearchToggle("archive:search-gray-have")
+  const [hideBacklog, setHideBacklog] = useSearchToggle(
+    "archive:search-hide-backlog"
+  )
   const have = useHave()
-  // With "Gray out what I already have" on, swiping skips those too.
-  const swipeItems = dimHave ? data.filter((m) => !have(m)) : data
+  const inBacklog = useInBacklog()
+  // Backlogged works are left out of the list; with "Gray out" on,
+  // swiping also skips what you already have.
+  const shown = hideBacklog ? data.filter((m) => !inBacklog(m)) : data
+  const swipeItems = dimHave ? shown.filter((m) => !have(m)) : shown
 
   return (
     <>
@@ -217,14 +223,28 @@ function SearchPage() {
 
         <FilterChips type={type} filters={filters} onChange={applyFilters} />
 
-        <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          <Switch size="sm" checked={dimHave} onCheckedChange={setDimHave} />
-          Gray out what I already have
-        </label>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+            <Switch size="sm" checked={dimHave} onCheckedChange={setDimHave} />
+            Gray out what I already have
+          </label>
+          <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+            <Switch
+              size="sm"
+              checked={hideBacklog}
+              onCheckedChange={setHideBacklog}
+            />
+            Hide my backlog
+          </label>
+        </div>
 
         <div className="pt-3">
           {!q && !active.length ? (
-            <Trending type={type} dim={dimHave ? have : undefined} />
+            <Trending
+              type={type}
+              dim={dimHave ? have : undefined}
+              hide={hideBacklog ? inBacklog : undefined}
+            />
           ) : isError ? (
             <SearchEmpty
               icon={<SearchXIcon />}
@@ -254,9 +274,9 @@ function SearchPage() {
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground tabular-nums">
-                  {data.length}
+                  {shown.length}
                   {hasNextPage ? "+" : ""} result
-                  {data.length === 1 && !hasNextPage ? "" : "s"}
+                  {shown.length === 1 && !hasNextPage ? "" : "s"}
                 </p>
                 {swipeItems.length ? (
                   <SwipeButton onClick={swipe.openDeck} />
@@ -272,10 +292,10 @@ function SearchPage() {
                 onNearEnd={() => void fetchNextPage()}
               />
               {type === "record" ? (
-                <ReleaseResultList results={data} dimOwned={dimHave} />
+                <ReleaseResultList results={shown} dimOwned={dimHave} />
               ) : (
                 <MediaGrid>
-                  {data.map((media) => (
+                  {shown.map((media) => (
                     <MediaCard
                       key={`${media.type}-${media.id}`}
                       media={media}
@@ -487,36 +507,43 @@ function useHave() {
       : (index?.logged.has(mediaKey(media)) ?? false)
 }
 
-const DIM_KEY = "archive:search-gray-have"
+/** In your backlog: what search can hide. */
+function useInBacklog() {
+  const { data: index } = useQuery(indexQuery())
+  return (media: MediaSummary) => index?.backlog.has(mediaKey(media)) ?? false
+}
 
-/** On by default; remembered in this browser only. */
-function useDimHave() {
-  const [dim, setDim] = useState(true)
+/** A search switch, on by default; remembered in this browser only. */
+function useSearchToggle(key: string) {
+  const [on, setOn] = useState(true)
   useEffect(() => {
     try {
-      if (localStorage.getItem(DIM_KEY) === "off") setDim(false)
+      if (localStorage.getItem(key) === "off") setOn(false)
     } catch {
       // Blocked storage: keep the default.
     }
-  }, [])
+  }, [key])
   const update = (next: boolean) => {
-    setDim(next)
+    setOn(next)
     try {
-      localStorage.setItem(DIM_KEY, next ? "on" : "off")
+      localStorage.setItem(key, next ? "on" : "off")
     } catch {
       // Not remembered, still applied.
     }
   }
-  return [dim, update] as const
+  return [on, update] as const
 }
 
 function Trending({
   type,
   dim,
+  hide,
 }: {
   type: MediaType
   /** Grays these covers (already in your archive). */
   dim?: (media: MediaSummary) => boolean
+  /** Leaves these out (in your backlog). */
+  hide?: (media: MediaSummary) => boolean
 }) {
   const swipe = useSwipe("trending")
   // Discogs has no trending list: show your own latest additions instead.
@@ -531,7 +558,7 @@ function Trending({
   const isPending =
     type === "record" ? collection.isPending : trending.isPending
   const isError = type === "record" ? collection.isError : trending.isError
-  const data: Array<MediaSummary> =
+  const all: Array<MediaSummary> =
     type === "record"
       ? uniqueReleases(collection.data ?? [])
           .slice(0, 18)
@@ -544,6 +571,7 @@ function Trending({
             poster: c.cover,
           }))
       : (trending.data ?? [])
+  const data = hide ? all.filter((m) => !hide(m)) : all
   // Grayed-out covers (already in your archive) are left out of swipe.
   const swipeItems = dim ? data.filter((m) => !dim(m)) : data
 
