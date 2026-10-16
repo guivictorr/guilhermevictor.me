@@ -2,7 +2,11 @@ import { ChevronLeftIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { SwipeSlide } from "./swipe-slide"
+import { prefetchWorkDetails } from "@/components/media/use-work-details"
+import { imageUrl } from "@/lib/images"
+import { logsQuery } from "@/queries/archive"
 import type { CardMedia } from "@/components/media-card"
 import type { LibraryItemInput } from "@/lib/repo"
 
@@ -55,6 +59,18 @@ export function SwipeDeck({
 }
 
 const keyOf = (m: CardMedia) => `${m.type}:${m.id}`
+/** Cards to warm around the current one. */
+const PREFETCH = [1, 2, -1]
+const preloaded = new Set<string>()
+function preloadImage(src: string | undefined) {
+  if (!src || preloaded.has(src)) return
+  preloaded.add(src)
+  const img = new Image()
+  img.decoding = "async"
+  img.src = src
+  // Decoded off-screen, so the swipe lands on a painted card.
+  img.decode().catch(() => preloaded.delete(src))
+}
 /** Start loading the next page this many cards before the end. */
 const NEAR_END = 3
 
@@ -80,6 +96,19 @@ function Deck({
   }, [snapshot, live])
   const scroller = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
+
+  // The next two cards (and the previous one) are ready before you get
+  // there: details, your logs and the cover image, so nothing fills in late.
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    for (const offset of PREFETCH) {
+      const media = items[index + offset]
+      if (!media) continue
+      void prefetchWorkDetails(queryClient, media)
+      void queryClient.prefetchQuery(logsQuery(media))
+      preloadImage(imageUrl(media.poster, "large"))
+    }
+  }, [index, items, queryClient])
 
   // Keep swiping past what's loaded: fetch the next page near the end.
   const nearEnd = useRef(onNearEnd)

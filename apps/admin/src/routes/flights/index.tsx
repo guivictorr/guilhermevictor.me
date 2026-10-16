@@ -33,6 +33,12 @@ import type { FlightStats } from "@/lib/flight-stats"
 import { flightsQuery } from "@/queries/archive"
 
 export const Route = createFileRoute("/flights/")({
+  loader: ({ context }) => {
+    void context.queryClient.prefetchQuery(flightsQuery())
+    // A static file fetched by the browser (relative URL), not on the server.
+    if (typeof window !== "undefined")
+      void context.queryClient.prefetchQuery(airportsQuery())
+  },
   head: () => ({ meta: [{ title: "Flights · Archive" }] }),
   component: FlightsPage,
 })

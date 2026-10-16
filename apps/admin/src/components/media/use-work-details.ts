@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import type { QueryClient } from "@tanstack/react-query"
 import type {
   ImageRef,
   ProviderRating,
@@ -7,6 +8,7 @@ import type {
 } from "@workspace/schemas"
 import { formatRuntime, joinDefined } from "@/lib/format"
 import type { LibraryItemInput } from "@/lib/repo"
+import { sortSeasons } from "@/lib/seasons"
 import {
   bookQuery,
   gameQuery,
@@ -32,6 +34,8 @@ export type WorkDetails = {
   release?: Release
   /** A wide image for blurred backgrounds: backdrop, screenshot, photo. */
   backdrop?: ImageRef
+  /** The details query has settled (data or error): safe to pick art. */
+  ready: boolean
 }
 
 /** The provider facts worth a glance, from the kind's detail query. */
@@ -48,7 +52,13 @@ export function useWorkDetails(item: LibraryItemInput): WorkDetails {
     ...releaseQuery(id),
     enabled: item.type === "record",
   })
-  const none = { platforms: [], tags: [], seasons: [] }
+  const query = { movie, show, game, book, record: release }[item.type]
+  const none = {
+    platforms: [],
+    tags: [],
+    seasons: [],
+    ready: !query.isPending,
+  }
   switch (item.type) {
     case "movie": {
       const m = movie.data
@@ -71,7 +81,7 @@ export function useWorkDetails(item: LibraryItemInput): WorkDetails {
           s?.networks.at(0),
         ]),
         provider: s?.providerRating,
-        seasons: s?.seasons ?? [],
+        seasons: sortSeasons(s?.seasons ?? []),
         backdrop: s?.backdrop,
       }
     }
@@ -109,4 +119,32 @@ export function useWorkDetails(item: LibraryItemInput): WorkDetails {
       }
     }
   }
+}
+
+/** The detail query behind `useWorkDetails`, for prefetching. */
+export function workDetailsQuery(item: Pick<LibraryItemInput, "type" | "id">) {
+  const id = Number(item.id)
+  switch (item.type) {
+    case "movie":
+      return movieQuery(id)
+    case "show":
+      return showQuery(id)
+    case "game":
+      return gameQuery(id)
+    case "book":
+      return bookQuery(String(item.id))
+    case "record":
+      return releaseQuery(id)
+  }
+}
+
+/** Starts fetching a work's details (no-op when cached and fresh). */
+export function prefetchWorkDetails(
+  queryClient: QueryClient,
+  item: Pick<LibraryItemInput, "type" | "id">
+) {
+  // The union of option types doesn't narrow; each is a valid query.
+  return queryClient.prefetchQuery(
+    workDetailsQuery(item) as ReturnType<typeof movieQuery>
+  )
 }

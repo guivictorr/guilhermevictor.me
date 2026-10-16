@@ -5,9 +5,6 @@ implementation side (components, native-feel utilities); this file covers how th
 should look, move and read. When the two disagree, this file wins, and `ui.md` should
 be updated to match.
 
-> **Status (2026-10-14):** these rules are decided but not applied yet. The app still
-> runs stock shadcn styles (Geist, neutral grays). See "Applying this" at the end.
-
 ## 0. Before you build UI
 
 Read the relevant guide first. They are the source of most rules below.
@@ -23,6 +20,7 @@ Read the relevant guide first. They are the source of most rules below.
 | [You don't need animations](https://emilkowal.ski/ui/you-dont-need-animations)    | Deciding whether something should animate at all                |
 | [7 practical animation tips](https://emilkowal.ski/ui/7-practical-animation-tips) | Concrete values for press, easing, origin, speed                |
 | [Web Interface Guidelines](https://interfaces.rauno.me/)                          | Forms, typography, touch, accessibility details                 |
+| [Craft](https://craft.gustavofior.com/resources) (principles 8–12 below)          | Alignment, radii, scroll edges, hover and interruptible motion  |
 
 ## 1. Brand
 
@@ -61,6 +59,55 @@ considered too simple, and Stats is to be rebuilt.
    (§10). When in doubt, leave it out.
 7. **Simplicity, not minimalism.** Show the common path first and put advanced options
    one level down (filters live in a sheet, not on the page).
+8. **Align by eye, not by box** ([optical alignment](https://craft.gustavofior.com/optical-alignment)).
+   Geometry is a starting point; what matters is where the weight looks centered.
+   - A play triangle sits 1–2px right of center (`translate-x-px` / `ml-0.5`); stars and
+     downloads may need a 1px nudge. Check by blurring the element (`filter: blur()`
+     in the inspector, or squint): the blob should be centered.
+   - Icon + label pills: the icon brings its own whitespace, so the icon side gets less
+     padding (`ps-3 pe-3.5`, not `px-3.5`). Trailing chevrons the same (`pe-2`).
+   - Circles and triangles look smaller than squares in the same box; size them up a
+     touch to match.
+   - Keep `font-optical-sizing: auto` (set on `body`); hang opening quotes
+     (`hanging-punctuation: first`) in quoted notes.
+9. **Concentric corners** ([nested border radius](https://craft.gustavofior.com/nested-border-radius)).
+   Inner radius = outer radius − inset (the padding, plus any border), never the same
+   radius on both, and never below zero (`max(0px, …)` → square).
+   - Feature cards: 24px − 16px padding → 8px covers. Fact cards: 20 − 16 → 4px.
+   - Menus and selects: 12px popup (`rounded-lg`) − 4px padding → 8px items
+     (`rounded-[calc(var(--radius-lg)-4px)]`).
+   - A pill inside a pill of the same height stays `rounded-full`.
+   - Tune by eye when the inset isn't even or the inner element doesn't reach the
+     corner.
+10. **Fade only the edge that hides something** ([scroll fades](https://craft.gustavofior.com/scroll-fades)).
+    Scrollers use `fade-x` / `fade-y` (`app.css`): a `mask-image` (works over any
+    background, never blocks taps) whose start/end sizes are `@property` lengths driven by
+    `animation-timeline: scroll(self)`. At the start only the end fades; at the end only
+    the start. Without scroll-timeline support both ends fade a little. The mask covers
+    the scrollbar too, so use it on scrollers with a hidden scrollbar (rails, chip rows,
+    `CardRow`) or on an inner wrapper.
+11. **Hover restraint** ([hover restraint](https://craft.gustavofior.com/hover-restraint)).
+    The more often something happens, the less animation it can afford.
+    - Hover highlights switch instantly: no `transition-colors` on rows, chips or
+      buttons (`Button` only transitions `transform`/`box-shadow`, for the press).
+    - Only the first tooltip waits (500ms, `TooltipProvider`); neighbours open at once
+      (`data-instant` skips the transition).
+    - Frequent navigation doesn't animate: tab-bar and sidebar links skip the view
+      transition (`viewTransition={false}`); the crossfade is for going into a page.
+    - Decide by frequency and intent, not by input device.
+12. **Interruptible motion** ([interruptibility](https://craft.gustavofior.com/interruptibility)).
+    Anything the user can toggle animates with a CSS transition toward its end state,
+    so reversing mid-way retargets from where it is instead of jumping.
+    - Popovers, menus, selects, comboboxes, tooltips and dialogs use Base UI's
+      `data-starting-style` / `data-ending-style` with `transition-[opacity,scale]`, like
+      the drawer. No `animate-in`/`animate-out` keyframes for open/close.
+    - Keyframes only for one-shots nothing interrupts: spinners, skeleton pulse, the
+      `animate-reveal` fade of content that waited for data.
+    - Never block input while something moves (no `isAnimating` flags, no
+      `pointer-events: none` during motion).
+    - A sheet must be mounted closed and then opened; one mounted already open just
+      pops in (that's why the log sheet is a single always-mounted `LogHost`).
+    - Springs only for gestures where release velocity matters (swipes, flicks).
 
 ## 3. Color
 
@@ -261,16 +308,23 @@ jarring jump. "It looks nice" on something frequent is not a reason.
 | Tooltips, small popovers | 125–200ms, from the trigger's `--transform-origin`                                          |
 | Menus, selects           | 150–250ms                                                                                   |
 | Sheets                   | `--ease-drawer`, up to 300ms; exit the way they entered                                     |
-| Page changes             | 180ms crossfade (view transitions)                                                          |
+| Page changes             | 180ms crossfade (view transitions) into a page; tab switches are instant                    |
 | Grids on first load      | 30–50ms stagger, first load only                                                            |
 | Gestures (drag, swipe)   | Springs (motion, bounce 0) that keep the release velocity; slight bounce only after a flick |
+
+Loading (details in `data-fetching.md`): sections suspend into skeletons of their real
+size, so nothing shifts. Content that had to wait fades in once (`animate-reveal`,
+180ms); cached content renders without animation. Blurred background images fade in on
+load (`useImageReveal`) and skip the fade when already decoded, so tab switches never
+blink.
 
 Never ship:
 
 - `transition: all`
 - an entrance from `scale(0)` (start at 0.95 with opacity 0)
 - `ease-in` on UI
-- keyframes on rapidly repeated UI (use transitions, which can be interrupted)
+- keyframes on toggled or rapidly repeated UI (use transitions, which can be interrupted)
+- hover colour transitions
 - animated `width`, `height`, `margin`, `padding`, `top` or `left`
 - ungated hover motion
 

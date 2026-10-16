@@ -10,5 +10,6 @@
 | [obsidian-import.md](obsidian-import.md) | The vault format, import rules and the review workflow                       |
 | [design.md](design.md)                   | Visual identity and design rules: brand, color, type, motion, components     |
 | [ui.md](ui.md)                           | Native-feel rules and shared components (implementation)                     |
+| [data-fetching.md](data-fetching.md)     | Loaders, Suspense, prefetching, optimistic writes, caching (TanStack Query)  |
 
 Start with `vision.md` for context, then `architecture.md`.

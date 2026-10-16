@@ -23,12 +23,18 @@ import { MediaRail } from "@/components/media/media-rail"
 import { SwipeAction } from "@/components/swipe/swipe-button"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { formatDate, joinDefined } from "@/lib/format"
+import { logsQuery } from "@/queries/archive"
 import { bookQuery, searchQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/books/$id")({
   validateSearch: logSearch,
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(bookQuery(params.id)),
+  loader: ({ context, params }) => {
+    // Your logs load alongside the details, not after them.
+    void context.queryClient.prefetchQuery(
+      logsQuery({ type: "book", id: params.id })
+    )
+    return context.queryClient.ensureQueryData(bookQuery(params.id))
+  },
   head: ({ loaderData }) => ({
     meta: [{ title: loaderData ? `${loaderData.title} · Archive` : "Archive" }],
   }),

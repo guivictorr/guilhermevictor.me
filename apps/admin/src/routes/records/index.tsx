@@ -42,6 +42,8 @@ import { importDiscogsCollection } from "@/server/media.functions"
 
 export const Route = createFileRoute("/records/")({
   validateSearch: swipeSearch,
+  loader: ({ context }) =>
+    void context.queryClient.prefetchQuery(collectionQuery()),
   head: () => ({ meta: [{ title: "Records · Archive" }] }),
   component: RecordsPage,
 })

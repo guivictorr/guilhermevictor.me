@@ -96,7 +96,7 @@ function AppSidebar() {
                 {section.items.map((item) => (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton
-                      render={<Link to={item.to} />}
+                      render={<Link to={item.to} viewTransition={false} />}
                       isActive={isActive(item.to, item.exact)}
                       tooltip={item.label}
                       className="data-active:[&_svg]:text-primary"
@@ -115,7 +115,7 @@ function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link to="/settings" />}
+              render={<Link to="/settings" viewTransition={false} />}
               isActive={isActive("/settings", false)}
               tooltip="Settings"
               className="data-active:[&_svg]:text-primary"
@@ -146,6 +146,10 @@ function TabBar() {
             <li key={item.label} className="flex">
               <Link
                 to={item.to}
+                // Switching tabs is instant: it happens all the time (no
+                // animation budget), and a view-transition snapshot drops the
+                // tab bar's backdrop blur for a frame, which read as a blink.
+                viewTransition={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "pressable flex flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[0.6875rem] font-medium",

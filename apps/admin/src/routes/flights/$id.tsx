@@ -21,6 +21,12 @@ import { flightFacts, formatDuration, localDate } from "@/lib/flight-math"
 import { flightsQuery } from "@/queries/archive"
 
 export const Route = createFileRoute("/flights/$id")({
+  loader: ({ context }) => {
+    void context.queryClient.prefetchQuery(flightsQuery())
+    // A static file fetched by the browser (relative URL), not on the server.
+    if (typeof window !== "undefined")
+      void context.queryClient.prefetchQuery(airportsQuery())
+  },
   head: () => ({ meta: [{ title: "Flight · Archive" }] }),
   component: FlightPage,
 })

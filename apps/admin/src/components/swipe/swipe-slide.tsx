@@ -3,6 +3,7 @@ import type { CollectionItem, LogEntry } from "@workspace/schemas"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
+import { REVEAL_IMAGE, useImageReveal } from "@/components/loaders"
 import {
   BookmarkCheckIcon,
   ChevronRightIcon,
@@ -67,7 +68,9 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
     open: boolean
     editing?: CollectionItem
   }>({ open: false })
-  const background = imageUrl(item.poster, "large")
+  // blur-3xl: a thumbnail looks the same as the full cover, at a tenth of
+  // the bytes.
+  const background = imageUrl(item.poster, "thumb")
 
   const target = (editing?: LogEntry): LogTargetContext => {
     if (editing?.kind === "season")
@@ -91,6 +94,7 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
     }
   }
 
+  const reveal = useImageReveal(background)
   return (
     <div className="relative isolate flex h-full flex-col overflow-hidden">
       {/* The cover itself, blurred, as the backdrop. */}
@@ -99,7 +103,12 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
           src={background}
           alt=""
           aria-hidden
-          className="absolute inset-0 -z-10 size-full scale-125 object-cover opacity-80 blur-3xl"
+          decoding="async"
+          {...reveal}
+          className={cn(
+            "absolute inset-0 -z-10 size-full scale-125 object-cover blur-3xl data-loaded:opacity-80",
+            REVEAL_IMAGE
+          )}
         />
       ) : null}
       <div
@@ -293,7 +302,7 @@ function CopyChips({
   onSelect: (copy: CollectionItem) => void
 }) {
   return (
-    <ul aria-label="Your copies" className="mt-1 flex flex-col">
+    <ul aria-label="Your copies" className="mt-1 flex flex-col items-center">
       {copies.map((copy) => (
         <li key={copy.id}>
           <InfoRow label="Copy" onClick={() => onSelect(copy)}>
@@ -328,7 +337,10 @@ function LastLog({ log, onSelect }: { log: LogEntry; onSelect: () => void }) {
   )
 }
 
-/** A full-width, one-line, tappable summary under the cover. */
+/**
+ * A one-line, tappable summary under the cover: as wide as its text,
+ * capped at the card width (then truncated).
+ */
 function InfoRow({
   label,
   onClick,
@@ -342,10 +354,10 @@ function InfoRow({
     <button
       type="button"
       onClick={onClick}
-      className="pressable glass mx-auto mt-2 flex h-10 w-full max-w-md items-center gap-3 rounded-2xl border px-3 text-left text-xs"
+      className="pressable glass mx-auto mt-2 flex h-10 w-fit max-w-full items-center gap-3 rounded-2xl border ps-3 pe-2 text-left text-xs"
     >
       <span className="type-overline shrink-0 text-subtle">{label}</span>
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span className="min-w-0 truncate">{children}</span>
       <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
     </button>
   )

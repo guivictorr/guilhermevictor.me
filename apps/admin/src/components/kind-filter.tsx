@@ -21,7 +21,7 @@ export function KindFilter({
 }) {
   const pill = (selected: boolean) =>
     cn(
-      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors",
+      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border ps-3 pe-3.5 text-sm font-medium",
       selected
         ? "border-primary bg-primary text-primary-foreground"
         : "text-muted-foreground hover:text-foreground"

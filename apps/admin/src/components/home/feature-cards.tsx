@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
 import type { BacklogItem, MediaType } from "@workspace/schemas"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import { PlusIcon } from "lucide-react"
 import { useMemo } from "react"
@@ -10,10 +9,11 @@ import {
   describeLogDates,
   describeLogExtras,
 } from "@/components/log/log-history"
+import { REVEAL_IMAGE, useImageReveal } from "@/components/loaders"
+import { useOpenLog } from "@/components/log/log-host"
 import { MediaLink } from "@/components/media-card"
 import { useWorkDetails } from "@/components/media/use-work-details"
 import { Poster } from "@/components/poster"
-import { DETAIL_ROUTE } from "@/lib/detail-routes"
 import { shuffle } from "@/lib/daily-picks"
 import { joinDefined, today } from "@/lib/format"
 import { imageUrl } from "@/lib/images"
@@ -41,7 +41,14 @@ function FeatureCard({
 }) {
   const details = useWorkDetails(item)
   // Wide art when the provider has it; else the cover, blurred harder.
-  const art = imageUrl(details.backdrop ?? item.poster, "backdrop")
+  // Picked only once details settle, so it never swaps cover → backdrop.
+  // Heavy blur hides detail, so a blurred cover only needs a thumbnail.
+  const art = details.ready
+    ? details.backdrop
+      ? imageUrl(details.backdrop, "card")
+      : imageUrl(item.poster, "thumb")
+    : undefined
+  const reveal = useImageReveal(art)
   return (
     <article
       className={cn(
@@ -54,9 +61,11 @@ function FeatureCard({
           src={art}
           alt=""
           aria-hidden
-          loading="lazy"
+          decoding="async"
+          {...reveal}
           className={cn(
-            "absolute inset-0 -z-10 size-full object-cover opacity-70",
+            "absolute inset-0 -z-10 size-full object-cover data-loaded:opacity-70",
+            REVEAL_IMAGE,
             details.backdrop ? "scale-105 blur-[2px]" : "scale-125 blur-2xl"
           )}
         />
@@ -71,7 +80,8 @@ function FeatureCard({
           type={item.type}
           title={item.title}
           className={cn(
-            "shrink-0 shadow-lg",
+            // Concentric with the card: 24px corner − 16px inset.
+            "shrink-0 rounded-[8px] shadow-lg",
             item.type === "record" ? "w-24" : "w-20 md:w-24"
           )}
         />
@@ -105,6 +115,32 @@ function FeatureCard({
   )
 }
 
+/** Each kind's works in progress, by the status of their latest log. */
+export function nowGroups([games, shows, books]: ReadonlyArray<
+  Array<LibraryEntry>
+>) {
+  return [
+    {
+      type: "game" as const,
+      entries: (games ?? []).filter((e) => e.status === "playing"),
+    },
+    {
+      type: "show" as const,
+      entries: (shows ?? []).filter((e) => e.status === "watching"),
+    },
+    {
+      type: "book" as const,
+      entries: (books ?? []).filter((e) => e.status === "reading"),
+    },
+  ].filter((group) => group.entries.length > 0)
+}
+
+/** Most recently logged first. */
+export const latestFirst = (entries: Array<LibraryEntry>) =>
+  [...entries].sort((a, b) =>
+    (b.lastLoggedAt ?? "").localeCompare(a.lastLoggedAt ?? "")
+  )
+
 const NOW = {
   game: { overline: "Now playing", also: "Also playing" },
   show: { overline: "Now watching", also: "Also watching" },
@@ -123,9 +159,8 @@ export function NowCard({
   type: keyof typeof NOW
   entries: Array<LibraryEntry>
 }) {
-  const [current, ...others] = [...entries].sort((a, b) =>
-    (b.lastLoggedAt ?? "").localeCompare(a.lastLoggedAt ?? "")
-  )
+  const [current, ...others] = latestFirst(entries)
+  const openLog = useOpenLog()
   const { data: logs } = useQuery({
     ...logsQuery({ type, id: current?.id ?? 0 }),
     enabled: current !== undefined,
@@ -148,15 +183,11 @@ export function NowCard({
               ? `${NOW[type].also}: ${others.map((e) => e.title).join(", ")}`
               : "The only one in progress"}
           </p>
-          <Link
-            to={DETAIL_ROUTE[type]}
-            params={{ id: String(current.id) }}
-            search={{ log: "new" }}
-            className={buttonVariants({ size: "sm" })}
-          >
+          {/* Opens the log sheet over Home; no navigation. */}
+          <Button size="sm" onClick={() => void openLog(current)}>
             <PlusIcon />
             {type === "show" ? "Log season" : "Log"}
-          </Link>
+          </Button>
         </div>
       }
     />
@@ -168,17 +199,17 @@ export function NowCard({
  * backlog, one pick featured and a second one beside it. Same all day
  * (seeded by the date), new tomorrow.
  */
-export function useTodayPicks(backlog: Array<BacklogItem> | undefined) {
-  return useMemo(() => {
-    if (!backlog?.length) return []
-    const day = today()
-    const byKind = Map.groupBy(backlog, (b) => b.type)
-    const kinds = shuffle([...byKind.keys()], day).slice(0, 3)
-    return kinds.map((type) => ({
-      type,
-      picks: shuffle(byKind.get(type) ?? [], `${day}:${type}`).slice(0, 2),
-    }))
-  }, [backlog])
+export function todayPicks(backlog: Array<BacklogItem>, day = today()) {
+  const byKind = Map.groupBy(backlog, (b) => b.type)
+  const kinds = shuffle([...byKind.keys()], day).slice(0, 3)
+  return kinds.map((type) => ({
+    type,
+    picks: shuffle(byKind.get(type) ?? [], `${day}:${type}`).slice(0, 2),
+  }))
+}
+
+export function useTodayPicks(backlog: Array<BacklogItem>) {
+  return useMemo(() => todayPicks(backlog), [backlog])
 }
 
 export function ForTodayCards({
@@ -198,7 +229,7 @@ export function ForTodayCards({
               alt ? (
                 <MediaLink
                   media={alt}
-                  className="flex items-center gap-3 border-t border-border/60 px-4 py-2 transition-colors hover:bg-muted/40"
+                  className="flex items-center gap-3 border-t border-border/60 px-4 py-2 hover:bg-muted/40"
                 >
                   <Poster
                     image={alt.poster}
@@ -233,7 +264,7 @@ export function ForTodayCards({
  */
 export function CardRow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 *:w-[85%] *:shrink-0 *:snap-start md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0 md:*:w-auto">
+    <div className="fade-x -mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 *:w-[85%] *:shrink-0 *:snap-start md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0 md:*:w-auto">
       {children}
     </div>
   )

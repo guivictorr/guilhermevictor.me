@@ -54,7 +54,7 @@ export function ScrollRow({
   return (
     <div
       className={cn(
-        "-mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-2 md:mx-0 md:scroll-px-0 md:px-0",
+        "fade-x -mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-2 md:mx-0 md:scroll-px-0 md:px-0",
         className
       )}
     >

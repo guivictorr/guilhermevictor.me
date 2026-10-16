@@ -9,6 +9,7 @@ import type {
   Video,
 } from "@workspace/schemas"
 import type { SearchFilters } from "@/lib/search-filters"
+import { sortSeasons } from "@/lib/seasons"
 import { getTmdbEnv } from "./env.server"
 
 const BASE_URL = "https://api.themoviedb.org/3"
@@ -525,13 +526,15 @@ export async function fetchShow(id: number): Promise<Show> {
       .map(showSummary),
     poster: image(s.poster_path),
     backdrop: image(s.backdrop_path),
-    seasons: s.seasons.map((season) => ({
-      seasonNumber: season.season_number,
-      name: season.name,
-      episodeCount: season.episode_count,
-      airDate: text(season.air_date),
-      poster: image(season.poster_path),
-    })),
+    seasons: sortSeasons(
+      s.seasons.map((season) => ({
+        seasonNumber: season.season_number,
+        name: season.name,
+        episodeCount: season.episode_count,
+        airDate: text(season.air_date),
+        poster: image(season.poster_path),
+      }))
+    ),
   }
 }
 

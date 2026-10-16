@@ -89,8 +89,12 @@ export function deriveRecent(
   const itemsByKey = new Map(
     items.map((item) => [itemKey(item.type, item.id), item])
   )
+  // Newest entries in the archive first (when they were added, not the
+  // dates they record), so a backfilled old watch still shows up here.
   return [...logs]
-    .sort(compareLogsDesc)
+    .sort(
+      (a, b) => b.createdAt.localeCompare(a.createdAt) || compareLogsDesc(a, b)
+    )
     .flatMap((log) => {
       const item = itemsByKey.get(itemKey(mediaTypeOf(log), log.mediaId))
       return item ? [{ log, item }] : []

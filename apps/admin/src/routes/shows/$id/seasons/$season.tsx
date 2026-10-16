@@ -14,12 +14,14 @@ import { useLogSheet } from "@/components/log/use-log-sheet"
 import { SynopsisSection } from "@/components/media/detail-sections"
 import { formatDate, formatRuntime, joinDefined } from "@/lib/format"
 import { parseId } from "@/lib/params"
+import { logsQuery } from "@/queries/archive"
 import { seasonQuery, showQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/shows/$id/seasons/$season")({
   loader: async ({ context, params }) => {
     const id = parseId(params.id)
     const season = parseId(params.season, { allowZero: true })
+    void context.queryClient.prefetchQuery(logsQuery({ type: "show", id }))
     const [show, seasonData] = await Promise.all([
       context.queryClient.ensureQueryData(showQuery(id)),
       context.queryClient.ensureQueryData(seasonQuery(id, season)),

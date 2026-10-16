@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import {
   createColumnHelper,
@@ -73,6 +73,7 @@ import { formatDate } from "@/lib/format"
 import { KINDS } from "@/lib/media-kinds"
 import type { LibraryEntry } from "@/lib/repo"
 import { libraryQuery } from "@/queries/archive"
+import { SuspenseSection } from "@/components/loaders"
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -158,20 +159,25 @@ const SORT_OPTIONS = [
   sorting: SortingState
 }>
 
-const EMPTY: Array<LibraryEntry> = []
-
 export type LibraryLayout = "grid" | "table"
 
-export function LibraryView({
-  type,
-  layout,
-  onLayoutChange,
-}: {
+type LibraryViewProps = {
   type: MediaType
   layout: LibraryLayout
   onLayoutChange: (layout: LibraryLayout) => void
-}) {
-  const { data, isPending } = useQuery(libraryQuery(type))
+}
+
+/** A kind's library; the route's loader prefetches it. */
+export function LibraryView(props: LibraryViewProps) {
+  return (
+    <SuspenseSection fallback={<MediaGridSkeleton />}>
+      <Library {...props} />
+    </SuspenseSection>
+  )
+}
+
+function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
+  const { data } = useSuspenseQuery(libraryQuery(type))
   const [filter, setFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([
     { id: "lastLoggedAt", desc: true },
@@ -181,7 +187,7 @@ export function LibraryView({
   const showTable = isDesktop && layout === "table"
 
   const filtered = useMemo(() => {
-    const all = data ?? EMPTY
+    const all = data
     const needle = filter.trim().toLocaleLowerCase()
     return needle
       ? all.filter((e) => e.title.toLocaleLowerCase().includes(needle))
@@ -203,9 +209,7 @@ export function LibraryView({
   const noun = kind.plural.toLowerCase()
   const Icon = kind.icon
 
-  if (isPending) return <MediaGridSkeleton />
-
-  if (!data?.length) {
+  if (!data.length) {
     return (
       <Empty className="min-h-[50dvh]">
         <EmptyHeader>

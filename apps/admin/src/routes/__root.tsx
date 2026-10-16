@@ -11,6 +11,7 @@ import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { ThemeProvider } from "next-themes"
 import { AppShell, readSidebarOpen } from "@/components/app-shell"
+import { LogHost } from "@/components/log/log-host"
 import { PwaRegister } from "@/components/pwa-register"
 import { ThemeColorSync } from "@/components/theme-color-sync"
 import { viewerQuery } from "@/queries/auth"
@@ -111,6 +112,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 top: "calc(env(safe-area-inset-top, 0px) + 0.5rem)",
               }}
             />
+            <LogHost />
             <ThemeColorSync />
             <PwaRegister />
           </TooltipProvider>

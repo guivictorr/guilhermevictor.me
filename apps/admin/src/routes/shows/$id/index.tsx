@@ -31,13 +31,19 @@ import { YourStatsCard } from "@/components/media/your-stats-card"
 import { Poster } from "@/components/poster"
 import { formatDate, joinDefined } from "@/lib/format"
 import { parseId } from "@/lib/params"
+import { sortSeasons } from "@/lib/seasons"
 import { logsQuery } from "@/queries/archive"
 import { showQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/shows/$id/")({
   validateSearch: logSearch,
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(showQuery(parseId(params.id))),
+  loader: ({ context, params }) => {
+    // Your logs load alongside the details, not after them.
+    void context.queryClient.prefetchQuery(
+      logsQuery({ type: "show", id: parseId(params.id) })
+    )
+    return context.queryClient.ensureQueryData(showQuery(parseId(params.id)))
+  },
   head: ({ loaderData }) => ({
     meta: [{ title: loaderData ? `${loaderData.title} · Archive` : "Archive" }],
   }),
@@ -206,12 +212,7 @@ function SeasonsSection({ show }: { show: Show }) {
         (logCounts.get(log.seasonNumber) ?? 0) + 1
       )
 
-  // Specials (season 0) go last, like most TV apps.
-  const seasons = [...show.seasons].sort(
-    (a, b) =>
-      Number(a.seasonNumber === 0) - Number(b.seasonNumber === 0) ||
-      a.seasonNumber - b.seasonNumber
-  )
+  const seasons = sortSeasons(show.seasons)
   const regular = show.seasons.filter((s) => s.seasonNumber > 0)
   const loggedRegular = regular.filter((s) =>
     logCounts.has(s.seasonNumber)

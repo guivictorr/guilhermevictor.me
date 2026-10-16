@@ -1,5 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
-import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useCanGoBack,
+  useLocation,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router"
 import type {
   ImageRef,
   MediaType,
@@ -16,8 +21,10 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
 import { cn } from "@workspace/ui/lib/utils"
+import { REVEAL_IMAGE, useImageReveal } from "@/components/loaders"
 import { ChevronLeftIcon, StarIcon } from "lucide-react"
 import { Poster } from "./poster"
+import { detailTarget, findCachedItem } from "@/lib/cached-item"
 import { imageUrl } from "@/lib/images"
 import { KINDS } from "@/lib/media-kinds"
 import { myRating } from "@/lib/repo/log-utils"
@@ -81,7 +88,11 @@ export function DetailHero({
   titleAction?: React.ReactNode
   backTo: string
 }) {
-  const backdropUrl = imageUrl(backdrop ?? poster, "backdrop")
+  // Without a backdrop the cover is blurred, so a thumbnail is enough.
+  const backdropUrl = backdrop
+    ? imageUrl(backdrop, "backdrop")
+    : imageUrl(poster, "thumb")
+  const reveal = useImageReveal(backdropUrl)
 
   return (
     <section className="relative">
@@ -91,8 +102,11 @@ export function DetailHero({
             src={backdropUrl}
             alt=""
             aria-hidden
+            decoding="async"
+            {...reveal}
             className={cn(
-              "size-full object-cover",
+              "size-full object-cover data-loaded:opacity-100",
+              REVEAL_IMAGE,
               !backdrop && "scale-110 blur-2xl"
             )}
           />
@@ -356,16 +370,55 @@ export function DetailsCard({
   )
 }
 
+/**
+ * A detail page while it loads. When a list in the cache already knows the
+ * work (you tapped it in the library, search, Home…), its cover and title
+ * are drawn for real right away; only what's still coming is skeleton.
+ */
 export function DetailSkeleton() {
+  const queryClient = useQueryClient()
+  const pathname = useLocation({ select: (l) => l.pathname })
+  const target = detailTarget(pathname)
+  const item = target
+    ? findCachedItem(queryClient, target.type, target.id)
+    : undefined
+
   return (
     <div className="pt-safe px-safe md:px-8" aria-busy aria-label="Loading">
       <Skeleton className="mt-3 size-9 rounded-full md:mt-6" />
-      <div className="mt-16 flex items-end gap-4 md:mt-28">
-        <Skeleton className="aspect-[2/3] w-28 rounded-lg md:w-44" />
-        <div className="flex-1 space-y-2 pb-1">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-7 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+      <div className="mt-16 flex items-end gap-4 md:mt-28 md:gap-6">
+        {item ? (
+          <Poster
+            image={item.poster}
+            type={item.type}
+            title={item.title}
+            size="large"
+            priority
+            className="w-28 shrink-0 shadow-xl md:w-44"
+          />
+        ) : (
+          <Skeleton className="aspect-[2/3] w-28 rounded-lg md:w-44" />
+        )}
+        <div className="min-w-0 flex-1 space-y-2 pb-1">
+          {item ? (
+            <>
+              <div className="type-overline text-signal-text">
+                {KINDS[item.type].label}
+              </div>
+              <h1 className="type-title text-[1.75rem] md:text-[2.5rem]">
+                {item.title}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {[item.subtitle, item.year].filter(Boolean).join(" · ")}
+              </p>
+            </>
+          ) : (
+            <>
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-7 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </>
+          )}
         </div>
       </div>
       <div className="mt-5 flex gap-2">

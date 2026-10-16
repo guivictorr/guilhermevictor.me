@@ -41,6 +41,8 @@ export const Route = createFileRoute("/backlog")({
   validateSearch: z
     .object({ kind: MediaType.optional().catch(undefined) })
     .extend(swipeSearch.shape),
+  loader: ({ context }) =>
+    void context.queryClient.prefetchQuery(backlogQuery()),
   head: () => ({ meta: [{ title: "Backlog · Archive" }] }),
   component: BacklogPage,
 })

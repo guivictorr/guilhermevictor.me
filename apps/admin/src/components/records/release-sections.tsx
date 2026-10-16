@@ -225,7 +225,7 @@ export function OtherVersionsSection({ release }: { release: Release }) {
                     params={{ id: String(v.id) }}
                     disabled={current}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5",
                       current
                         ? "bg-muted/60"
                         : "hover:bg-muted/50 active:bg-muted"

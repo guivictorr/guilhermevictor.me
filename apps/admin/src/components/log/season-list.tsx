@@ -7,6 +7,7 @@ import { LogSheet } from "@/components/log/log-sheet"
 import { useLogSheet } from "@/components/log/use-log-sheet"
 import { StarRating } from "@/components/star-rating"
 import { joinDefined } from "@/lib/format"
+import { sortSeasons } from "@/lib/seasons"
 import type { LibraryItemInput } from "@/lib/repo"
 import { logsQuery } from "@/queries/archive"
 
@@ -24,10 +25,7 @@ export function SeasonList({
   const { data: logs } = useQuery(logsQuery({ type: "show", id: item.id }))
   const sheet = useLogSheet()
   const [season, setSeason] = useState<SeasonSummary>()
-  // Regular seasons in order, specials last.
-  const ordered = [...seasons].sort(
-    (a, b) => (a.seasonNumber || Infinity) - (b.seasonNumber || Infinity)
-  )
+  const ordered = sortSeasons(seasons)
   const logsOf = (n: number) =>
     (logs ?? []).filter(
       (log): log is SeasonLog => log.kind === "season" && log.seasonNumber === n
@@ -52,7 +50,7 @@ export function SeasonList({
               <button
                 type="button"
                 onClick={() => open(s)}
-                className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/50 active:bg-muted"
+                className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-muted/50 active:bg-muted"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{s.name}</p>

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { buttonVariants } from "@workspace/ui/components/button"
 import {
@@ -9,7 +9,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { Skeleton } from "@workspace/ui/components/skeleton"
 import {
   ArchiveIcon,
   ChevronRightIcon,
@@ -23,43 +22,75 @@ import { swipeSearch } from "@/components/swipe/swipe-search"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { SwipeAction } from "@/components/swipe/swipe-button"
-import { FactsDeck } from "@/components/home/facts-deck"
+import { FactsDeck, FactsSkeleton } from "@/components/home/facts-deck"
 import { NextFlightCard } from "@/components/home/next-flight-card"
 import {
   ForTodayCards,
   CardRow,
   NowCard,
+  latestFirst,
+  nowGroups,
+  todayPicks,
   useTodayPicks,
 } from "@/components/home/feature-cards"
-import { backlogQuery, libraryQuery, recentQuery } from "@/queries/archive"
+import {
+  CardRowSkeleton,
+  ListSkeleton,
+  SuspenseSection,
+} from "@/components/loaders"
+import { prefetchWorkDetails } from "@/components/media/use-work-details"
+import { airportsQuery } from "@/lib/airports"
+import {
+  backlogQuery,
+  factsQuery,
+  flightsQuery,
+  libraryQuery,
+  logsQuery,
+  recentQuery,
+} from "@/queries/archive"
 
 export const Route = createFileRoute("/")({
   validateSearch: swipeSearch,
+  // Start every section's data at once (no waterfalls), without blocking
+  // the navigation: sections suspend into skeletons of their own size.
+  loader: ({ context: { queryClient } }) => {
+    void queryClient.prefetchQuery(recentQuery(RECENT))
+    void queryClient.prefetchQuery(factsQuery())
+    void queryClient.prefetchQuery(flightsQuery())
+    void queryClient.prefetchQuery(backlogQuery())
+    for (const type of NOW_TYPES)
+      void queryClient.prefetchQuery(libraryQuery(type))
+    // Browser only from here: the server renders the cards without their
+    // details, and details streamed in mid-hydration wouldn't match.
+    if (typeof window === "undefined") return
+    // Flight facts and the next flight need the airports file.
+    void queryClient.prefetchQuery(airportsQuery())
+    // Dependent prefetch: the cards' details, as soon as their lists land.
+    void Promise.all(
+      NOW_TYPES.map((type) => queryClient.ensureQueryData(libraryQuery(type)))
+    ).then((libraries) => {
+      for (const { entries } of nowGroups(libraries)) {
+        const current = latestFirst(entries)[0]
+        if (!current) continue
+        void prefetchWorkDetails(queryClient, current)
+        void queryClient.prefetchQuery(logsQuery(current))
+      }
+    }, noop)
+    void queryClient.ensureQueryData(backlogQuery()).then((backlog) => {
+      for (const { picks } of todayPicks(backlog))
+        for (const pick of picks.slice(0, 1))
+          void prefetchWorkDetails(queryClient, pick)
+    }, noop)
+  },
   head: () => ({ meta: [{ title: "Archive" }] }),
   component: HomePage,
 })
 
-function HomePage() {
-  const recent = useQuery(recentQuery(15))
-  const games = useQuery(libraryQuery("game"))
-  const shows = useQuery(libraryQuery("show"))
-  const books = useQuery(libraryQuery("book"))
-  // What you're in the middle of, by the status of each work's latest log.
-  const now = [
-    {
-      type: "game" as const,
-      entries: games.data?.filter((e) => e.status === "playing") ?? [],
-    },
-    {
-      type: "show" as const,
-      entries: shows.data?.filter((e) => e.status === "watching") ?? [],
-    },
-    {
-      type: "book" as const,
-      entries: books.data?.filter((e) => e.status === "reading") ?? [],
-    },
-  ].filter((group) => group.entries.length > 0)
+const RECENT = 15
+const NOW_TYPES = ["game", "show", "book"] as const
+const noop = () => undefined
 
+function HomePage() {
   return (
     <>
       <PageHeader
@@ -80,106 +111,119 @@ function HomePage() {
         }
       />
       <PageBody className="space-y-8">
-        <FactsDeck />
-        <NextFlightCard />
-        <ForToday />
-
-        {now.length > 0 ? (
-          <section>
-            <SectionTitle
-              title="Now"
-              swipe={
-                <SwipeAction
-                  id="now"
-                  items={now.flatMap((group) => group.entries)}
-                  title="In progress"
-                />
-              }
-            />
-            <CardRow>
-              {now.map((group) => (
-                <NowCard
-                  key={group.type}
-                  type={group.type}
-                  entries={group.entries}
-                />
-              ))}
-            </CardRow>
-          </section>
-        ) : null}
-
-        <section>
-          <SectionTitle title="Recently logged" />
-          {recent.isPending ? (
-            <div className="space-y-2">
-              {Array.from({ length: 4 }, (_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
-              ))}
-            </div>
-          ) : recent.data?.length ? (
-            <ul className="divide-y overflow-hidden rounded-xl border bg-card">
-              {recent.data.map(({ log, item }) => (
-                <li key={log.id}>
-                  <MediaLink
-                    media={item}
-                    className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 active:bg-muted"
-                  >
-                    <Poster
-                      image={item.poster}
-                      type={item.type}
-                      title={item.title}
-                      size="thumb"
-                      className="w-11 shrink-0 rounded-md"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {item.title}
-                        {log.kind === "season" ? (
-                          <span className="font-normal text-muted-foreground">
-                            {" "}
-                            · S{log.seasonNumber}
-                          </span>
-                        ) : null}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {describeLogDates(log)}
-                      </p>
-                      <StarRating
-                        rating={log.rating}
-                        className="mt-0.5 text-xs"
-                      />
-                    </div>
-                    <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
-                  </MediaLink>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Empty className="border">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <ArchiveIcon />
-                </EmptyMedia>
-                <EmptyTitle>Your archive is empty</EmptyTitle>
-                <EmptyDescription>
-                  Log your first movie, season or game.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Link
-                  to="/search"
-                  search={{ type: "movie", q: "" }}
-                  className={buttonVariants({ size: "lg" })}
-                >
-                  <PlusIcon />
-                  Find something
-                </Link>
-              </EmptyContent>
-            </Empty>
-          )}
-        </section>
+        <SuspenseSection fallback={<FactsSkeleton />}>
+          <FactsDeck />
+        </SuspenseSection>
+        <SuspenseSection fallback={null}>
+          <NextFlightCard />
+        </SuspenseSection>
+        <SuspenseSection fallback={<CardRowSkeleton />}>
+          <ForToday />
+        </SuspenseSection>
+        <SuspenseSection fallback={<CardRowSkeleton />}>
+          <Now />
+        </SuspenseSection>
+        <SuspenseSection fallback={<ListSkeleton title rows={5} />}>
+          <RecentlyLogged />
+        </SuspenseSection>
       </PageBody>
     </>
+  )
+}
+
+/** What you're in the middle of, by the status of each work's latest log. */
+function Now() {
+  const libraries = useSuspenseQueries({
+    queries: NOW_TYPES.map((type) => libraryQuery(type)),
+    combine: (results) => results.map((r) => r.data),
+  })
+  const now = nowGroups(libraries)
+  if (!now.length) return null
+  return (
+    <section>
+      <SectionTitle
+        title="Now"
+        swipe={
+          <SwipeAction
+            id="now"
+            items={now.flatMap((group) => group.entries)}
+            title="In progress"
+          />
+        }
+      />
+      <CardRow>
+        {now.map((group) => (
+          <NowCard key={group.type} type={group.type} entries={group.entries} />
+        ))}
+      </CardRow>
+    </section>
+  )
+}
+
+function RecentlyLogged() {
+  const { data: recent } = useSuspenseQuery(recentQuery(RECENT))
+  return (
+    <section>
+      <SectionTitle title="Recently logged" />
+      {recent.length ? (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card">
+          {recent.map(({ log, item }) => (
+            <li key={log.id}>
+              <MediaLink
+                media={item}
+                className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 active:bg-muted"
+              >
+                <Poster
+                  image={item.poster}
+                  type={item.type}
+                  title={item.title}
+                  size="thumb"
+                  className="w-11 shrink-0 rounded-md"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {item.title}
+                    {log.kind === "season" ? (
+                      <span className="font-normal text-muted-foreground">
+                        {" "}
+                        · S{log.seasonNumber}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {describeLogDates(log)}
+                  </p>
+                  <StarRating rating={log.rating} className="mt-0.5 text-xs" />
+                </div>
+                <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
+              </MediaLink>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ArchiveIcon />
+            </EmptyMedia>
+            <EmptyTitle>Your archive is empty</EmptyTitle>
+            <EmptyDescription>
+              Log your first movie, season or game.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Link
+              to="/search"
+              search={{ type: "movie", q: "" }}
+              className={buttonVariants({ size: "lg" })}
+            >
+              <PlusIcon />
+              Find something
+            </Link>
+          </EmptyContent>
+        </Empty>
+      )}
+    </section>
   )
 }
 
@@ -210,7 +254,7 @@ function SectionTitle({
 
 /** Deciding what to do: today's picks from the backlog. */
 function ForToday() {
-  const { data: backlog } = useQuery(backlogQuery())
+  const { data: backlog } = useSuspenseQuery(backlogQuery())
   const groups = useTodayPicks(backlog)
   if (!groups.length) return null
   return (

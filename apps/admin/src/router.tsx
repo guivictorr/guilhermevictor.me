@@ -8,7 +8,15 @@ import { routeTree } from "./routeTree.gen"
 export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { staleTime: 30_000, refetchOnWindowFocus: false },
+      queries: {
+        // Only this app writes the archive and every write invalidates what
+        // it touched, so data stays fresh for minutes; provider queries set
+        // longer times. Kept 30 min after a screen unmounts, so coming back
+        // to a tab renders from cache with no skeleton.
+        staleTime: 5 * 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnWindowFocus: false,
+      },
     },
   })
 
@@ -23,6 +31,10 @@ export function getRouter() {
     // Query owns caching; the router should always ask it.
     defaultPreloadStaleTime: 0,
     defaultViewTransition: true,
+    // A route waiting on its loader shows its pending skeleton after 150ms
+    // (never for fast loads) and keeps it at least 300ms (never a flash).
+    defaultPendingMs: 150,
+    defaultPendingMinMs: 300,
     defaultErrorComponent: DefaultCatchBoundary,
     defaultNotFoundComponent: NotFound,
   })

@@ -27,12 +27,18 @@ import { PeopleGrid } from "@/components/media/people-grid"
 import { YourStatsCard } from "@/components/media/your-stats-card"
 import { formatDate, formatRuntime, joinDefined } from "@/lib/format"
 import { parseId } from "@/lib/params"
+import { logsQuery } from "@/queries/archive"
 import { movieQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/movies/$id")({
   validateSearch: logSearch,
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(movieQuery(parseId(params.id))),
+  loader: ({ context, params }) => {
+    // Your logs load alongside the details, not after them.
+    void context.queryClient.prefetchQuery(
+      logsQuery({ type: "movie", id: parseId(params.id) })
+    )
+    return context.queryClient.ensureQueryData(movieQuery(parseId(params.id)))
+  },
   head: ({ loaderData }) => ({
     meta: [{ title: loaderData ? `${loaderData.title} · Archive` : "Archive" }],
   }),

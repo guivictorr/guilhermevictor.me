@@ -102,6 +102,85 @@
   }
 }
 
+/* Content that had to wait for data appears with a short fade: a one-shot
+   that nothing interrupts, so keyframes are fine (toggled UI uses
+   transitions). Cached content never gets it (see SuspenseSection). */
+@keyframes reveal {
+  from {
+    opacity: 0;
+  }
+}
+@utility animate-reveal {
+  animation: reveal 180ms var(--ease-out);
+}
+
+/* Scroll fades: only an edge with more content behind it fades. A mask
+   (not an overlay) works over any background and never blocks taps; the
+   fade sizes follow the scroll position via a scroll-driven animation.
+   Put it on the scroller itself only when its scrollbar is hidden. */
+@property --fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes fade-start-in {
+  to {
+    --fade-start: var(--fade-size);
+  }
+}
+@keyframes fade-end-out {
+  from {
+    --fade-end: var(--fade-size);
+  }
+}
+@utility fade-x {
+  --fade-size: 1.5rem;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--fade-start),
+    #000 calc(100% - var(--fade-end)),
+    transparent
+  );
+  animation:
+    fade-start-in linear both,
+    fade-end-out linear both;
+  animation-timeline: scroll(self x), scroll(self x);
+  animation-range:
+    0 3rem,
+    calc(100% - 3rem) 100%;
+  @supports not (animation-timeline: scroll()) {
+    --fade-start: 0px;
+    --fade-end: var(--fade-size);
+  }
+}
+@utility fade-y {
+  --fade-size: 1.5rem;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--fade-start),
+    #000 calc(100% - var(--fade-end)),
+    transparent
+  );
+  animation:
+    fade-start-in linear both,
+    fade-end-out linear both;
+  animation-timeline: scroll(self y), scroll(self y);
+  animation-range:
+    0 3rem,
+    calc(100% - 3rem) 100%;
+  @supports not (animation-timeline: scroll()) {
+    --fade-start: 0px;
+    --fade-end: var(--fade-size);
+  }
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -154,6 +233,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-reveal {
+    animation: none;
+  }
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {

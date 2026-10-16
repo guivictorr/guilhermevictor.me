@@ -8,6 +8,7 @@ import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
 import { SHOW_STATUS_OPTIONS } from "@/lib/show-status"
 import { StarRating } from "@/components/star-rating"
 import { formatDate, joinDefined } from "@/lib/format"
+import { sortLogsBySeason } from "@/lib/seasons"
 import { logsQuery } from "@/queries/archive"
 
 const showStatusLabel = (status: string) =>
@@ -49,7 +50,10 @@ export function LogHistory({
     )
   }
 
-  const logs = filter ? data?.filter(filter) : data
+  const filtered = filter ? data?.filter(filter) : data
+  // Shows read best season by season.
+  const logs =
+    type === "show" && filtered ? sortLogsBySeason(filtered) : filtered
   if (!logs?.length)
     return <p className="text-sm text-muted-foreground">{emptyLabel}</p>
 
@@ -60,7 +64,7 @@ export function LogHistory({
           <button
             type="button"
             onClick={() => onSelect(log)}
-            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted"
+            className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 active:bg-muted"
           >
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

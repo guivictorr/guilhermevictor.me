@@ -37,13 +37,19 @@ import { formatDate, joinDefined } from "@/lib/format"
 import { formatMoney } from "@/lib/grades"
 import { imageUrl } from "@/lib/images"
 import { parseId } from "@/lib/params"
-import { collectionQuery } from "@/queries/archive"
+import { collectionQuery, logsQuery } from "@/queries/archive"
 import { releaseQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/records/$id")({
   validateSearch: logSearch,
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(releaseQuery(parseId(params.id))),
+  loader: ({ context, params }) => {
+    // Your logs load alongside the details, not after them.
+    void context.queryClient.prefetchQuery(
+      logsQuery({ type: "record", id: parseId(params.id) })
+    )
+    void context.queryClient.prefetchQuery(collectionQuery())
+    return context.queryClient.ensureQueryData(releaseQuery(parseId(params.id)))
+  },
   head: ({ loaderData }) => ({
     meta: [
       {

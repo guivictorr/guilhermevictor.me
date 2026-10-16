@@ -1,7 +1,14 @@
 import type { ImageRef } from "@workspace/schemas"
 
 /** Size presets per render context, mapped to each provider's own sizes. */
-export type ImageSize = "thumb" | "poster" | "large" | "backdrop" | "still"
+export type ImageSize =
+  | "thumb"
+  | "poster"
+  | "large"
+  | "backdrop"
+  | "still"
+  /** A card-wide background (Home's feature cards), lightly blurred. */
+  | "card"
 
 const TMDB_SIZES: Record<ImageSize, string> = {
   thumb: "w92",
@@ -9,6 +16,7 @@ const TMDB_SIZES: Record<ImageSize, string> = {
   large: "w780",
   backdrop: "w1280",
   still: "w300",
+  card: "w780",
 }
 
 const IGDB_SIZES: Record<ImageSize, string> = {
@@ -17,6 +25,7 @@ const IGDB_SIZES: Record<ImageSize, string> = {
   large: "t_cover_big_2x",
   backdrop: "t_1080p",
   still: "t_screenshot_med",
+  card: "t_screenshot_big",
 }
 
 const GOOGLE_WIDTHS: Record<ImageSize, number> = {
@@ -25,6 +34,7 @@ const GOOGLE_WIDTHS: Record<ImageSize, number> = {
   large: 720,
   backdrop: 800,
   still: 300,
+  card: 360,
 }
 
 export function imageUrl(

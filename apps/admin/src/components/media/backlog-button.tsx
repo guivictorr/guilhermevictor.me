@@ -87,7 +87,7 @@ export function CardBacklogBadge({ item }: { item: LibraryItemInput }) {
       aria-pressed={inBacklog}
       onClick={toggle}
       className={cn(
-        "pressable flex size-7 items-center justify-center rounded-full shadow-md backdrop-blur-md transition-colors",
+        "pressable flex size-7 items-center justify-center rounded-full shadow-md backdrop-blur-md",
         inBacklog
           ? "bg-primary text-primary-foreground"
           : "bg-background/70 text-foreground"

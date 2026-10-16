@@ -108,7 +108,7 @@ export function MoveLogSheet({
                   type="button"
                   disabled={move.isPending}
                   onClick={() => moveTo(media)}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-muted/50 active:bg-muted disabled:opacity-50"
+                  className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 active:bg-muted disabled:opacity-50"
                 >
                   <Poster
                     image={media.poster}

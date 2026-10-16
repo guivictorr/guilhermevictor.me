@@ -16,14 +16,10 @@ import {
   PencilLineIcon,
   Trash2Icon,
 } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { toast } from "sonner"
 import { useBacklogToggle } from "./backlog-button"
-import { LogSheet } from "@/components/log/log-sheet"
-import type { LogTargetContext } from "@/components/log/log-sheet"
-import { SeasonList } from "@/components/log/season-list"
-import { copyOptions } from "@/components/records/copies"
-import { ResponsiveSheet } from "@/components/responsive-sheet"
+import { useOpenLog, usePrefetchLog } from "@/components/log/log-host"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { DETAIL_ROUTE } from "@/lib/detail-routes"
 import { today } from "@/lib/format"
@@ -36,7 +32,6 @@ import {
   useAddLog,
   useDeleteLog,
 } from "@/queries/archive"
-import { gameQuery, showQuery } from "@/queries/media"
 
 type QuickAction = { label: string; input: () => LogInput | undefined }
 
@@ -142,34 +137,45 @@ export function CoverActions({
   children: React.ReactNode
 }) {
   const fine = useMediaQuery("(hover: hover) and (pointer: fine)")
-  const [logging, setLogging] = useState(false)
-  const stopLogging = useCallback(() => setLogging(false), [])
-  const sheet = logging ? (
-    <CoverLogSheet item={item} onClose={stopLogging} />
-  ) : null
+  const openLog = useOpenLog()
+  const prefetch = usePrefetchLog()
+  // The menu (and its queries: logs, copies) mounts on first open only. A
+  // grid has hundreds of covers; mounted up front, each would fetch its
+  // logs on page load.
+  const [menuUsed, setMenuUsed] = useState(false)
 
   if (fine)
     return (
-      <>
-        <ContextMenu>
-          <ContextMenuTrigger className="block">{children}</ContextMenuTrigger>
-          <CoverMenu item={item} onLog={() => setLogging(true)} />
-        </ContextMenu>
-        {sheet}
-      </>
+      <ContextMenu
+        onOpenChange={(open) => {
+          if (!open) return
+          setMenuUsed(true)
+          prefetch(item)
+        }}
+      >
+        <ContextMenuTrigger className="block">{children}</ContextMenuTrigger>
+        {menuUsed ? (
+          <CoverMenu item={item} onLog={() => void openLog(item)} />
+        ) : null}
+      </ContextMenu>
     )
   return (
-    <>
-      <LongPress onLongPress={() => setLogging(true)}>{children}</LongPress>
-      {sheet}
-    </>
+    <LongPress
+      onPressStart={() => prefetch(item)}
+      onLongPress={() => void openLog(item)}
+    >
+      {children}
+    </LongPress>
   )
 }
 
 function LongPress({
+  onPressStart,
   onLongPress,
   children,
 }: {
+  /** A press began: warm what the sheet needs. */
+  onPressStart: () => void
   onLongPress: () => void
   children: React.ReactNode
 }) {
@@ -189,6 +195,7 @@ function LongPress({
         if (!touch || e.touches.length > 1) return
         fired.current = false
         start.current = { x: touch.clientX, y: touch.clientY }
+        onPressStart()
         timer.current = window.setTimeout(() => {
           fired.current = true
           // Safari has no vibrate().
@@ -318,73 +325,4 @@ function CoverMenu({
       ) : null}
     </ContextMenuContent>
   )
-}
-
-/**
- * The log sheet for a cover, built for its kind: games list their
- * platforms, plays need a copy you own, shows log per season.
- */
-function CoverLogSheet({
-  item,
-  onClose,
-}: {
-  item: LibraryItemInput
-  onClose: () => void
-}) {
-  const [open, setOpen] = useState(true)
-  const close = (next: boolean) => {
-    setOpen(next)
-    // Let the sheet animate out before unmounting it.
-    if (!next) window.setTimeout(onClose, 300)
-  }
-  const game = useQuery({
-    ...gameQuery(Number(item.id)),
-    enabled: item.type === "game",
-  })
-  const show = useQuery({
-    ...showQuery(Number(item.id)),
-    enabled: item.type === "show",
-  })
-  const { data: collection, isPending: collectionPending } = useQuery({
-    ...collectionQuery(),
-    enabled: item.type === "record",
-  })
-  const copies = (collection ?? []).filter((c) => c.releaseId === item.id)
-
-  const noCopy = item.type === "record" && !collectionPending && !copies.length
-  useEffect(() => {
-    if (!noCopy) return
-    toast("Add a copy first", {
-      description: "Plays are logged on a copy you own.",
-    })
-    onClose()
-  }, [noCopy, onClose])
-  if (noCopy) return null
-
-  if (item.type === "show")
-    return (
-      <ResponsiveSheet
-        open={open}
-        onOpenChange={close}
-        title="Seasons"
-        description={item.title}
-      >
-        {show.data ? (
-          <SeasonList item={item} seasons={show.data.seasons} />
-        ) : (
-          <p className="text-sm text-muted-foreground">Loading seasons…</p>
-        )}
-      </ResponsiveSheet>
-    )
-
-  const target: LogTargetContext =
-    item.type === "movie"
-      ? { kind: "movie", item }
-      : item.type === "book"
-        ? { kind: "book", item }
-        : item.type === "game"
-          ? { kind: "game", item, platforms: game.data?.platforms ?? [] }
-          : { kind: "record", item, copies: copyOptions(copies) }
-
-  return <LogSheet open={open} onOpenChange={close} target={target} />
 }

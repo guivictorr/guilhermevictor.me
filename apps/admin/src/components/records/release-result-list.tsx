@@ -38,7 +38,7 @@ export function ReleaseResultList({
           <li key={r.id} className="relative">
             <MediaLink
               media={r}
-              className="flex gap-3 py-3 pr-14 pl-3 transition-colors hover:bg-muted/50 active:bg-muted"
+              className="flex gap-3 py-3 pr-14 pl-3 hover:bg-muted/50 active:bg-muted"
             >
               <Poster
                 image={r.poster}

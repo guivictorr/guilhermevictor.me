@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
+import { useSuspenseQuery } from "@tanstack/react-query"
+import { ClientOnly, Link } from "@tanstack/react-router"
 import type { Flight } from "@workspace/schemas"
 import { PlaneIcon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
@@ -45,12 +45,21 @@ const dayFormat = new Intl.DateTimeFormat(undefined, {
  * when nothing is coming up.
  */
 export function NextFlightCard() {
-  const { data: flights } = useQuery(flightsQuery())
-  const { data: airports } = useQuery(airportsQuery())
+  // Client only: the countdown is the browser's clock, and airports come
+  // from a static file the browser fetches.
+  return (
+    <ClientOnly>
+      <NextFlight />
+    </ClientOnly>
+  )
+}
+
+function NextFlight() {
+  const { data: flights } = useSuspenseQuery(flightsQuery())
+  const { data: airports } = useSuspenseQuery(airportsQuery())
   const now = useNow()
 
   const next = useMemo(() => {
-    if (!flights || !airports) return undefined
     let best: { flight: Flight; departs: Date; lands?: Date } | undefined
     for (const flight of flights) {
       const t = instants(flight, airports)
@@ -63,7 +72,7 @@ export function NextFlightCard() {
     return best
   }, [flights, airports, now])
 
-  if (!next || !airports) return null
+  if (!next) return null
   const { flight, departs, lands } = next
   const from = airports.byCode.get(flight.from)
   const to = airports.byCode.get(flight.to)
@@ -77,7 +86,7 @@ export function NextFlightCard() {
     ["Sec", left % 60],
   ] as const
   const legsAfter = flight.reservation
-    ? (flights ?? []).filter(
+    ? flights.filter(
         (f) =>
           f.reservation === flight.reservation && f.departure > flight.departure
       ).length

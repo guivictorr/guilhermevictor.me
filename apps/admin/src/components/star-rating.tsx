@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils"
 import { StarIcon } from "lucide-react"
-import { useId, useState } from "react"
+import { useId, useRef, useState } from "react"
 import { ALLOW_HALF_STARS, formatRating } from "@/lib/rating"
 
 const STARS = [1, 2, 3, 4, 5]
@@ -76,63 +76,84 @@ export function StarRatingInput({
   const step = ALLOW_HALF_STARS ? 1 : 2
   const current = value ?? 0
   const [preview, setPreview] = useState<number>()
+  /** The star just clicked, while the pointer is still on it. */
+  const clickedAt = useRef<number>(undefined)
 
-  /** The rating under the pointer, from its position across the stars. */
+  /**
+   * The rating under the pointer, from the star it's on (left half = half
+   * star). Measured per star, so it stays right however wide the row is
+   * laid out; off the stars it's undefined (no change).
+   */
   function valueAt(e: React.MouseEvent<HTMLElement>) {
-    const box = e.currentTarget.getBoundingClientRect()
-    const ratio = Math.min(Math.max((e.clientX - box.left) / box.width, 0), 1)
-    return Math.max(step, Math.ceil((ratio * 10) / step) * step)
+    const star = (e.target as HTMLElement).closest<HTMLElement>("[data-star]")
+    if (!star) return undefined
+    const index = Number(star.dataset.star)
+    const box = star.getBoundingClientRect()
+    const half = e.clientX - box.left < box.width / 2
+    const rating = index * 2 - (half && step === 1 ? 1 : 0)
+    return Math.max(step, rating)
   }
 
   const shown = preview ?? current
 
+  // Stars only: the value is in aria-valuetext for screen readers.
   return (
-    <div className="flex items-center gap-3">
-      <div
-        id={id ?? fallbackId}
-        role="slider"
-        tabIndex={0}
-        aria-label="Rating"
-        aria-valuemin={0}
-        aria-valuemax={10}
-        aria-valuenow={current}
-        aria-valuetext={formatRating(value)}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-            e.preventDefault()
-            onChange(Math.min(current + step, 10))
-          } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-            e.preventDefault()
-            onChange(current - step <= 0 ? undefined : current - step)
-          } else if (e.key === "Backspace" || e.key === "Delete") {
-            onChange(undefined)
-          }
-        }}
-        onClick={(e) => {
-          // Tap/click only: the star under the pointer; the current value
-          // again clears it. No dragging, so swipes never change a rating.
-          const next = valueAt(e)
-          onChange(next === value ? undefined : next)
+    <div
+      id={id ?? fallbackId}
+      role="slider"
+      tabIndex={0}
+      aria-label="Rating"
+      aria-valuemin={0}
+      aria-valuemax={10}
+      aria-valuenow={current}
+      aria-valuetext={formatRating(value)}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+          e.preventDefault()
+          onChange(Math.min(current + step, 10))
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+          e.preventDefault()
+          onChange(current - step <= 0 ? undefined : current - step)
+        } else if (e.key === "Backspace" || e.key === "Delete") {
+          onChange(undefined)
+        }
+      }}
+      onClick={(e) => {
+        // Tap/click only: the star under the pointer; the current value
+        // again clears it. No dragging, so swipes never change a rating.
+        const next = valueAt(e)
+        if (next === undefined) return
+        onChange(next === value ? undefined : next)
+        // Show the result, not the hover: no preview until the pointer
+        // moves on to another star.
+        setPreview(undefined)
+        clickedAt.current = next
+      }}
+      onPointerMove={(e) => {
+        if (e.pointerType !== "mouse") return
+        const hovered = valueAt(e)
+        if (hovered === undefined) {
           setPreview(undefined)
-        }}
-        onPointerMove={(e) => {
-          if (e.pointerType === "mouse") setPreview(valueAt(e))
-        }}
-        onPointerLeave={() => setPreview(undefined)}
-        style={{ touchAction: "manipulation" }}
-        className="text-star flex cursor-pointer rounded-md text-[2rem] outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        {STARS.map((star) => (
-          <span key={star} className="px-0.5">
-            <StarGlyph
-              fill={Math.min(Math.max(shown - (star - 1) * 2, 0), 2) / 2}
-            />
-          </span>
-        ))}
-      </div>
-      <span className="text-sm text-muted-foreground tabular-nums">
-        {shown === 0 ? "Tap to rate" : `${shown / 2} / 5`}
-      </span>
+          return
+        }
+        if (hovered === clickedAt.current) return
+        clickedAt.current = undefined
+        setPreview(hovered)
+      }}
+      onPointerLeave={() => {
+        clickedAt.current = undefined
+        setPreview(undefined)
+      }}
+      style={{ touchAction: "manipulation" }}
+      className="text-star flex w-fit cursor-pointer rounded-md text-[2rem] outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      {STARS.map((star) => (
+        <span key={star} data-star={star} className="px-0.5">
+          <StarGlyph
+            fill={Math.min(Math.max(shown - (star - 1) * 2, 0), 2) / 2}
+          />
+        </span>
+      ))}
     </div>
   )
 }

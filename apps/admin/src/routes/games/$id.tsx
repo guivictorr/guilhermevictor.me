@@ -31,12 +31,18 @@ import { YouTubeVideo } from "@/components/media/youtube"
 import { formatDate, joinDefined } from "@/lib/format"
 import { imageUrl } from "@/lib/images"
 import { parseId } from "@/lib/params"
+import { logsQuery } from "@/queries/archive"
 import { gameQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/games/$id")({
   validateSearch: logSearch,
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(gameQuery(parseId(params.id))),
+  loader: ({ context, params }) => {
+    // Your logs load alongside the details, not after them.
+    void context.queryClient.prefetchQuery(
+      logsQuery({ type: "game", id: parseId(params.id) })
+    )
+    return context.queryClient.ensureQueryData(gameQuery(parseId(params.id)))
+  },
   head: ({ loaderData }) => ({
     meta: [{ title: loaderData ? `${loaderData.title} · Archive` : "Archive" }],
   }),

@@ -1,6 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
+import { ClientOnly } from "@tanstack/react-router"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { cn } from "@workspace/ui/lib/utils"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { MediaLink } from "@/components/media-card"
 import { ScrollRow } from "@/components/media/media-rail"
 import { Poster } from "@/components/poster"
@@ -22,10 +24,10 @@ const KIND_LABEL: Record<Fact["kind"], string> = {
 
 /** Flight facts need the airports file, so they're worked out here. */
 function useFlightFacts(): Array<Fact> {
-  const { data: flights } = useQuery(flightsQuery())
-  const { data: airports } = useQuery(airportsQuery())
+  const { data: flights } = useSuspenseQuery(flightsQuery())
+  const { data: airports } = useSuspenseQuery(airportsQuery())
   return useMemo(() => {
-    if (!flights?.length || !airports) return []
+    if (!flights.length) return []
     const stats = computeFlightStats(flights, airports)
     const facts: Array<Fact> = []
     if (stats.distanceKm > 0)
@@ -81,29 +83,59 @@ const OFFSET_KEY = "archive:facts-offset"
  * storage it simply starts at the beginning.
  */
 function useVisitOffset() {
-  const [offset, setOffset] = useState<number>()
-  useEffect(() => {
-    let current = 0
+  // Client only (see FactsDeck), so storage can be read during render and
+  // the cards never pop in after an effect.
+  const [offset] = useState(() => {
     try {
-      current = Number(localStorage.getItem(OFFSET_KEY)) || 0
+      const current = Number(localStorage.getItem(OFFSET_KEY)) || 0
       localStorage.setItem(OFFSET_KEY, String(current + VISIBLE))
+      return current
     } catch {
       // Private mode or blocked storage: no rotation, still works.
+      return 0
     }
-    setOffset(current)
-  }, [])
+  })
   return offset
 }
 
-/** Three facts about the archive, different ones on every visit. */
+/**
+ * Three facts about the archive, different ones on every visit. Rendered
+ * on the client only: flight facts need the airports file (fetched by the
+ * browser) and the rotation lives in localStorage; the skeleton keeps its
+ * place meanwhile.
+ */
 export function FactsDeck() {
-  const { data } = useQuery(factsQuery())
+  return (
+    <ClientOnly fallback={<FactsSkeleton />}>
+      <Facts />
+    </ClientOnly>
+  )
+}
+
+export function FactsSkeleton() {
+  return (
+    <section aria-hidden>
+      <h2 className="type-heading mb-3 text-lg">By the numbers</h2>
+      <ScrollRow className="md:*:flex-1">
+        {Array.from({ length: VISIBLE }, (_, i) => (
+          <Skeleton
+            key={i}
+            className={cn(CARD, "animate-pulse border-transparent bg-muted")}
+          />
+        ))}
+      </ScrollRow>
+    </section>
+  )
+}
+
+function Facts() {
+  const { data } = useSuspenseQuery(factsQuery())
   const flightFacts = useFlightFacts()
   const offset = useVisitOffset()
   // Interleave kinds so the first cards aren't all about one thing.
   const facts = useMemo(() => {
     const queues = [
-      ...Map.groupBy([...(data ?? []), ...flightFacts], (f) => f.kind).values(),
+      ...Map.groupBy([...data, ...flightFacts], (f) => f.kind).values(),
     ]
     const mixed: Array<Fact> = []
     while (queues.some((q) => q.length))
@@ -114,7 +146,7 @@ export function FactsDeck() {
     return mixed
   }, [data, flightFacts])
 
-  if (!facts.length || offset === undefined) return null
+  if (!facts.length) return null
   const shown =
     facts.length <= VISIBLE
       ? facts
@@ -174,7 +206,8 @@ function FactCard({ fact }: { fact: Fact }) {
           type={fact.link.type}
           title={fact.value}
           size="thumb"
-          className="w-14 shrink-0 self-start"
+          // Concentric with the card: 20px corner − 16px inset.
+          className="w-14 shrink-0 self-start rounded-[4px]"
         />
       ) : null}
     </div>
@@ -182,7 +215,7 @@ function FactCard({ fact }: { fact: Fact }) {
   return fact.link ? (
     <MediaLink
       media={fact.link}
-      className={cn(CARD, "pressable transition-colors hover:bg-raised")}
+      className={cn(CARD, "pressable hover:bg-raised")}
     >
       {body}
     </MediaLink>

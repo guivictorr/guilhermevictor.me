@@ -56,7 +56,7 @@ export function Copies({
               <button
                 type="button"
                 onClick={() => onSelect(copy)}
-                className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted"
+                className="w-full px-4 py-3 text-left hover:bg-muted/50 active:bg-muted"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   {copy.mediaCondition ? (
