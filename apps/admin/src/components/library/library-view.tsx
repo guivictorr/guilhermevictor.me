@@ -63,7 +63,6 @@ import {
   MediaGridSkeleton,
   MediaLink,
 } from "@/components/media-card"
-import { CardLogBadge } from "@/components/media/card-log-menu"
 import { SwipeButton } from "@/components/swipe/swipe-button"
 import { SwipeDeck } from "@/components/swipe/swipe-deck"
 import { useSwipe } from "@/components/swipe/swipe-search"
@@ -376,7 +375,6 @@ export function LibraryView({
               >
                 <MediaCard
                   media={entry}
-                  badge={<CardLogBadge item={entry} />}
                   meta={
                     <>
                       {entry.rating !== undefined ? (

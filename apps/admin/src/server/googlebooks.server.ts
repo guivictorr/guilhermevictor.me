@@ -111,6 +111,8 @@ export type BookSearch = {
   /** ISO 639-1, e.g. "pt". */
   language?: string
   orderBy?: "relevance" | "newest"
+  /** 1-based page of 40 results. */
+  page?: number
 }
 
 /**
@@ -140,6 +142,7 @@ export async function searchGoogleBooks(
     q: terms.join(" "),
     printType: "books",
     maxResults: "40",
+    startIndex: search.page ? String((search.page - 1) * 40) : undefined,
     langRestrict: search.language,
     orderBy: search.orderBy,
   })

@@ -22,7 +22,7 @@ const CABIN_LABEL = {
 } as const
 
 /** Airline logos by IATA code; falls back to the code as text. */
-function AirlineMark({ flight }: { flight: Flight }) {
+export function AirlineMark({ flight }: { flight: Flight }) {
   const code = airlineCode(flight.flightNumber)
   const [failed, setFailed] = useState(false)
   if (code && !failed)

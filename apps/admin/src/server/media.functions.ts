@@ -43,16 +43,19 @@ export const searchMedia = createServerFn({ method: "GET" })
       type: MediaType,
       query: z.string().trim().max(200),
       filters: SearchFilters.default({}),
+      /** 1-based; about 20–40 results per page depending on the provider. */
+      page: z.number().int().min(1).max(25).default(1),
     })
   )
   .handler(({ data }) => {
+    const { page } = data
     const query = data.query || undefined
     const filters = filtersFor(data.type, data.filters)
     switch (data.type) {
       case "game":
-        return searchIgdb(query, filters)
+        return searchIgdb(query, filters, page)
       case "record":
-        return searchDiscogs(query, filters)
+        return searchDiscogs(query, filters, page)
       case "book":
         return searchGoogleBooks({
           query,
@@ -61,11 +64,12 @@ export const searchMedia = createServerFn({ method: "GET" })
           publisher: filters.publisher,
           language: filters.lang,
           orderBy: filters.sort === "newest" ? "newest" : undefined,
+          page,
         })
       default:
         return query
-          ? searchTmdb(data.type, query, filters)
-          : discoverTmdb(data.type, filters)
+          ? searchTmdb(data.type, query, filters, page)
+          : discoverTmdb(data.type, filters, page)
     }
   })
 

@@ -1,6 +1,6 @@
 import type { MediaSummary } from "@workspace/schemas"
 import { cn } from "@workspace/ui/lib/utils"
-import { CardBadges } from "./card-log-menu"
+import { CardBacklogBadge } from "./backlog-button"
 import { MediaCard } from "@/components/media-card"
 
 /** Search results don't carry genres; the snapshot is refreshed when logged. */
@@ -32,7 +32,7 @@ export function MediaRail({
         >
           <MediaCard
             media={media}
-            badge={<CardBadges item={toBacklogItem(media)} />}
+            badge={<CardBacklogBadge item={toBacklogItem(media)} />}
           />
         </div>
       ))}

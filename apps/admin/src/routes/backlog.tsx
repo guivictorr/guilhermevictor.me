@@ -20,7 +20,6 @@ import {
   MediaGridSkeleton,
 } from "@/components/media-card"
 import { KindFilter } from "@/components/kind-filter"
-import { CardLogBadge } from "@/components/media/card-log-menu"
 import { ScrollRow } from "@/components/media/media-rail"
 import {
   RandomPickSheet,
@@ -195,17 +194,7 @@ function SectionHeader({
 }
 
 function BacklogCard({ item }: { item: BacklogItem }) {
-  return (
-    <MediaCard
-      media={item}
-      badge={
-        <>
-          <CardLogBadge item={item} />
-          <RemoveButton item={item} />
-        </>
-      }
-    />
-  )
+  return <MediaCard media={item} badge={<RemoveButton item={item} />} />
 }
 
 function RemoveButton({ item }: { item: BacklogItem }) {

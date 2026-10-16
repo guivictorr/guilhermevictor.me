@@ -48,7 +48,9 @@ export function ResponsiveSheet({
             </DrawerDescription>
           ) : null}
         </DrawerHeader>
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+        {/* overflow-y-auto alone turns x into "auto": a few stray pixels
+            would make the whole sheet scroll sideways on phones. */}
+        <div className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           {children}
         </div>
       </DrawerContent>

@@ -19,6 +19,7 @@ import { toast } from "sonner"
 import type { z } from "zod"
 import { useAppForm, useFieldContext } from "@/components/form/form-hook"
 import { FormShell } from "@/components/log/log-forms"
+import { DatePicker } from "@/components/date-picker"
 import { ResponsiveSheet, useOpenSession } from "@/components/responsive-sheet"
 import { aircraftTypesQuery, searchAircraft } from "@/lib/aircraft-types"
 import { airportsQuery, searchAirports } from "@/lib/airports"
@@ -164,7 +165,10 @@ function AircraftField({ flown }: { flown: Set<string> }) {
   )
 }
 
-/** Local date + time, as printed on the boarding pass. */
+/**
+ * Local date + time, as printed on the boarding pass: a calendar for the
+ * day and a time box, combined into `YYYY-MM-DDTHH:mm`.
+ */
 function DateTimeField({
   label,
   optional = false,
@@ -173,19 +177,39 @@ function DateTimeField({
   optional?: boolean
 }) {
   const { field, errors, invalid } = useFieldErrorsOf<string | undefined>()
+  const value = field.state.value ?? ""
+  const date = value.slice(0, 10) || undefined
+  const time = value.slice(11, 16)
+  const set = (nextDate: string | undefined, nextTime: string) =>
+    field.handleChange(
+      nextDate
+        ? `${nextDate}T${nextTime || "00:00"}`
+        : optional
+          ? undefined
+          : ""
+    )
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-      <Input
-        id={field.name}
-        type="datetime-local"
-        value={field.state.value ?? ""}
-        aria-invalid={invalid || undefined}
-        onBlur={field.handleBlur}
-        onChange={(e) =>
-          field.handleChange(e.target.value || (optional ? undefined : ""))
-        }
-      />
+      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-1.5">
+        <DatePicker
+          id={field.name}
+          value={date}
+          optional={optional}
+          invalid={invalid}
+          onBlur={field.handleBlur}
+          onChange={(next) => set(next, time)}
+        />
+        <Input
+          type="time"
+          aria-label={`${label} time`}
+          value={time}
+          disabled={!date}
+          onBlur={field.handleBlur}
+          onChange={(e) => set(date, e.target.value)}
+          className="px-2 tabular-nums"
+        />
+      </div>
       <FieldError errors={errors} />
     </Field>
   )
@@ -361,7 +385,7 @@ function FlightForm({
           {() => <AirportField label="To" flown={flown} />}
         </form.AppField>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <form.AppField name="departure">
           {() => <DateTimeField label="Departure" />}
         </form.AppField>

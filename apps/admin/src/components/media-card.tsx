@@ -3,6 +3,8 @@ import type { ImageRef, MediaType, WorkId } from "@workspace/schemas"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { cn } from "@workspace/ui/lib/utils"
 import { Poster } from "./poster"
+import { CoverActions } from "@/components/media/cover-actions"
+import { DETAIL_ROUTE } from "@/lib/detail-routes"
 
 export type CardMedia = {
   type: MediaType
@@ -13,13 +15,7 @@ export type CardMedia = {
   poster?: ImageRef
 }
 
-export const DETAIL_ROUTE = {
-  movie: "/movies/$id",
-  show: "/shows/$id",
-  game: "/games/$id",
-  book: "/books/$id",
-  record: "/records/$id",
-} as const satisfies Record<CardMedia["type"], string>
+export { DETAIL_ROUTE } from "@/lib/detail-routes"
 
 /** Typed link to a work's detail page. */
 export function MediaLink({
@@ -51,43 +47,53 @@ export function MediaCard({
   meta,
   badge,
   dimmed = false,
+  actions = true,
 }: {
   media: CardMedia
   meta?: React.ReactNode
   badge?: React.ReactNode
   /** Gray cover: you already have it (search results). */
   dimmed?: boolean
+  /** Right-click menu / long press to log (see CoverActions). */
+  actions?: boolean
 }) {
+  const link = (
+    <MediaLink
+      media={media}
+      className="pressable group block min-w-0 rounded-xl outline-none"
+    >
+      <Poster
+        image={media.poster}
+        type={media.type}
+        title={media.title}
+        className={cn(
+          "group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background",
+          dimmed && "opacity-55 grayscale"
+        )}
+      />
+      <div className="mt-2 min-w-0 px-0.5">
+        <p className="truncate text-sm leading-tight font-medium">
+          {media.title}
+        </p>
+        {media.subtitle ? (
+          <p className="truncate text-xs text-muted-foreground">
+            {media.subtitle}
+          </p>
+        ) : null}
+        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          {media.year ? <span>{media.year}</span> : null}
+          {meta}
+        </div>
+      </div>
+    </MediaLink>
+  )
   return (
     <div className="relative min-w-0">
-      <MediaLink
-        media={media}
-        className="pressable group block min-w-0 rounded-xl outline-none"
-      >
-        <Poster
-          image={media.poster}
-          type={media.type}
-          title={media.title}
-          className={cn(
-            "group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background",
-            dimmed && "opacity-55 grayscale"
-          )}
-        />
-        <div className="mt-2 min-w-0 px-0.5">
-          <p className="truncate text-sm leading-tight font-medium">
-            {media.title}
-          </p>
-          {media.subtitle ? (
-            <p className="truncate text-xs text-muted-foreground">
-              {media.subtitle}
-            </p>
-          ) : null}
-          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-            {media.year ? <span>{media.year}</span> : null}
-            {meta}
-          </div>
-        </div>
-      </MediaLink>
+      {actions ? (
+        <CoverActions item={{ ...media, genres: [] }}>{link}</CoverActions>
+      ) : (
+        link
+      )}
       {badge ? (
         <div className="absolute top-1.5 right-1.5 flex gap-1">{badge}</div>
       ) : null}

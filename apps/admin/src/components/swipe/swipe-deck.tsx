@@ -1,6 +1,6 @@
 import { ChevronLeftIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { SwipeSlide } from "./swipe-slide"
 import type { CardMedia } from "@/components/media-card"
@@ -23,42 +23,71 @@ const toItem = (media: CardMedia): LibraryItemInput => ({
  * under sheets and menus (z-50), so logging opens on top. Only the current
  * card and its neighbours render.
  */
+type More = {
+  /** The list has more beyond what's loaded (e.g. search pages). */
+  hasMore?: boolean
+  loadingMore?: boolean
+  /** Called near the last card, to load the next page. */
+  onNearEnd?: () => void
+}
+
 export function SwipeDeck({
   open,
   items,
   title,
   onClose,
+  ...more
 }: {
   open: boolean
   items: Array<CardMedia>
   title: string
   onClose: () => void
-}) {
+} & More) {
   // Client-only: a reload with `?swipe=` renders the page first, then this.
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   if (!mounted || !open || !items.length) return null
   // Portalled so no page container (transforms, overflow) can clip it.
   return createPortal(
-    <Deck items={items} title={title} onClose={onClose} />,
+    <Deck items={items} title={title} onClose={onClose} {...more} />,
     document.body
   )
 }
+
+const keyOf = (m: CardMedia) => `${m.type}:${m.id}`
+/** Start loading the next page this many cards before the end. */
+const NEAR_END = 3
 
 function Deck({
   items: live,
   title,
   onClose,
+  hasMore = false,
+  loadingMore = false,
+  onNearEnd,
 }: {
   items: Array<CardMedia>
   title: string
   onClose: () => void
-}) {
+} & More) {
   // The list as it was when opened: rating or logging here can re-sort the
   // page's list (e.g. by rating), which mustn't shuffle the cards in place.
-  const [items] = useState(live)
+  // Items loaded later (the next search page) are added at the end.
+  const [snapshot] = useState(live)
+  const items = useMemo(() => {
+    const seen = new Set(snapshot.map(keyOf))
+    return [...snapshot, ...live.filter((m) => !seen.has(keyOf(m)))]
+  }, [snapshot, live])
   const scroller = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
+
+  // Keep swiping past what's loaded: fetch the next page near the end.
+  const nearEnd = useRef(onNearEnd)
+  nearEnd.current = onNearEnd
+  useEffect(() => {
+    if (hasMore && !loadingMore && index >= items.length - NEAR_END)
+      nearEnd.current?.()
+  }, [index, items.length, hasMore, loadingMore])
 
   // The page behind shouldn't scroll while the deck is up, and its reserved
   // scrollbar gutter would show as a strip down the deck's right edge.
@@ -155,6 +184,7 @@ function Deck({
               aria-live="polite"
             >
               {index + 1} / {items.length}
+              {hasMore ? "+" : ""}
             </span>
           </div>
         </div>

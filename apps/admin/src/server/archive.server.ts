@@ -210,6 +210,7 @@ const showLogEntry = (row: typeof showLogs.$inferSelect): LogEntry =>
       kind: row.seasonNumber === null ? "show" : "season",
       mediaId: row.showId,
       seasonNumber: row.seasonNumber,
+      status: row.status,
       startedAt: row.startedAt,
       finishedAt: row.finishedAt,
       rewatch: row.rewatch,
@@ -371,6 +372,7 @@ async function writeLog(
       const values = {
         showId: input.mediaId,
         seasonNumber: input.kind === "season" ? input.seasonNumber : null,
+        status: input.status,
         startedAt: input.startedAt ?? null,
         finishedAt: input.finishedAt ?? null,
         rewatch: input.rewatch,

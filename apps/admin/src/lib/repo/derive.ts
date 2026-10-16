@@ -69,7 +69,10 @@ export function deriveLibrary(
           lastLoggedAt: logDate(latest),
           rating: myRating(itemLogs),
           status:
-            latest.kind === "game" || latest.kind === "book"
+            latest.kind === "game" ||
+            latest.kind === "book" ||
+            latest.kind === "season" ||
+            latest.kind === "show"
               ? latest.status
               : undefined,
         },

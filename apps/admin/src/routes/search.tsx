@@ -1,4 +1,8 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query"
 import {
   createFileRoute,
   stripSearchParams,
@@ -21,6 +25,7 @@ import {
 } from "@workspace/ui/components/input-group"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { Switch } from "@workspace/ui/components/switch"
+import { cn } from "@workspace/ui/lib/utils"
 import {
   SearchIcon,
   SearchXIcon,
@@ -28,7 +33,7 @@ import {
   XIcon,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { z } from "zod"
 import {
   MediaCard,
@@ -39,9 +44,8 @@ import { PageBody, PageHeader } from "@/components/page-header"
 import { SwipeButton } from "@/components/swipe/swipe-button"
 import { SwipeDeck } from "@/components/swipe/swipe-deck"
 import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
-import { SegmentedControl } from "@/components/segmented-control"
-import { CardBadges } from "@/components/media/card-log-menu"
-import { toBacklogItem } from "@/components/media/media-rail"
+import { CardBacklogBadge } from "@/components/media/backlog-button"
+import { ScrollRow, toBacklogItem } from "@/components/media/media-rail"
 import { ReleaseResultList } from "@/components/records/release-result-list"
 import { FilterSheet } from "@/components/search/filter-sheet"
 import {
@@ -50,10 +54,11 @@ import {
   activeFilters,
   filtersFor,
 } from "@/lib/search-filters"
+import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
 import type { FilterField } from "@/lib/search-filters"
 import { collectionQuery, indexQuery, mediaKey } from "@/queries/archive"
 import {
-  searchQuery,
+  searchPagesQuery,
   trendingQuery,
   watchProvidersQuery,
 } from "@/queries/media"
@@ -66,14 +71,6 @@ const SearchParams = z
   })
   .extend(SearchFilters.shape)
   .extend(swipeSearch.shape)
-
-const TYPE_OPTIONS = [
-  { value: "movie", label: "Movies" },
-  { value: "show", label: "Shows" },
-  { value: "game", label: "Games" },
-  { value: "book", label: "Books" },
-  { value: "record", label: "Records" },
-] as const
 
 const PLACEHOLDER = {
   movie: "Search movies on TMDB",
@@ -133,10 +130,23 @@ function SearchPage() {
     return () => clearTimeout(timeout)
   }, [input, q, navigate])
 
-  const { data, isFetching, isPending, isError, error } = useQuery({
-    ...searchQuery(type, q, filters),
+  const results = useInfiniteQuery({
+    ...searchPagesQuery(type, q, filters),
     placeholderData: keepPreviousData,
   })
+  const { isFetching, isPending, isError, error } = results
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = results
+  // Pages can overlap (providers reshuffle); keep each result once.
+  const data = useMemo(
+    () => [
+      ...new Map(
+        (results.data?.pages ?? [])
+          .flat()
+          .map((m) => [`${m.type}:${m.id}`, m] as const)
+      ).values(),
+    ],
+    [results.data]
+  )
   const swipe = useSwipe("results")
   const [dimHave, setDimHave] = useDimHave()
   const have = useHave()
@@ -191,11 +201,9 @@ function SearchPage() {
           </Button>
         </div>
 
-        <SegmentedControl
-          label="Media type"
+        <KindPills
           value={type}
-          options={TYPE_OPTIONS}
-          onValueChange={(next) =>
+          onChange={(next) =>
             // Filters are per kind; switching kinds starts clean.
             navigate({
               search: { type: next, q },
@@ -236,14 +244,17 @@ function SearchPage() {
           ) : (
             <div
               className={
-                isFetching
+                // Dim while a new search loads, not while appending pages.
+                isFetching && !isFetchingNextPage
                   ? "opacity-60 transition-opacity"
                   : "transition-opacity"
               }
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground tabular-nums">
-                  {data.length} result{data.length === 1 ? "" : "s"}
+                  {data.length}
+                  {hasNextPage ? "+" : ""} result
+                  {data.length === 1 && !hasNextPage ? "" : "s"}
                 </p>
                 <SwipeButton onClick={swipe.openDeck} />
               </div>
@@ -252,6 +263,9 @@ function SearchPage() {
                 items={data}
                 title={q ? `“${q}”` : "Results"}
                 onClose={swipe.close}
+                hasMore={hasNextPage}
+                loadingMore={isFetchingNextPage}
+                onNearEnd={() => void fetchNextPage()}
               />
               {type === "record" ? (
                 <ReleaseResultList results={data} dimOwned={dimHave} />
@@ -262,11 +276,16 @@ function SearchPage() {
                       key={`${media.type}-${media.id}`}
                       media={media}
                       dimmed={dimHave && have(media)}
-                      badge={<CardBadges item={toBacklogItem(media)} />}
+                      badge={<CardBacklogBadge item={toBacklogItem(media)} />}
                     />
                   ))}
                 </MediaGrid>
               )}
+              <LoadMore
+                active={hasNextPage && !isFetchingNextPage}
+                loading={isFetchingNextPage}
+                onVisible={() => void fetchNextPage()}
+              />
             </div>
           )}
         </div>
@@ -280,6 +299,74 @@ function SearchPage() {
         onApply={applyFilters}
       />
     </>
+  )
+}
+
+/** Media type as pills, like the library's kind switcher. */
+function KindPills({
+  value,
+  onChange,
+}: {
+  value: MediaType
+  onChange: (type: MediaType) => void
+}) {
+  return (
+    <div role="radiogroup" aria-label="Media type">
+      <ScrollRow className="snap-none gap-2 pb-1">
+        {KIND_ORDER.map((type) => {
+          const { plural, icon: Icon } = KINDS[type]
+          const active = type === value
+          return (
+            <button
+              key={type}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange(type)}
+              className={cn(
+                "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors",
+                active
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon className="size-4" />
+              {plural}
+            </button>
+          )
+        })}
+      </ScrollRow>
+    </div>
+  )
+}
+
+/** Loads the next page when it scrolls into view (600px early). */
+function LoadMore({
+  active,
+  loading,
+  onVisible,
+}: {
+  active: boolean
+  loading: boolean
+  onVisible: () => void
+}) {
+  const sentinel = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = sentinel.current
+    if (!el || !active) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) onVisible()
+      },
+      { rootMargin: "600px" }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [active, onVisible])
+  return (
+    <div ref={sentinel} className="flex justify-center py-6">
+      {loading ? <Spinner /> : null}
+    </div>
   )
 }
 
@@ -486,7 +573,7 @@ function Trending({
               key={`${media.type}-${media.id}`}
               media={media}
               dimmed={dim?.(media) ?? false}
-              badge={<CardBadges item={toBacklogItem(media)} />}
+              badge={<CardBacklogBadge item={toBacklogItem(media)} />}
             />
           ))}
         </MediaGrid>

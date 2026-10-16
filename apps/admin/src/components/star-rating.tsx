@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils"
 import { StarIcon } from "lucide-react"
-import { useId, useRef, useState } from "react"
+import { useId, useState } from "react"
 import { ALLOW_HALF_STARS, formatRating } from "@/lib/rating"
 
 const STARS = [1, 2, 3, 4, 5]
@@ -18,7 +18,10 @@ export function StarRating({
     <span
       role="img"
       aria-label={formatRating(rating)}
-      className={cn("text-star inline-flex items-center gap-px", className)}
+      className={cn(
+        "text-star inline-flex items-center gap-px tabular-nums",
+        className
+      )}
     >
       {STARS.map((star) => (
         <StarGlyph
@@ -56,7 +59,7 @@ function StarGlyph({ fill, className }: { fill: number; className?: string }) {
 
 /**
  * 5-star input on the 1–10 scale (half stars when enabled).
- * Mouse: hover previews, click sets. Touch: tap or drag across the stars.
+ * Mouse: hover previews, click sets. Touch: tap sets (no dragging).
  * Clicking/tapping the current value again clears it. Arrow keys step,
  * Backspace clears.
  */
@@ -73,10 +76,9 @@ export function StarRatingInput({
   const step = ALLOW_HALF_STARS ? 1 : 2
   const current = value ?? 0
   const [preview, setPreview] = useState<number>()
-  const drag = useRef<{ startValue?: number; moved: boolean }>(undefined)
 
   /** The rating under the pointer, from its position across the stars. */
-  function valueAt(e: React.PointerEvent<HTMLElement>) {
+  function valueAt(e: React.MouseEvent<HTMLElement>) {
     const box = e.currentTarget.getBoundingClientRect()
     const ratio = Math.min(Math.max((e.clientX - box.left) / box.width, 0), 1)
     return Math.max(step, Math.ceil((ratio * 10) / step) * step)
@@ -106,37 +108,18 @@ export function StarRatingInput({
             onChange(undefined)
           }
         }}
-        onPointerDown={(e) => {
-          if (e.pointerType === "mouse" && e.button !== 0) return
-          e.currentTarget.setPointerCapture(e.pointerId)
-          drag.current = { startValue: value, moved: false }
-          setPreview(valueAt(e))
-        }}
-        onPointerMove={(e) => {
-          // Mouse hover previews; a held pointer (touch drag) previews too.
-          if (e.pointerType !== "mouse" && !drag.current) return
+        onClick={(e) => {
+          // Tap/click only: the star under the pointer; the current value
+          // again clears it. No dragging, so swipes never change a rating.
           const next = valueAt(e)
-          if (drag.current && next !== preview) drag.current.moved = true
-          setPreview(next)
-        }}
-        onPointerUp={(e) => {
-          if (!drag.current) return
-          const next = valueAt(e)
-          // A plain tap/click on the current value clears it.
-          const clear = !drag.current.moved && next === drag.current.startValue
-          drag.current = undefined
-          onChange(clear ? undefined : next)
-          if (e.pointerType !== "mouse") setPreview(undefined)
-        }}
-        onPointerCancel={() => {
-          drag.current = undefined
+          onChange(next === value ? undefined : next)
           setPreview(undefined)
         }}
-        onPointerLeave={(e) => {
-          if (e.pointerType === "mouse" && !drag.current) setPreview(undefined)
+        onPointerMove={(e) => {
+          if (e.pointerType === "mouse") setPreview(valueAt(e))
         }}
-        // Vertical scrolling still works; horizontal moves rate.
-        style={{ touchAction: "pan-y" }}
+        onPointerLeave={() => setPreview(undefined)}
+        style={{ touchAction: "manipulation" }}
         className="text-star flex cursor-pointer rounded-md text-[2rem] outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         {STARS.map((star) => (

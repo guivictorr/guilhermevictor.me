@@ -195,7 +195,7 @@ function RatingChip({
         fill="currentColor"
         strokeWidth={0}
       />
-      <span className="font-semibold">{value.toFixed(1)}</span>
+      <span className="font-semibold tabular-nums">{value.toFixed(1)}</span>
       <span className="text-xs text-muted-foreground uppercase">{label}</span>
     </span>
   )

@@ -1,0 +1,2 @@
+ALTER TABLE "show_logs" ADD COLUMN "status" text DEFAULT 'finished' NOT NULL;--> statement-breakpoint
+ALTER TABLE "show_logs" ADD CONSTRAINT "show_logs_status" CHECK ("show_logs"."status" in ('watching', 'finished', 'abandoned'));

@@ -1,16 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
-import type {
-  CollectionItem,
-  LogEntry,
-  ProviderRating,
-  Release,
-  SeasonSummary,
-} from "@workspace/schemas"
+import type { CollectionItem, LogEntry } from "@workspace/schemas"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import {
   BookmarkCheckIcon,
+  ChevronRightIcon,
   BookmarkPlusIcon,
   HistoryIcon,
   ListOrderedIcon,
@@ -18,11 +13,12 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useRateLatest } from "./use-rate-latest"
+import { useWorkDetails } from "@/components/media/use-work-details"
 import { RatingsRow } from "@/components/detail-layout"
 import {
-  LogBadges,
   LogHistory,
   describeLogDates,
+  describeLogExtras,
 } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
 import type { LogTargetContext } from "@/components/log/log-sheet"
@@ -35,7 +31,7 @@ import { copyOptions, snapshotOf } from "@/components/records/copies"
 import { CopySheet } from "@/components/records/copy-sheet"
 import { ResponsiveSheet } from "@/components/responsive-sheet"
 import { StarRatingInput } from "@/components/star-rating"
-import { formatDate, formatRuntime, joinDefined } from "@/lib/format"
+import { formatDate, joinDefined } from "@/lib/format"
 import { formatMoney } from "@/lib/grades"
 import { imageUrl } from "@/lib/images"
 import type { LibraryItemInput } from "@/lib/repo"
@@ -45,98 +41,6 @@ import {
   logsQuery,
   mediaKey,
 } from "@/queries/archive"
-import {
-  bookQuery,
-  gameQuery,
-  movieQuery,
-  releaseQuery,
-  showQuery,
-} from "@/queries/media"
-
-type Details = {
-  /** One short line: runtime · director, platforms, author · pages… */
-  facts?: string
-  provider?: ProviderRating
-  /** For the game log form. */
-  platforms: Array<string>
-  /** Platforms (icons later) or a record's format, as tags: never truncated. */
-  tags: Array<string>
-  seasons: Array<SeasonSummary>
-  release?: Release
-}
-
-/** The provider facts worth a glance, from the kind's detail query. */
-function useDetails(item: LibraryItemInput): Details {
-  const id = Number(item.id)
-  const movie = useQuery({ ...movieQuery(id), enabled: item.type === "movie" })
-  const show = useQuery({ ...showQuery(id), enabled: item.type === "show" })
-  const game = useQuery({ ...gameQuery(id), enabled: item.type === "game" })
-  const book = useQuery({
-    ...bookQuery(String(item.id)),
-    enabled: item.type === "book",
-  })
-  const release = useQuery({
-    ...releaseQuery(id),
-    enabled: item.type === "record",
-  })
-  const none = { platforms: [], tags: [], seasons: [] }
-  switch (item.type) {
-    case "movie": {
-      const m = movie.data
-      return {
-        ...none,
-        facts: joinDefined([formatRuntime(m?.runtime), m?.directors.at(0)]),
-        provider: m?.providerRating,
-      }
-    }
-    case "show": {
-      const s = show.data
-      const count = s?.seasons.filter((x) => x.seasonNumber > 0).length
-      return {
-        ...none,
-        facts: joinDefined([
-          count === undefined
-            ? undefined
-            : `${count} season${count === 1 ? "" : "s"}`,
-          s?.networks.at(0),
-        ]),
-        provider: s?.providerRating,
-        seasons: s?.seasons ?? [],
-      }
-    }
-    case "game": {
-      const g = game.data
-      return {
-        ...none,
-        facts: g?.developers.at(0),
-        provider: g?.providerRating,
-        platforms: g?.platforms ?? [],
-        tags: g?.platforms ?? [],
-      }
-    }
-    case "book": {
-      const b = book.data
-      return {
-        ...none,
-        facts: joinDefined([
-          b?.authors.slice(0, 2).join(", "),
-          b?.pages ? `${b.pages} pages` : undefined,
-        ]),
-        provider: b?.providerRating,
-      }
-    }
-    case "record": {
-      const r = release.data
-      return {
-        ...none,
-        facts: r?.labels[0]?.name,
-        tags: r?.format?.split(/,\s*/) ?? [],
-        provider: r?.providerRating,
-        release: r,
-      }
-    }
-  }
-}
 
 /**
  * One item of a list's swipe view: big cover over its own blurred art, a
@@ -144,7 +48,7 @@ function useDetails(item: LibraryItemInput): Details {
  * for shows) pinned to the bottom.
  */
 export function SwipeSlide({ item }: { item: LibraryItemInput }) {
-  const details = useDetails(item)
+  const details = useWorkDetails(item)
   const rating = useRateLatest(item)
   const { data: logs } = useQuery(logsQuery({ type: item.type, id: item.id }))
   const latest = logs?.[0]
@@ -380,10 +284,7 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
   )
 }
 
-/**
- * Your copies of a record, one tappable line each: condition, price and
- * store at a glance; tap to edit the copy.
- */
+/** Your copies of a record, one line each (condition, price, store); tap to edit. */
 function CopyChips({
   copies,
   onSelect,
@@ -392,42 +293,19 @@ function CopyChips({
   onSelect: (copy: CollectionItem) => void
 }) {
   return (
-    <ul
-      aria-label="Your copies"
-      className="mt-3 flex flex-col items-center gap-1.5"
-    >
+    <ul aria-label="Your copies" className="mt-1 flex flex-col">
       {copies.map((copy) => (
         <li key={copy.id}>
-          <button
-            type="button"
-            onClick={() => onSelect(copy)}
-            className="pressable glass flex min-h-9 flex-wrap items-center justify-center gap-1 rounded-2xl border px-3 py-1 text-xs"
-          >
-            {copy.mediaCondition ? (
-              <Badge
-                variant="secondary"
-                className="h-5 px-1.5 text-[0.6875rem]"
-              >
-                Media {copy.mediaCondition}
-              </Badge>
-            ) : null}
-            {copy.sleeveCondition ? (
-              <Badge
-                variant="secondary"
-                className="h-5 px-1.5 text-[0.6875rem]"
-              >
-                Sleeve {copy.sleeveCondition}
-              </Badge>
-            ) : null}
-            <span className="text-muted-foreground">
-              {joinDefined([
-                copy.variant,
-                formatMoney(copy.price),
-                copy.store,
-                copy.acquiredAt ? formatDate(copy.acquiredAt) : undefined,
-              ]) || "No details yet"}
-            </span>
-          </button>
+          <InfoRow label="Copy" onClick={() => onSelect(copy)}>
+            {joinDefined([
+              copy.mediaCondition && `Media ${copy.mediaCondition}`,
+              copy.sleeveCondition && `Sleeve ${copy.sleeveCondition}`,
+              copy.variant,
+              formatMoney(copy.price),
+              copy.store,
+              copy.acquiredAt ? formatDate(copy.acquiredAt) : undefined,
+            ]) || "No details yet"}
+          </InfoRow>
         </li>
       ))}
     </ul>
@@ -435,19 +313,40 @@ function CopyChips({
 }
 
 /**
- * Your most recent log at a glance (dates, status, platform, hours,
- * format, season…); tap to edit it. Rating is in the stars / "Mine".
+ * Your most recent log on one line (dates, then status/platform/hours,
+ * season…, truncated rather than wrapped); tap to edit it.
  */
 function LastLog({ log, onSelect }: { log: LogEntry; onSelect: () => void }) {
+  const extras = describeLogExtras(log)
+  return (
+    <InfoRow label="Last" onClick={onSelect}>
+      <span className="font-medium">{describeLogDates(log)}</span>
+      {extras ? (
+        <span className="text-muted-foreground"> · {extras}</span>
+      ) : null}
+    </InfoRow>
+  )
+}
+
+/** A full-width, one-line, tappable summary under the cover. */
+function InfoRow({
+  label,
+  onClick,
+  children,
+}: {
+  label: string
+  onClick: () => void
+  children: React.ReactNode
+}) {
   return (
     <button
       type="button"
-      onClick={onSelect}
-      className="pressable glass mx-auto mt-3 flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs"
+      onClick={onClick}
+      className="pressable glass mx-auto mt-2 flex h-10 w-full max-w-md items-center gap-3 rounded-2xl border px-3 text-left text-xs"
     >
-      <span className="text-muted-foreground">Last</span>
-      <span className="font-medium">{describeLogDates(log)}</span>
-      <LogBadges log={log} />
+      <span className="type-overline shrink-0 text-subtle">{label}</span>
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
     </button>
   )
 }

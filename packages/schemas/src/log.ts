@@ -47,10 +47,16 @@ const movieLogFields = z.object({
   notes: optionalText,
 })
 
+/** Where you are with a season (or a legacy whole-show log). */
+export const ShowStatus = z.enum(["watching", "finished", "abandoned"])
+export type ShowStatus = z.infer<typeof ShowStatus>
+
 /** The whole show at once, when you don't track it season by season. */
 const showLogFields = z.object({
   kind: z.literal("show"),
   mediaId: z.number().int(),
+  /** Older logs and exports have none: they were finished. */
+  status: ShowStatus.default("finished"),
   startedAt: IsoDate.optional(),
   finishedAt: IsoDate.optional(),
   rating: Rating.optional(),
@@ -62,6 +68,7 @@ const seasonLogFields = z.object({
   kind: z.literal("season"),
   mediaId: z.number().int(),
   seasonNumber: z.number().int().min(0),
+  status: ShowStatus.default("finished"),
   startedAt: IsoDate.optional(),
   finishedAt: IsoDate.optional(),
   rating: Rating.optional(),

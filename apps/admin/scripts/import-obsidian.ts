@@ -694,6 +694,7 @@ async function main() {
             : {
                 kind: "show",
                 mediaId: Number(m.id),
+                status: "finished",
                 startedAt: start,
                 finishedAt: end,
                 rating: rated,

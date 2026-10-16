@@ -186,7 +186,8 @@ function splitTitle(raw: string) {
 /** Text and/or filters (artist, label, genre, style, year, country, format). */
 export async function searchDiscogs(
   query: string | undefined,
-  filters: SearchFilters = {}
+  filters: SearchFilters = {},
+  page = 1
 ): Promise<Array<MediaSummary>> {
   const format =
     filters.format === "all" ? undefined : (filters.format ?? "Vinyl")
@@ -202,6 +203,7 @@ export async function searchDiscogs(
     // Discogs filters one year; a range uses its start.
     year: filters.from ? String(filters.from) : undefined,
     per_page: "40",
+    page: String(page),
   }
   const data = await discogs<{ results: Array<DiscogsSearchResult> }>(
     "/database/search",

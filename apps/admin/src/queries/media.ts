@@ -1,5 +1,5 @@
-import { queryOptions } from "@tanstack/react-query"
-import type { MediaType } from "@workspace/schemas"
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query"
+import type { MediaSummary, MediaType } from "@workspace/schemas"
 import { activeFilters } from "@/lib/search-filters"
 import type { SearchFilters } from "@/lib/search-filters"
 import {
@@ -48,6 +48,31 @@ export const searchQuery = (
   queryOptions({
     queryKey: mediaKeys.search(type, query, filters),
     queryFn: () => searchMedia({ data: { type, query, filters } }),
+    enabled: query.trim().length > 0 || activeFilters(type, filters).length > 0,
+    staleTime: PROVIDER_STALE_TIME,
+  })
+
+/** Pages a provider can give before results stop being useful. */
+const MAX_SEARCH_PAGES = 25
+
+/**
+ * The Search page's results, a page at a time as you scroll. Stops at an
+ * empty page (providers' totals aren't all reliable) or after 25 pages.
+ */
+export const searchPagesQuery = (
+  type: MediaType,
+  query: string,
+  filters: SearchFilters = {}
+) =>
+  infiniteQueryOptions({
+    queryKey: [...mediaKeys.search(type, query, filters), "pages"] as const,
+    queryFn: ({ pageParam }) =>
+      searchMedia({ data: { type, query, filters, page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: (last: Array<MediaSummary>, all, lastPage) =>
+      last.length === 0 || all.length >= MAX_SEARCH_PAGES
+        ? undefined
+        : lastPage + 1,
     enabled: query.trim().length > 0 || activeFilters(type, filters).length > 0,
     staleTime: PROVIDER_STALE_TIME,
   })

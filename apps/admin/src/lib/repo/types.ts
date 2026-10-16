@@ -26,7 +26,7 @@ export type LibraryEntry = LibraryItem & {
   lastLoggedAt?: string
   /** Rating from the most recent rated log. */
   rating?: number
-  /** Games and books: status of the most recent log. */
+  /** Games, books and shows: status of the most recent log. */
   status?: ProgressStatus
 }
 

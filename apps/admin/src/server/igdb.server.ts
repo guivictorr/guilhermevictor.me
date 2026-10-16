@@ -129,7 +129,8 @@ const IGDB_SORTS: Record<string, string> = {
  */
 export async function searchIgdb(
   query: string | undefined,
-  filters: SearchFilters = {}
+  filters: SearchFilters = {},
+  page = 1
 ): Promise<Array<MediaSummary>> {
   const where = ["version_parent = null"]
   if (filters.extras !== "1") where.push(`game_type = ${MAIN_GAME_TYPES}`)
@@ -162,6 +163,7 @@ export async function searchIgdb(
       `fields ${SUMMARY_FIELDS}`,
       `where ${where.join(" & ")}`,
       "limit 40",
+      `offset ${(page - 1) * 40}`,
     ].join("; ") + ";"
   )
   return games.map(summary)

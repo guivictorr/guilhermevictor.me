@@ -26,6 +26,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
+import { DatePicker } from "@/components/date-picker"
 import { StarRatingInput } from "@/components/star-rating"
 
 /*
@@ -66,15 +67,15 @@ function DateField({
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-      <Input
+      <DatePicker
         id={field.name}
-        type="date"
+        value={field.state.value}
         max={max}
-        value={field.state.value ?? ""}
-        aria-invalid={invalid || undefined}
+        optional={optional}
+        invalid={invalid}
         onBlur={field.handleBlur}
-        onChange={(e) =>
-          field.handleChange(e.target.value || (optional ? undefined : ""))
+        onChange={(value) =>
+          field.handleChange(value ?? (optional ? undefined : ""))
         }
       />
       {description ? <FieldDescription>{description}</FieldDescription> : null}
@@ -107,13 +108,15 @@ function SwitchField({
   const field = useFieldContext<boolean>()
   return (
     <Field orientation="horizontal">
-      <FieldContent>
+      {/* min-w-0: a long description wraps instead of pushing the switch out. */}
+      <FieldContent className="min-w-0">
         <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
         {description ? (
           <FieldDescription>{description}</FieldDescription>
         ) : null}
       </FieldContent>
       <Switch
+        className="shrink-0"
         id={field.name}
         checked={field.state.value}
         onCheckedChange={field.handleChange}

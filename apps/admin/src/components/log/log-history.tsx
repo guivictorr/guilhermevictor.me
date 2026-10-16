@@ -5,9 +5,13 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { ChevronRightIcon, RotateCcwIcon } from "lucide-react"
 import { BOOK_FORMAT_OPTIONS, BOOK_STATUS_OPTIONS } from "@/lib/book-status"
 import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
+import { SHOW_STATUS_OPTIONS } from "@/lib/show-status"
 import { StarRating } from "@/components/star-rating"
 import { formatDate, joinDefined } from "@/lib/format"
 import { logsQuery } from "@/queries/archive"
+
+const showStatusLabel = (status: string) =>
+  SHOW_STATUS_OPTIONS.find((o) => o.value === status)?.label
 
 /** Human summary of a log's dates. */
 export function describeLogDates(log: LogEntry) {
@@ -80,6 +84,42 @@ export function LogHistory({
   )
 }
 
+/**
+ * A log's details as one line of text ("Playing · PC · 32h", "S2 ·
+ * Rewatch"), for places too narrow for badges.
+ */
+export function describeLogExtras(log: LogEntry) {
+  switch (log.kind) {
+    case "game":
+      return joinDefined([
+        GAME_STATUS_OPTIONS.find((o) => o.value === log.status)?.label,
+        log.platform,
+        log.hoursPlayed !== undefined ? `${log.hoursPlayed}h` : undefined,
+      ])
+    case "book":
+      return joinDefined([
+        BOOK_STATUS_OPTIONS.find((o) => o.value === log.status)?.label,
+        BOOK_FORMAT_OPTIONS.find((o) => o.value === log.format)?.label,
+        log.reread ? "Re-read" : undefined,
+      ])
+    case "season":
+      return joinDefined([
+        log.seasonNumber === 0 ? "Specials" : `S${log.seasonNumber}`,
+        log.status === "finished" ? undefined : showStatusLabel(log.status),
+        log.rewatch ? "Rewatch" : undefined,
+      ])
+    case "show":
+      return joinDefined([
+        log.status === "finished" ? undefined : showStatusLabel(log.status),
+        log.rewatch ? "Rewatch" : undefined,
+      ])
+    case "movie":
+      return log.rewatch ? "Rewatch" : ""
+    case "record":
+      return ""
+  }
+}
+
 export function LogBadges({ log }: { log: LogEntry }) {
   if (log.kind === "game") {
     const status = GAME_STATUS_OPTIONS.find(
@@ -131,6 +171,10 @@ export function LogBadges({ log }: { log: LogEntry }) {
         <Badge variant="secondary">
           {log.seasonNumber === 0 ? "Specials" : `S${log.seasonNumber}`}
         </Badge>
+      ) : null}
+      {(log.kind === "season" || log.kind === "show") &&
+      log.status !== "finished" ? (
+        <Badge variant="secondary">{showStatusLabel(log.status)}</Badge>
       ) : null}
       {rewatch ? (
         <Badge variant="outline">

@@ -328,22 +328,23 @@ function sortResults<T extends TmdbResultFacets & { date?: string }>(
 export async function searchTmdb(
   type: "movie" | "show",
   query: string,
-  filters: SearchFilters = {}
+  filters: SearchFilters = {},
+  page = 1
 ): Promise<Array<MediaSummary>> {
   const exactYear =
     filters.from && filters.from === filters.to
       ? String(filters.from)
       : undefined
   const filtering = Object.keys(filters).length > 0
-  // Filtering drops results, so look a bit deeper than the first page.
-  const pages = filtering ? [1, 2, 3] : [1]
+  // Filtering drops results, so each app page reads 3 TMDB pages.
+  const pages = filtering ? [3 * page - 2, 3 * page - 1, 3 * page] : [page]
   if (type === "movie") {
     const responses = await Promise.all(
-      pages.map((page) =>
+      pages.map((n) =>
         tmdb<{ results: Array<TmdbMovieResult> }>("/search/movie", {
           query,
           include_adult: "false",
-          page: String(page),
+          page: String(n),
           ...(exactYear ? { primary_release_year: exactYear } : {}),
         })
       )
@@ -355,11 +356,11 @@ export async function searchTmdb(
     return sortResults(results, filters.sort).map(movieSummary)
   }
   const responses = await Promise.all(
-    pages.map((page) =>
+    pages.map((n) =>
       tmdb<{ results: Array<TmdbTvResult> }>("/search/tv", {
         query,
         include_adult: "false",
-        page: String(page),
+        page: String(n),
         ...(exactYear ? { first_air_date_year: exactYear } : {}),
       })
     )
@@ -384,7 +385,8 @@ const DISCOVER_SORT: Record<string, { movie: string; show: string }> = {
 /** Browse by filters alone (no text): TMDB's discover endpoints. */
 export async function discoverTmdb(
   type: "movie" | "show",
-  filters: SearchFilters
+  filters: SearchFilters,
+  page = 1
 ): Promise<Array<MediaSummary>> {
   const { TMDB_WATCH_REGION: region } = getTmdbEnv()
   const date = type === "movie" ? "primary_release_date" : "first_air_date"
@@ -410,11 +412,12 @@ export async function discoverTmdb(
   const defined = Object.fromEntries(
     Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
   )
+  // Two TMDB pages (40 results) per app page.
   const pages = await Promise.all(
-    [1, 2].map((page) =>
+    [2 * page - 1, 2 * page].map((n) =>
       tmdb<{ results: Array<TmdbMovieResult & TmdbTvResult> }>(
         type === "movie" ? "/discover/movie" : "/discover/tv",
-        { ...defined, page: String(page) }
+        { ...defined, page: String(n) }
       )
     )
   )

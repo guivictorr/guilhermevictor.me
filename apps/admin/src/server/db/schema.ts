@@ -241,6 +241,7 @@ export const showLogs = pgTable(
       .notNull()
       .references(() => shows.id, { onDelete: "cascade" }),
     seasonNumber: integer("season_number"),
+    status: text("status").notNull().default("finished"),
     startedAt: date("started_at"),
     finishedAt: date("finished_at"),
     rewatch: boolean("rewatch").notNull().default(false),
@@ -251,6 +252,10 @@ export const showLogs = pgTable(
   (t) => [
     index("show_logs_show_idx").on(t.showId),
     ratingCheck("show_logs_rating", t.rating),
+    check(
+      "show_logs_status",
+      sql`${t.status} in ('watching', 'finished', 'abandoned')`
+    ),
   ]
 )
 

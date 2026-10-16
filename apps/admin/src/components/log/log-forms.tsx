@@ -21,6 +21,7 @@ import { useAppForm } from "@/components/form/form-hook"
 import { today } from "@/lib/format"
 import { BOOK_FORMAT_OPTIONS, BOOK_STATUS_OPTIONS } from "@/lib/book-status"
 import { GAME_STATUS_OPTIONS } from "@/lib/game-status"
+import { SHOW_STATUS_OPTIONS } from "@/lib/show-status"
 
 /*
  * One form per log kind. Fields are placeholders until the per-type
@@ -100,6 +101,7 @@ export function SeasonLogForm({
     kind: "season",
     mediaId,
     seasonNumber,
+    status: initial?.status ?? "finished",
     startedAt: initial?.startedAt,
     finishedAt: initial ? initial.finishedAt : today(),
     rating: initial?.rating,
@@ -114,6 +116,27 @@ export function SeasonLogForm({
 
   return (
     <FormShell onSubmit={form.handleSubmit}>
+      <form.AppField
+        name="status"
+        listeners={{
+          // Watching hasn't finished yet; finishing gets today if empty.
+          onChange: ({ value }) => {
+            if (value === "watching") {
+              form.setFieldValue("finishedAt", undefined)
+              if (!form.getFieldValue("startedAt"))
+                form.setFieldValue("startedAt", today())
+            } else if (
+              value === "finished" &&
+              !form.getFieldValue("finishedAt")
+            )
+              form.setFieldValue("finishedAt", today())
+          },
+        }}
+      >
+        {(f) => (
+          <f.SegmentedField label="Status" options={SHOW_STATUS_OPTIONS} />
+        )}
+      </form.AppField>
       <div className="grid grid-cols-2 gap-3">
         <form.AppField name="startedAt">
           {(f) => <f.DateField label="Started" optional max={today()} />}
@@ -151,6 +174,7 @@ export function ShowLogForm({
   const defaultValues: z.input<typeof ShowLogInput> = {
     kind: "show",
     mediaId,
+    status: initial?.status ?? "finished",
     startedAt: initial?.startedAt,
     finishedAt: initial ? initial.finishedAt : today(),
     rating: initial?.rating,
@@ -165,6 +189,27 @@ export function ShowLogForm({
 
   return (
     <FormShell onSubmit={form.handleSubmit}>
+      <form.AppField
+        name="status"
+        listeners={{
+          // Watching hasn't finished yet; finishing gets today if empty.
+          onChange: ({ value }) => {
+            if (value === "watching") {
+              form.setFieldValue("finishedAt", undefined)
+              if (!form.getFieldValue("startedAt"))
+                form.setFieldValue("startedAt", today())
+            } else if (
+              value === "finished" &&
+              !form.getFieldValue("finishedAt")
+            )
+              form.setFieldValue("finishedAt", today())
+          },
+        }}
+      >
+        {(f) => (
+          <f.SegmentedField label="Status" options={SHOW_STATUS_OPTIONS} />
+        )}
+      </form.AppField>
       <div className="grid grid-cols-2 gap-3">
         <form.AppField name="startedAt">
           {(f) => <f.DateField label="Started" optional max={today()} />}

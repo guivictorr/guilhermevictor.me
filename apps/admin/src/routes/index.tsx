@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { buttonVariants } from "@workspace/ui/components/button"
@@ -18,25 +17,21 @@ import {
   SettingsIcon,
 } from "lucide-react"
 import { describeLogDates } from "@/components/log/log-history"
-import { MediaCard, MediaLink } from "@/components/media-card"
+import { MediaLink } from "@/components/media-card"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { swipeSearch } from "@/components/swipe/swipe-search"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
-import { MediaRail } from "@/components/media/media-rail"
 import { SwipeAction } from "@/components/swipe/swipe-button"
 import { FactsDeck } from "@/components/home/facts-deck"
-import { dailyPicks } from "@/lib/daily-picks"
-import { today } from "@/lib/format"
-import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
-import type { LibrarySection } from "@/lib/media-kinds"
+import { NextFlightCard } from "@/components/home/next-flight-card"
 import {
-  backlogQuery,
-  libraryQuery,
-  recentQuery,
-  flightsQuery,
-  statsQuery,
-} from "@/queries/archive"
+  ForTodayCards,
+  CardRow,
+  NowCard,
+  useTodayPicks,
+} from "@/components/home/feature-cards"
+import { backlogQuery, libraryQuery, recentQuery } from "@/queries/archive"
 
 export const Route = createFileRoute("/")({
   validateSearch: swipeSearch,
@@ -47,7 +42,23 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const recent = useQuery(recentQuery(15))
   const games = useQuery(libraryQuery("game"))
-  const playing = games.data?.filter((g) => g.status === "playing") ?? []
+  const shows = useQuery(libraryQuery("show"))
+  const books = useQuery(libraryQuery("book"))
+  // What you're in the middle of, by the status of each work's latest log.
+  const now = [
+    {
+      type: "game" as const,
+      entries: games.data?.filter((e) => e.status === "playing") ?? [],
+    },
+    {
+      type: "show" as const,
+      entries: shows.data?.filter((e) => e.status === "watching") ?? [],
+    },
+    {
+      type: "book" as const,
+      entries: books.data?.filter((e) => e.status === "reading") ?? [],
+    },
+  ].filter((group) => group.entries.length > 0)
 
   return (
     <>
@@ -69,26 +80,31 @@ function HomePage() {
         }
       />
       <PageBody className="space-y-8">
-        <Counts />
         <FactsDeck />
+        <NextFlightCard />
         <ForToday />
 
-        {playing.length > 0 ? (
+        {now.length > 0 ? (
           <section>
             <SectionTitle
-              title="Now playing"
-              to="/games"
+              title="Now"
               swipe={
-                <SwipeAction id="playing" items={playing} title="Now playing" />
+                <SwipeAction
+                  id="now"
+                  items={now.flatMap((group) => group.entries)}
+                  title="In progress"
+                />
               }
             />
-            <div className="-mx-4 flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 md:mx-0 md:px-0">
-              {playing.map((game) => (
-                <div key={game.id} className="w-28 shrink-0 snap-start md:w-32">
-                  <MediaCard media={game} />
-                </div>
+            <CardRow>
+              {now.map((group) => (
+                <NowCard
+                  key={group.type}
+                  type={group.type}
+                  entries={group.entries}
+                />
               ))}
-            </div>
+            </CardRow>
           </section>
         ) : null}
 
@@ -195,48 +211,22 @@ function SectionTitle({
 /** Deciding what to do: today's picks from the backlog. */
 function ForToday() {
   const { data: backlog } = useQuery(backlogQuery())
-  const picks = useMemo(
-    () => (backlog ? dailyPicks(backlog, today()) : []),
-    [backlog]
-  )
-  if (!backlog?.length) return null
+  const groups = useTodayPicks(backlog)
+  if (!groups.length) return null
   return (
     <section>
       <SectionTitle
         title="For today"
         to="/backlog"
-        swipe={<SwipeAction id="today" items={picks} title="For today" />}
+        swipe={
+          <SwipeAction
+            id="today"
+            items={groups.flatMap((g) => g.picks)}
+            title="For today"
+          />
+        }
       />
-      <MediaRail items={picks} />
+      <ForTodayCards groups={groups} />
     </section>
-  )
-}
-
-/** One tile per library section: logged works, owned records, flights. */
-function Counts() {
-  const { data: stats } = useQuery(statsQuery())
-  const { data: flights } = useQuery(flightsQuery())
-  const value = (key: LibrarySection["key"]) =>
-    key === "flight" ? flights?.length : stats?.byType[key].items
-  return (
-    <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
-      {LIBRARY_SECTIONS.map(({ key, plural, to }) => {
-        const count = value(key)
-        return (
-          <Link
-            key={key}
-            to={to}
-            className="pressable edge-highlight min-w-0 rounded-[20px] border bg-card p-3.5 transition-colors hover:bg-raised"
-          >
-            <div className="font-dots text-[1.75rem]">
-              {count === undefined ? <Skeleton className="h-8 w-8" /> : count}
-            </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {plural}
-            </div>
-          </Link>
-        )
-      })}
-    </div>
   )
 }

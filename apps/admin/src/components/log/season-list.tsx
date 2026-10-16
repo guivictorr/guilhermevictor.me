@@ -59,6 +59,11 @@ export function SeasonList({
                   <p className="text-xs text-muted-foreground">
                     {latest
                       ? joinDefined([
+                          latest.status === "watching"
+                            ? "Watching"
+                            : latest.status === "abandoned"
+                              ? "Abandoned"
+                              : undefined,
                           describeLogDates(latest),
                           seasonLogs.length > 1
                             ? `${seasonLogs.length} logs`
