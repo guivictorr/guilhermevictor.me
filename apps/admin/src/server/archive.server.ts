@@ -1,3 +1,4 @@
+import { LIBRARY_PAGE_SIZE, pageLibrary } from "@/lib/repo/library-page"
 import {
   ArchiveExport,
   BookRow,
@@ -719,6 +720,16 @@ export const pgRepository: ArchiveRepository = {
       selectLogs(db, type),
     ])
     return deriveLibrary(items, logs)
+  },
+
+  async listLibraryPage({ type, offset, limit, ...query }) {
+    const entries = await this.listLibrary(type)
+    return pageLibrary(
+      entries,
+      query,
+      offset,
+      limit ?? LIBRARY_PAGE_SIZE.desktop
+    )
   },
 
   async listLogs({ type, id }) {

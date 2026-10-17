@@ -9,19 +9,13 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import { Switch } from "@workspace/ui/components/switch"
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
 import { useState } from "react"
+import { OptionPicker } from "@/components/option-picker"
 import { ResponsiveSheet, useOpenSession } from "@/components/responsive-sheet"
 import { FILTER_FIELDS, filtersFor } from "@/lib/search-filters"
 import type {
@@ -277,24 +271,13 @@ function OptionSelect({
   options: Array<{ value: string; label: string }>
   onChange: (value: string | undefined) => void
 }) {
-  const items = [{ value: ANY, label: "Any" }, ...options]
   return (
-    <Select
-      items={items}
+    <OptionPicker
+      id={id}
+      options={[{ value: ANY, label: "Any" }, ...options]}
       value={value === undefined ? ANY : String(value)}
-      onValueChange={(v) => onChange(!v || v === ANY ? undefined : v)}
-    >
-      <SelectTrigger id={id} className="w-full">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {items.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+      onChange={(v) => onChange(!v || v === ANY ? undefined : v)}
+    />
   )
 }
 

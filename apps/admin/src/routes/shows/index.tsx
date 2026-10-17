@@ -4,7 +4,8 @@ import { LibraryNav } from "@/components/library/library-nav"
 import { LibraryView } from "@/components/library/library-view"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { swipeSearch } from "@/components/swipe/swipe-search"
-import { libraryQuery } from "@/queries/archive"
+import { DEFAULT_LIBRARY_QUERY } from "@/lib/repo/library-page"
+import { libraryPagesQuery } from "@/queries/archive"
 
 export const Route = createFileRoute("/shows/")({
   // Keep URLs clean: defaults are implied, not written.
@@ -15,7 +16,9 @@ export const Route = createFileRoute("/shows/")({
     })
     .extend(swipeSearch.shape),
   loader: ({ context }) =>
-    void context.queryClient.prefetchQuery(libraryQuery("show")),
+    void context.queryClient.prefetchInfiniteQuery(
+      libraryPagesQuery("show", DEFAULT_LIBRARY_QUERY)
+    ),
   head: () => ({ meta: [{ title: "Shows · Archive" }] }),
   component: ShowsPage,
 })

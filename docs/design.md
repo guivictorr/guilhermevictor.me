@@ -259,6 +259,13 @@ Other rules:
 - Buttons disable while submitting.
 - Clicking a label focuses its field.
 
+**Choosing from a list:** up to 8 options, a select. More than that (platforms,
+streaming services, genres, airports, aircraft), a searchable combobox. `OptionPicker`
+(`components/option-picker.tsx`) makes the switch by itself, and `f.SelectField` uses it.
+A select on a narrow toolbar button (sort menus) opens below the button
+(`alignItemWithTrigger={false}`); laying the list over the button only lines up in
+full-width form fields.
+
 ## 8. Media as objects
 
 Each kind looks like the thing it is:

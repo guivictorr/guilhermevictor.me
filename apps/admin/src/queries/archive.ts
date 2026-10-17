@@ -1,4 +1,5 @@
 import {
+  infiniteQueryOptions,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -25,6 +26,8 @@ import type {
   LogTarget,
   RecentLog,
 } from "@/lib/repo"
+import { LIBRARY_PAGE_SIZE } from "@/lib/repo/library-page"
+import type { LibraryPageQuery } from "@/lib/repo/library-page"
 import { mediaTypeOf } from "@/lib/repo/log-utils"
 
 export const mediaKey = (target: LogTarget) => `${target.type}:${target.id}`
@@ -58,6 +61,34 @@ export const libraryQuery = (type: MediaType) =>
     queryKey: archiveKeys.library(type),
     queryFn: () => repo.listLibrary(type),
   })
+
+/**
+ * A library one page at a time (infinite scroll). Its key sits under
+ * `library(type)`, so every write that invalidates the library refreshes
+ * the loaded pages too. The page size isn't in the key: the browser asks
+ * for its screen's size, the server render for the user agent's.
+ */
+export const libraryPagesQuery = (type: MediaType, query: LibraryPageQuery) =>
+  infiniteQueryOptions({
+    queryKey: [...archiveKeys.library(type), "pages", query] as const,
+    queryFn: ({ pageParam }) =>
+      repo.listLibraryPage({
+        type,
+        offset: pageParam,
+        limit: clientPageSize(),
+        ...query,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (last) => last.nextOffset,
+  })
+
+/** Undefined on the server, which then sizes the page by user agent. */
+function clientPageSize() {
+  if (typeof window === "undefined") return undefined
+  return window.matchMedia("(min-width: 48rem)").matches
+    ? LIBRARY_PAGE_SIZE.desktop
+    : LIBRARY_PAGE_SIZE.mobile
+}
 
 export const logsQuery = (target: LogTarget) =>
   queryOptions({

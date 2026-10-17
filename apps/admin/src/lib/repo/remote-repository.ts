@@ -19,6 +19,7 @@ import {
   listCollectionFn,
   listFlightsFn,
   listLibraryFn,
+  listLibraryPageFn,
   listLogsFn,
   listRecentFn,
   removeFromBacklogFn,
@@ -31,6 +32,7 @@ import type { ArchiveRepository } from "./types"
 /** The archive in Postgres, through server functions (session required). */
 export const remoteRepository: ArchiveRepository = {
   listLibrary: (type) => listLibraryFn({ data: { type } }),
+  listLibraryPage: (input) => listLibraryPageFn({ data: input }),
   listLogs: (target) => listLogsFn({ data: target }),
   listRecent: (limit) => listRecentFn({ data: { limit } }),
   addLog: (input, item) => addLogFn({ data: { input, item } }),

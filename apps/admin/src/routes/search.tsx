@@ -33,7 +33,7 @@ import {
   XIcon,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { z } from "zod"
 import {
   MediaCard,
@@ -41,6 +41,7 @@ import {
   MediaGridSkeleton,
 } from "@/components/media-card"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { LoadMore } from "@/components/load-more"
 import { SwipeButton } from "@/components/swipe/swipe-button"
 import { SwipeDeck } from "@/components/swipe/swipe-deck"
 import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
@@ -360,36 +361,6 @@ function KindPills({
           )
         })}
       </ScrollRow>
-    </div>
-  )
-}
-
-/** Loads the next page when it scrolls into view (600px early). */
-function LoadMore({
-  active,
-  loading,
-  onVisible,
-}: {
-  active: boolean
-  loading: boolean
-  onVisible: () => void
-}) {
-  const sentinel = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = sentinel.current
-    if (!el || !active) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) onVisible()
-      },
-      { rootMargin: "600px" }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [active, onVisible])
-  return (
-    <div ref={sentinel} className="flex justify-center py-6">
-      {loading ? <Spinner /> : null}
     </div>
   )
 }

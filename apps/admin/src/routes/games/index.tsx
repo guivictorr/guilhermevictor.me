@@ -5,7 +5,8 @@ import { LibraryView } from "@/components/library/library-view"
 import { SteamSyncButton } from "@/components/library/steam-sync-button"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { swipeSearch } from "@/components/swipe/swipe-search"
-import { libraryQuery } from "@/queries/archive"
+import { DEFAULT_LIBRARY_QUERY } from "@/lib/repo/library-page"
+import { libraryPagesQuery } from "@/queries/archive"
 
 export const Route = createFileRoute("/games/")({
   // Keep URLs clean: defaults are implied, not written.
@@ -16,7 +17,9 @@ export const Route = createFileRoute("/games/")({
     })
     .extend(swipeSearch.shape),
   loader: ({ context }) =>
-    void context.queryClient.prefetchQuery(libraryQuery("game")),
+    void context.queryClient.prefetchInfiniteQuery(
+      libraryPagesQuery("game", DEFAULT_LIBRARY_QUERY)
+    ),
   head: () => ({ meta: [{ title: "Games · Archive" }] }),
   component: GamesPage,
 })

@@ -167,7 +167,14 @@ function RecordsPage() {
                 >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent align="end">
+                <SelectContent
+                  align="end"
+                  // A narrow toolbar button: drop below it like a menu instead of
+                  // laying the list over it (which only lines up in full-width
+                  // form fields).
+                  alignItemWithTrigger={false}
+                  className="w-auto"
+                >
                   {Object.entries(SORTS).map(([value, s]) => (
                     <SelectItem key={value} value={value}>
                       {s.label}

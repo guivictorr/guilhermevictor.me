@@ -12,13 +12,6 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { Switch } from "@workspace/ui/components/switch"
 import { Textarea } from "@workspace/ui/components/textarea"
@@ -27,6 +20,7 @@ import {
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
 import { DatePicker } from "@/components/date-picker"
+import { OptionPicker } from "@/components/option-picker"
 import { StarRatingInput } from "@/components/star-rating"
 
 /*
@@ -215,6 +209,7 @@ function NumberField({
   )
 }
 
+/** A select, or a searchable combobox once the list is long (OptionPicker). */
 function SelectField({
   label,
   options,
@@ -228,22 +223,14 @@ function SelectField({
   return (
     <Field>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-      <Select
-        items={options}
-        value={field.state.value ?? null}
-        onValueChange={(value) => field.handleChange(value ?? undefined)}
-      >
-        <SelectTrigger id={field.name} className="w-full">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <OptionPicker
+        id={field.name}
+        options={options}
+        value={field.state.value}
+        onChange={field.handleChange}
+        onBlur={field.handleBlur}
+        placeholder={placeholder}
+      />
     </Field>
   )
 }

@@ -53,6 +53,21 @@ mutations), `src/components/loaders.tsx` (Suspense helpers, skeletons, image rev
    `useTransition` / `placeholderData: (prev) => prev` instead of falling back to a
    skeleton.
 
+## Paged lists
+
+Library lists (movies, shows, games, books) never ship whole. `listLibraryPageFn`
+derives the library, filters by title, sorts and returns one page
+(`lib/repo/library-page.ts`): 15 entries on phones, 30 on desktop. The browser sends
+its size; the server render (no screen yet) picks it from the user agent, so the first
+HTML has the right count. The client reads them with `useSuspenseInfiniteQuery`
+(`libraryPagesQuery`, keyed under `library(type)` so writes refresh loaded pages) and
+loads the next page with the shared `<LoadMore>` sentinel, the same one search uses.
+Sort and filter changes go through `useDeferredValue`: the current list stays (dimmed)
+until the new first page arrives. Swipe decks keep paging through `onNearEnd`.
+
+Never fetch per item of a list: one query for the list, prefetch on intent, or mount
+per-item data lazily (a menu's queries load when it opens).
+
 ## Placeholders from lists
 
 [Placeholder query data](https://tanstack.com/query/latest/docs/framework/react/guides/placeholder-query-data)

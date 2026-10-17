@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
+import { getRequestHeaders } from "@tanstack/react-start/server"
 import {
   ArchiveExport,
   CollectionItem,
@@ -14,6 +15,7 @@ import { z } from "zod"
 import { mediaTypeOf } from "@/lib/repo/log-utils"
 import { pgRepository as repo } from "./archive.server"
 import { requireOwner } from "./auth.functions"
+import { LIBRARY_PAGE_SIZE, LIBRARY_SORTS } from "@/lib/repo/library-page"
 import { ensureDetails, ensureSeasonDetails } from "./details.server"
 
 /*
@@ -46,6 +48,31 @@ export const listLibraryFn = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .validator(z.object({ type: MediaType }))
   .handler(({ data }) => repo.listLibrary(data.type))
+
+/**
+ * A page of a library, filtered and ordered on the server so a large
+ * library never ships whole. Without a `limit` (the server render, before
+ * the browser can measure its screen) the size follows the user agent.
+ */
+export const listLibraryPageFn = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
+  .validator(
+    z.object({
+      type: MediaType,
+      offset: z.number().int().min(0),
+      limit: z.number().int().min(1).max(100).optional(),
+      sort: z.enum(LIBRARY_SORTS),
+      desc: z.boolean(),
+      q: z.string().max(200),
+    })
+  )
+  .handler(async ({ data: { type, offset, limit, ...query } }) => {
+    const mobile = /Mobi|Android|iPhone|iPad/i.test(
+      getRequestHeaders().get("user-agent") ?? ""
+    )
+    const size = limit ?? LIBRARY_PAGE_SIZE[mobile ? "mobile" : "desktop"]
+    return repo.listLibraryPage({ type, offset, limit: size, ...query })
+  })
 
 export const listLogsFn = createServerFn({ method: "GET" })
   .middleware([requireOwner])

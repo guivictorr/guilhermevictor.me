@@ -1,8 +1,7 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import {
   createColumnHelper,
-  createSortedRowModel,
   rowSortingFeature,
   sortFn_alphanumeric,
   sortFn_basic,
@@ -55,7 +54,14 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react"
-import { useMemo, useState } from "react"
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { statusLabel } from "@/lib/status"
 import {
   MediaCard,
@@ -72,12 +78,16 @@ import { useIsDesktop } from "@/hooks/use-media-query"
 import { formatDate } from "@/lib/format"
 import { KINDS } from "@/lib/media-kinds"
 import type { LibraryEntry } from "@/lib/repo"
-import { libraryQuery } from "@/queries/archive"
+import { LoadMore } from "@/components/load-more"
+import { DEFAULT_LIBRARY_QUERY, LIBRARY_SORTS } from "@/lib/repo/library-page"
+import type { LibraryPageQuery } from "@/lib/repo/library-page"
+import { libraryPagesQuery } from "@/queries/archive"
 import { SuspenseSection } from "@/components/loaders"
 
+// Sorting happens on the server (pages arrive in order); the table only
+// keeps the sort state for its header buttons.
 const features = tableFeatures({
   rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
   sortFns: {
     alphanumeric: sortFn_alphanumeric,
     text: sortFn_text,
@@ -177,39 +187,50 @@ export function LibraryView(props: LibraryViewProps) {
 }
 
 function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
-  const { data } = useSuspenseQuery(libraryQuery(type))
   const [filter, setFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "lastLoggedAt", desc: true },
+    { id: DEFAULT_LIBRARY_QUERY.sort, desc: DEFAULT_LIBRARY_QUERY.desc },
   ])
   const isDesktop = useIsDesktop()
   const swipe = useSwipe("list")
   const showTable = isDesktop && layout === "table"
 
-  const filtered = useMemo(() => {
-    const all = data
-    const needle = filter.trim().toLocaleLowerCase()
-    return needle
-      ? all.filter((e) => e.title.toLocaleLowerCase().includes(needle))
-      : all
-  }, [data, filter])
+  // Typing and re-sorting fetch new pages; the deferred values keep the
+  // current list on screen (dimmed) instead of falling back to a skeleton.
+  const q = useDebounced(filter.trim(), 300)
+  const live = useMemo(() => toPageQuery(sorting, q), [sorting, q])
+  const query = useDeferredValue(live)
+  const stale = query !== live
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useSuspenseInfiniteQuery(libraryPagesQuery(type, query))
+  const entries = useMemo(
+    () => data.pages.flatMap((page) => page.items),
+    [data.pages]
+  )
+  const total = data.pages[0]?.total ?? 0
+  // The whole library's size, for the filter's placeholder.
+  const librarySize = useRef(0)
+  if (!query.q) librarySize.current = total
 
   const table = useTable({
     features,
     columns,
-    data: filtered,
+    data: entries,
     state: { sorting },
     onSortingChange: setSorting,
     getRowId: (row) => `${row.type}-${row.id}`,
   })
   const rows = table.getRowModel().rows
+  const loadMore = useCallback(() => {
+    if (!isFetchingNextPage) void fetchNextPage()
+  }, [fetchNextPage, isFetchingNextPage])
   const kind = KINDS[type]
   const hasStatus = type === "game" || type === "book"
   const one = kind.label.toLowerCase()
   const noun = kind.plural.toLowerCase()
   const Icon = kind.icon
 
-  if (!data.length) {
+  if (!total && !query.q) {
     return (
       <Empty className="min-h-[50dvh]">
         <EmptyHeader>
@@ -251,7 +272,7 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
           <InputGroupInput
             type="search"
             aria-label={`Filter ${noun}`}
-            placeholder={`Filter ${data.length} ${data.length === 1 ? one : noun}`}
+            placeholder={`Filter ${librarySize.current} ${librarySize.current === 1 ? one : noun}`}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
@@ -271,7 +292,14 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
             >
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
-            <SelectContent align="end">
+            <SelectContent
+              align="end"
+              // A narrow toolbar button: drop below it like a menu instead of
+              // laying the list over it (which only lines up in full-width
+              // form fields).
+              alignItemWithTrigger={false}
+              className="w-auto"
+            >
               {SORT_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -300,12 +328,15 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
         </ToggleGroup>
         {rows.length ? <SwipeButton toolbar onClick={swipe.openDeck} /> : null}
       </div>
-      {/* Same filter and order as the grid. */}
+      {/* Same filter and order as the grid; loads more pages as you go. */}
       <SwipeDeck
         open={swipe.open}
-        items={rows.map((row) => row.original)}
+        items={entries}
         title={kind.plural}
         onClose={swipe.close}
+        hasMore={hasNextPage}
+        loadingMore={isFetchingNextPage}
+        onNearEnd={() => void fetchNextPage()}
       />
 
       {rows.length === 0 ? (
@@ -313,7 +344,12 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
           No {noun} match “{filter}”.
         </p>
       ) : showTable ? (
-        <div className="overflow-hidden rounded-xl border">
+        <div
+          className={cn(
+            "overflow-hidden rounded-xl border",
+            stale && "opacity-60"
+          )}
+        >
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((group) => (
@@ -367,7 +403,7 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
           </Table>
         </div>
       ) : (
-        <MediaGrid>
+        <MediaGrid className={cn(stale && "opacity-60")}>
           {rows.map((row) => {
             const entry = row.original
             const status = statusLabel(entry.status)
@@ -396,6 +432,28 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
           })}
         </MediaGrid>
       )}
+      <LoadMore
+        active={hasNextPage}
+        loading={isFetchingNextPage}
+        onVisible={loadMore}
+      />
     </div>
   )
+}
+
+/** The table's sort state as a page query. */
+function toPageQuery(sorting: SortingState, q: string): LibraryPageQuery {
+  const first = sorting[0]
+  const sort = LIBRARY_SORTS.find((s) => s === first?.id) ?? "lastLoggedAt"
+  return { sort, desc: first?.desc ?? true, q }
+}
+
+/** `value`, once it has stopped changing for `ms`. */
+function useDebounced<T>(value: T, ms: number) {
+  const [settled, setSettled] = useState(value)
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSettled(value), ms)
+    return () => window.clearTimeout(timer)
+  }, [value, ms])
+  return settled
 }

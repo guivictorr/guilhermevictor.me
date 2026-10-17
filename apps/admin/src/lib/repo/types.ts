@@ -14,6 +14,7 @@ import type {
   MediaType,
   WorkId,
 } from "@workspace/schemas"
+import type { LibraryPage, LibraryPageQuery } from "./library-page"
 import type { Fact } from "@/lib/facts"
 import type { ProgressStatus } from "@/lib/status"
 
@@ -82,6 +83,14 @@ export type ArchiveStats = {
  */
 export interface ArchiveRepository {
   listLibrary: (type: MediaType) => Promise<Array<LibraryEntry>>
+  /** One page of a kind's library; `limit` defaults by device (server). */
+  listLibraryPage: (
+    input: {
+      type: MediaType
+      offset: number
+      limit?: number
+    } & LibraryPageQuery
+  ) => Promise<LibraryPage>
   listLogs: (target: LogTarget) => Promise<Array<LogEntry>>
   listRecent: (limit: number) => Promise<Array<RecentLog>>
   addLog: (input: LogInput, item: LibraryItemInput) => Promise<LogEntry>
