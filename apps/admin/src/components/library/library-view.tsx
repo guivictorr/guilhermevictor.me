@@ -1,5 +1,5 @@
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
+import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query"
+import { Link, useNavigate } from "@tanstack/react-router"
 import {
   createColumnHelper,
   rowSortingFeature,
@@ -22,18 +22,6 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@workspace/ui/components/input-group"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
-import {
   Table,
   TableBody,
   TableCell,
@@ -41,10 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@workspace/ui/components/toggle-group"
 import { cn } from "@workspace/ui/lib/utils"
 import {
   ArrowDownIcon,
@@ -52,16 +36,16 @@ import {
   LayoutGridIcon,
   ListIcon,
   PlusIcon,
-  SearchIcon,
 } from "lucide-react"
 import {
   useCallback,
   useDeferredValue,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react"
+import { toast } from "sonner"
+import { LibraryNav } from "./library-nav"
 import { statusLabel } from "@/lib/status"
 import {
   MediaCard,
@@ -69,7 +53,6 @@ import {
   MediaGridSkeleton,
   MediaLink,
 } from "@/components/media-card"
-import { SwipeButton } from "@/components/swipe/swipe-button"
 import { SwipeDeck } from "@/components/swipe/swipe-deck"
 import { useSwipe } from "@/components/swipe/swipe-search"
 import { Poster } from "@/components/poster"
@@ -81,7 +64,10 @@ import type { LibraryEntry } from "@/lib/repo"
 import { LoadMore } from "@/components/load-more"
 import { DEFAULT_LIBRARY_QUERY, LIBRARY_SORTS } from "@/lib/repo/library-page"
 import type { LibraryPageQuery } from "@/lib/repo/library-page"
-import { libraryPagesQuery } from "@/queries/archive"
+import { libraryPagesQuery, libraryQuery } from "@/queries/archive"
+import { ListToolbar, ViewSwitch } from "@/components/list-toolbar"
+import { SearchField, SurpriseButton } from "@/components/search-field"
+import { DETAIL_ROUTE } from "@/lib/detail-routes"
 import { SuspenseSection } from "@/components/loaders"
 
 // Sorting happens on the server (pages arrive in order); the table only
@@ -177,20 +163,72 @@ type LibraryViewProps = {
   onLayoutChange: (layout: LibraryLayout) => void
 }
 
-/** A kind's library; the route's loader prefetches it. */
+/**
+ * A kind's library (the route's loader prefetches it), under the same
+ * header as Search: a big filter field with Surprise me, the kind pills,
+ * then the count, order and view (grid / table / swipe).
+ */
 export function LibraryView(props: LibraryViewProps) {
-  return (
-    <SuspenseSection fallback={<MediaGridSkeleton />}>
-      <Library {...props} />
-    </SuspenseSection>
-  )
-}
-
-function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
   const [filter, setFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([
     { id: DEFAULT_LIBRARY_QUERY.sort, desc: DEFAULT_LIBRARY_QUERY.desc },
   ])
+  const surprise = useLibrarySurprise(props.type)
+  const noun = KINDS[props.type].plural.toLowerCase()
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <SearchField
+          value={filter}
+          onChange={setFilter}
+          label={`Filter ${noun}`}
+          placeholder={`Filter your ${noun}`}
+        />
+        <SurpriseButton onClick={() => void surprise()} />
+      </div>
+      <LibraryNav />
+      <SuspenseSection fallback={<MediaGridSkeleton />}>
+        <Library
+          {...props}
+          filter={filter}
+          sorting={sorting}
+          onSortingChange={setSorting}
+        />
+      </SuspenseSection>
+    </div>
+  )
+}
+
+/** Opens one of your works of this kind at random. */
+function useLibrarySurprise(type: MediaType) {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  return async () => {
+    const entries = await queryClient.fetchQuery(libraryQuery(type))
+    const pick = entries[Math.floor(Math.random() * entries.length)]
+    if (!pick) {
+      toast(`No ${KINDS[type].plural.toLowerCase()} yet`)
+      return
+    }
+    void navigate({
+      to: DETAIL_ROUTE[type],
+      params: { id: String(pick.id) },
+    })
+  }
+}
+
+function Library({
+  type,
+  layout,
+  onLayoutChange,
+  filter,
+  sorting,
+  onSortingChange,
+}: LibraryViewProps & {
+  filter: string
+  sorting: SortingState
+  onSortingChange: (sorting: SortingState) => void
+}) {
   const isDesktop = useIsDesktop()
   const swipe = useSwipe("list")
   const showTable = isDesktop && layout === "table"
@@ -208,16 +246,16 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
     [data.pages]
   )
   const total = data.pages[0]?.total ?? 0
-  // The whole library's size, for the filter's placeholder.
-  const librarySize = useRef(0)
-  if (!query.q) librarySize.current = total
 
   const table = useTable({
     features,
     columns,
     data: entries,
     state: { sorting },
-    onSortingChange: setSorting,
+    onSortingChange: (updater) =>
+      onSortingChange(
+        typeof updater === "function" ? updater(sorting) : updater
+      ),
     getRowId: (row) => `${row.type}-${row.id}`,
   })
   const rows = table.getRowModel().rows
@@ -264,70 +302,49 @@ function Library({ type, layout, onLayoutChange }: LibraryViewProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <InputGroup className="h-10 flex-1 rounded-xl">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput
-            type="search"
-            aria-label={`Filter ${noun}`}
-            placeholder={`Filter ${librarySize.current} ${librarySize.current === 1 ? one : noun}`}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+      <ListToolbar
+        count={`${total.toLocaleString("en-US")} ${total === 1 ? one : noun}`}
+        // The table sorts from its column headers.
+        sort={
+          showTable
+            ? undefined
+            : {
+                items: SORT_OPTIONS.map(({ value, label }) => ({
+                  value,
+                  label,
+                })),
+                value: currentSort?.value ?? "recent",
+                onChange: (value) => {
+                  const option = SORT_OPTIONS.find((o) => o.value === value)
+                  if (option) onSortingChange([...option.sorting])
+                },
+              }
+        }
+        view={
+          <ViewSwitch
+            // The table is a desktop view.
+            options={
+              isDesktop
+                ? [
+                    {
+                      value: "grid" as const,
+                      label: "Grid",
+                      icon: <LayoutGridIcon className="size-4" />,
+                    },
+                    {
+                      value: "table" as const,
+                      label: "Table",
+                      icon: <ListIcon className="size-4" />,
+                    },
+                  ]
+                : []
+            }
+            value={layout}
+            onChange={onLayoutChange}
+            onSwipe={rows.length ? swipe.openDeck : undefined}
           />
-        </InputGroup>
-        {!showTable ? (
-          <Select
-            items={SORT_OPTIONS.map(({ value, label }) => ({ value, label }))}
-            value={currentSort?.value ?? null}
-            onValueChange={(value) => {
-              const option = SORT_OPTIONS.find((o) => o.value === value)
-              if (option) setSorting([...option.sorting])
-            }}
-          >
-            <SelectTrigger
-              aria-label="Sort by"
-              className="h-10! w-auto rounded-xl"
-            >
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent
-              align="end"
-              // A narrow toolbar button: drop below it like a menu instead of
-              // laying the list over it (which only lines up in full-width
-              // form fields).
-              alignItemWithTrigger={false}
-              className="w-auto"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : null}
-        <ToggleGroup
-          aria-label="Layout"
-          variant="outline"
-          spacing={0}
-          value={[layout]}
-          onValueChange={(values) => {
-            const next = values.at(-1) as LibraryLayout | undefined
-            if (next) onLayoutChange(next)
-          }}
-          className="hidden md:flex"
-        >
-          <ToggleGroupItem value="grid" aria-label="Grid" className="size-10">
-            <LayoutGridIcon />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="table" aria-label="Table" className="size-10">
-            <ListIcon />
-          </ToggleGroupItem>
-        </ToggleGroup>
-        {rows.length ? <SwipeButton toolbar onClick={swipe.openDeck} /> : null}
-      </div>
+        }
+      />
       {/* Same filter and order as the grid; loads more pages as you go. */}
       <SwipeDeck
         open={swipe.open}

@@ -3,6 +3,8 @@ import type { MediaSummary, MediaType } from "@workspace/schemas"
 import { activeFilters } from "@/lib/search-filters"
 import type { SearchFilters } from "@/lib/search-filters"
 import {
+  countResults,
+  findPeople,
   getCollection,
   getBook,
   getCollectionValue,
@@ -10,6 +12,7 @@ import {
   getMaster,
   getRelease,
   getMovie,
+  getPerson,
   getSeason,
   getShow,
   getTrending,
@@ -37,6 +40,8 @@ export const mediaKeys = {
   collectionValue: () => [...mediaKeys.all, "collection-value"] as const,
   trending: (type: MediaType) => [...mediaKeys.all, "trending", type] as const,
   collection: (id: number) => [...mediaKeys.all, "collection", id] as const,
+  people: (query: string) => [...mediaKeys.all, "people", query] as const,
+  person: (id: number) => [...mediaKeys.all, "person", id] as const,
 }
 
 /** Runs with search text, filters, or both. */
@@ -75,6 +80,37 @@ export const searchPagesQuery = (
         : lastPage + 1,
     enabled: query.trim().length > 0 || activeFilters(type, filters).length > 0,
     staleTime: PROVIDER_STALE_TIME,
+  })
+
+/**
+ * How many results a search has, or null when the provider can't say
+ * (see `countResults`). Same rule as the search itself for when it runs.
+ */
+export const countQuery = (
+  type: MediaType,
+  query: string,
+  filters: SearchFilters = {}
+) =>
+  queryOptions({
+    queryKey: [...mediaKeys.search(type, query, filters), "count"] as const,
+    queryFn: () => countResults({ data: { type, query, filters } }),
+    enabled: query.trim().length > 0 || activeFilters(type, filters).length > 0,
+    staleTime: PROVIDER_STALE_TIME,
+  })
+
+export const peopleQuery = (query: string) =>
+  queryOptions({
+    queryKey: mediaKeys.people(query),
+    queryFn: () => findPeople({ data: { query } }),
+    enabled: query.trim().length > 1,
+    staleTime: PROVIDER_STALE_TIME,
+  })
+
+export const personQuery = (id: number) =>
+  queryOptions({
+    queryKey: mediaKeys.person(id),
+    queryFn: () => getPerson({ data: { id } }),
+    staleTime: Infinity,
   })
 
 export const watchProvidersQuery = (type: "movie" | "show") =>

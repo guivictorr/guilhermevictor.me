@@ -6,12 +6,14 @@ import { requireOwner } from "./auth.functions"
 import { cached } from "./cache.server"
 import { liveOrStored, seasonLiveOrStored } from "./details.server"
 import {
+  countDiscogs,
   fetchCollectionValue,
   fetchDiscogsCollection,
   fetchMaster,
   searchDiscogs,
 } from "./discogs.server"
 import {
+  countIgdb,
   fetchPopularGames,
   igdbIdsForSteamApps,
   searchIgdb,
@@ -19,10 +21,13 @@ import {
 import { fetchSteamPlaytime } from "./steam.server"
 import { fetchTrendingBooks, searchGoogleBooks } from "./googlebooks.server"
 import {
+  countTmdb,
   discoverTmdb,
   fetchCollection,
+  fetchPerson,
   fetchTrendingTmdb,
   fetchWatchProviders,
+  searchPeople,
   searchTmdb,
 } from "./tmdb.server"
 
@@ -51,27 +56,90 @@ export const searchMedia = createServerFn({ method: "GET" })
     const { page } = data
     const query = data.query || undefined
     const filters = filtersFor(data.type, data.filters)
-    switch (data.type) {
-      case "game":
-        return searchIgdb(query, filters, page)
-      case "record":
-        return searchDiscogs(query, filters, page)
-      case "book":
-        return searchGoogleBooks({
-          query,
-          author: filters.author,
-          subject: filters.genre,
-          publisher: filters.publisher,
-          language: filters.lang,
-          orderBy: filters.sort === "newest" ? "newest" : undefined,
-          page,
-        })
-      default:
-        return query
-          ? searchTmdb(data.type, query, filters, page)
-          : discoverTmdb(data.type, filters, page)
-    }
+    // Browsing repeats a lot (Search's genre tiles show
+    // their first covers): cache it. Text searches vary too much to bother.
+    if (!query)
+      return cached(
+        `browse:${JSON.stringify([data.type, filters, page])}`,
+        1000 * 60 * 60,
+        () => search(data.type, undefined, filters, page)
+      )
+    return search(data.type, query, filters, page)
   })
+
+function search(
+  type: MediaType,
+  query: string | undefined,
+  filters: SearchFilters,
+  page: number
+) {
+  switch (type) {
+    case "game":
+      return searchIgdb(query, filters, page)
+    case "record":
+      return searchDiscogs(query, filters, page)
+    case "book":
+      return searchGoogleBooks({
+        query,
+        author: filters.author,
+        subject: filters.genre,
+        publisher: filters.publisher,
+        language: filters.lang,
+        orderBy: filters.sort === "newest" ? "newest" : undefined,
+        page,
+      })
+    default:
+      return query
+        ? searchTmdb(type, query, filters, page)
+        : discoverTmdb(type, filters, page)
+  }
+}
+
+const SearchInput = z.object({
+  type: MediaType,
+  query: z.string().trim().max(200),
+  filters: SearchFilters.default({}),
+})
+
+/**
+ * How many results a search has, where the provider says so reliably:
+ * TMDB and IGDB when browsing, Discogs always. Null otherwise (text search
+ * on TMDB/IGDB is filtered page by page; Google Books' totals are guesses).
+ */
+export const countResults = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
+  .validator(SearchInput)
+  .handler(({ data }): Promise<number | null> => {
+    const query = data.query || undefined
+    const filters = filtersFor(data.type, data.filters)
+    const key = `count:${JSON.stringify([data.type, query, filters])}`
+    const count = (): Promise<number | null> => {
+      switch (data.type) {
+        case "record":
+          return countDiscogs(query, filters)
+        case "book":
+          return Promise.resolve(null)
+        case "game":
+          return query ? Promise.resolve(null) : countIgdb(filters)
+        default:
+          return query ? Promise.resolve(null) : countTmdb(data.type, filters)
+      }
+    }
+    return cached(key, 1000 * 60 * 60, count)
+  })
+
+/** People by name for the movie "People" filter (TMDB). */
+export const findPeople = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
+  .validator(z.object({ query: z.string().trim().min(1).max(100) }))
+  .handler(({ data }) => searchPeople(data.query))
+
+export const getPerson = createServerFn({ method: "GET" })
+  .middleware([requireOwner])
+  .validator(Id)
+  .handler(({ data }) =>
+    cached(`person:${data.id}`, 1000 * 60 * 60 * 24, () => fetchPerson(data.id))
+  )
 
 /** Streaming services for the "Streaming on" filter (TMDB, your region). */
 export const getWatchProviders = createServerFn({ method: "GET" })

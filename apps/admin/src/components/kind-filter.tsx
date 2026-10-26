@@ -5,8 +5,9 @@ import { ScrollRow } from "@/components/media/media-rail"
 import { KINDS } from "@/lib/media-kinds"
 
 /**
- * Kind pills (same look as the library switcher) with counts; the choice is
- * the page's `?kind=` search param. Used by Backlog and Review.
+ * Kind pills with counts, the same look as Search's kinds and the library
+ * switcher (text only, the current one filled); the choice is the page's
+ * `?kind=` search param. Used by Backlog.
  */
 export function KindFilter({
   to,
@@ -21,10 +22,8 @@ export function KindFilter({
 }) {
   const pill = (selected: boolean) =>
     cn(
-      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border ps-3 pe-3.5 text-sm font-medium",
-      selected
-        ? "border-primary bg-primary text-primary-foreground"
-        : "text-muted-foreground hover:text-foreground"
+      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium",
+      selected ? "bg-foreground text-background" : "bg-muted text-foreground"
     )
   const count = (n: number) => (
     <span className="tabular-nums opacity-70">{n}</span>
@@ -41,7 +40,7 @@ export function KindFilter({
           All {count(total)}
         </Link>
         {counts.map(([type, n]) => {
-          const { plural, icon: Icon } = KINDS[type]
+          const { plural } = KINDS[type]
           return (
             <Link
               key={type}
@@ -50,7 +49,6 @@ export function KindFilter({
               aria-current={active === type ? "page" : undefined}
               className={pill(active === type)}
             >
-              <Icon className="size-4" />
               {plural} {count(n)}
             </Link>
           )

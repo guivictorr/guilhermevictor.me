@@ -25,8 +25,15 @@ const year = z.coerce
   .catch(undefined)
 
 export const SearchFilters = z.object({
-  /** Provider genre id (TMDB/IGDB), Discogs genre or Google Books subject. */
+  /**
+   * Provider genre id (TMDB/IGDB), Discogs genre or Google Books subject.
+   * Movies, shows and games take several ids, comma-separated (all apply).
+   */
   genre: text,
+  /** Movies, shows and games: genre ids to leave out, comma-separated. */
+  xgenre: text,
+  /** Movies: TMDB person ids, comma-separated (cast or crew). */
+  people: text,
   /** Release year range. */
   from: year,
   to: year,
@@ -35,7 +42,7 @@ export const SearchFilters = z.object({
   /** ISO 639-1: original language (movies/shows), edition language (books). */
   lang: text,
   sort: text,
-  /** TMDB watch provider id (streaming service). */
+  /** TMDB watch provider ids, "|"-separated: on any of them. */
   provider: text,
   /** Shows: TMDB status id. */
   status: text,
@@ -114,9 +121,9 @@ export const SHOW_STATUS = options([
 ])
 
 export const RUNTIMES = options([
-  ["short", "Under 90 min"],
-  ["standard", "90–150 min"],
-  ["long", "Over 150 min"],
+  ["short", "< 90m"],
+  ["under2h", "< 2h"],
+  ["long", "2h+"],
 ])
 
 export const TMDB_SORTS = options([
@@ -306,6 +313,22 @@ export type FilterField =
       browseOnly?: boolean
     }
   | {
+      /** Chips: tap to include, again to exclude (`xgenre`), again to clear. */
+      key: "genre"
+      label: string
+      control: "genres"
+      options: Array<Option>
+    }
+  | {
+      /** A short list shown as a segmented control ("Any" first). */
+      key: FilterKey
+      label: string
+      control: "segments"
+      options: Array<Option>
+      browseOnly?: boolean
+    }
+  | { key: "people"; label: string; control: "people"; browseOnly: true }
+  | {
       key: FilterKey
       label: string
       control: "text"
@@ -322,7 +345,7 @@ export type FilterField =
     }
 
 const tmdbFields = (genres: Array<Option>): Array<FilterField> => [
-  { key: "genre", label: "Genre", control: "select", options: genres },
+  { key: "genre", label: "Genres", control: "genres", options: genres },
   { key: "from", label: "Released", control: "years" },
   { key: "rating", label: "Rating", control: "rating" },
   {
@@ -345,8 +368,14 @@ export const FILTER_FIELDS: Record<MediaType, Array<FilterField>> = {
     {
       key: "runtime",
       label: "Runtime",
-      control: "select",
+      control: "segments",
       options: RUNTIMES,
+      browseOnly: true,
+    },
+    {
+      key: "people",
+      label: "People",
+      control: "people",
       browseOnly: true,
     },
     {
@@ -379,7 +408,7 @@ export const FILTER_FIELDS: Record<MediaType, Array<FilterField>> = {
       control: "select",
       options: PLATFORMS,
     },
-    { key: "genre", label: "Genre", control: "select", options: GAME_GENRES },
+    { key: "genre", label: "Genres", control: "genres", options: GAME_GENRES },
     { key: "theme", label: "Theme", control: "select", options: GAME_THEMES },
     { key: "mode", label: "Mode", control: "select", options: GAME_MODES },
     { key: "from", label: "Released", control: "years" },
@@ -446,30 +475,50 @@ export const FILTER_FIELDS: Record<MediaType, Array<FilterField>> = {
   ],
 }
 
-/** Keys that count as an active filter for a kind ("to" goes with "from"). */
+/** The URL keys one field writes ("from" + "to", "genre" + "xgenre"). */
+export function fieldKeys(field: FilterField): Array<FilterKey> {
+  if (field.key === "from") return ["from", "to"]
+  if (field.control === "genres") return ["genre", "xgenre"]
+  return [field.key]
+}
+
+/** Fields that count as an active filter for a kind, by their main key. */
 export function activeFilters(
   type: MediaType,
   filters: SearchFilters
 ): Array<FilterKey> {
-  return FILTER_FIELDS[type].flatMap((field) => {
-    if (field.key === "from")
-      return filters.from !== undefined || filters.to !== undefined
-        ? ["from" as const]
-        : []
-    return filters[field.key] !== undefined ? [field.key] : []
-  })
+  return FILTER_FIELDS[type].flatMap((field) =>
+    fieldKeys(field).some((key) => filters[key] !== undefined)
+      ? [field.key]
+      : []
+  )
 }
+
+/** The filters without one field (removing a chip). */
+export function withoutField(
+  type: MediaType,
+  filters: SearchFilters,
+  key: FilterKey
+): SearchFilters {
+  const field = FILTER_FIELDS[type].find((f) => f.key === key)
+  const drop = new Set(field ? fieldKeys(field) : [key])
+  return Object.fromEntries(
+    Object.entries(filters).filter(([k]) => !drop.has(k as FilterKey))
+  )
+}
+
+/** A comma list param as ids, and back. */
+export const listOf = (value: string | number | undefined) =>
+  value === undefined ? [] : String(value).split(/[,|]/).filter(Boolean)
+export const toList = (ids: Array<string>, separator = ",") =>
+  ids.length ? ids.join(separator) : undefined
 
 /** Only the filters that apply to `type`, so switching kinds doesn't leak. */
 export function filtersFor(
   type: MediaType,
   filters: SearchFilters
 ): SearchFilters {
-  const keys = new Set<FilterKey>(
-    FILTER_FIELDS[type].flatMap((f) =>
-      f.key === "from" ? (["from", "to"] as const) : [f.key]
-    )
-  )
+  const keys = new Set<FilterKey>(FILTER_FIELDS[type].flatMap(fieldKeys))
   return Object.fromEntries(
     [...keys].flatMap((key) =>
       filters[key] === undefined ? [] : [[key, filters[key]]]

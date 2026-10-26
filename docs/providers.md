@@ -70,6 +70,14 @@ It never creates logs or overwrites what you entered.
 - Discogs `/database/search`: q, artist, label, genre, style, country, year,
   format (Vinyl by default).
 - Genre/theme/mode/platform ids are stable and listed as constants.
+- Several genres: `genre` is a comma list (all must match: TMDB `with_genres=a,b`,
+  IGDB `genres = [a,b]`); `xgenre` leaves genres out (`without_genres`,
+  `genres != (a,b)`). `people` (movies, browse only) is TMDB `with_people`, picked
+  through `/search/person`.
+- Counts (`countResults`, cached 1 h): TMDB `total_results` and IGDB `games/count`
+  only when browsing (text search is filtered page by page), Discogs
+  `pagination.items` always, Google Books never (its totals are guesses). TMDB
+  stops counting at 20,001: the UI shows "20,000+".
 
 ## Airports & airlines (flights)
 

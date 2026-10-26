@@ -1,7 +1,7 @@
 import {
   keepPreviousData,
   useInfiniteQuery,
-  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query"
 import {
   createFileRoute,
@@ -9,7 +9,7 @@ import {
   useNavigate,
 } from "@tanstack/react-router"
 import { MediaType } from "@workspace/schemas"
-import type { CollectionItem, MediaSummary } from "@workspace/schemas"
+import type { MediaSummary } from "@workspace/schemas"
 import {
   Empty,
   EmptyDescription,
@@ -17,52 +17,40 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@workspace/ui/components/input-group"
 import { Spinner } from "@workspace/ui/components/spinner"
-import { Switch } from "@workspace/ui/components/switch"
 import { cn } from "@workspace/ui/lib/utils"
-import {
-  SearchIcon,
-  SearchXIcon,
-  SlidersHorizontalIcon,
-  XIcon,
-} from "lucide-react"
+import { ChevronLeftIcon, SearchXIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
 import { z } from "zod"
-import {
-  MediaCard,
-  MediaGrid,
-  MediaGridSkeleton,
-} from "@/components/media-card"
+import { MediaGridSkeleton } from "@/components/media-card"
 import { PageBody, PageHeader } from "@/components/page-header"
+import { SearchField, SurpriseButton } from "@/components/search-field"
 import { LoadMore } from "@/components/load-more"
-import { SwipeButton } from "@/components/swipe/swipe-button"
 import { SwipeDeck } from "@/components/swipe/swipe-deck"
 import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
-import { CardBacklogBadge } from "@/components/media/backlog-button"
-import { ScrollRow, toBacklogItem } from "@/components/media/media-rail"
-import { ReleaseResultList } from "@/components/records/release-result-list"
+import { ScrollRow } from "@/components/media/media-rail"
+import {
+  BecauseYouRated,
+  GenreTiles,
+  QuickFilters,
+  Trending,
+  recommends,
+} from "@/components/search/discover-home"
 import { FilterSheet } from "@/components/search/filter-sheet"
 import {
-  FILTER_FIELDS,
-  SearchFilters,
-  activeFilters,
-  filtersFor,
-} from "@/lib/search-filters"
+  ActiveFilters,
+  EmptyResults,
+  ResultsList,
+  ResultsToolbar,
+} from "@/components/search/results"
+import { useArchiveMarks, useSearchView } from "@/components/search/search-view"
+import { DETAIL_ROUTE } from "@/lib/detail-routes"
+import { SearchFilters, activeFilters, filtersFor } from "@/lib/search-filters"
 import { KINDS, KIND_ORDER } from "@/lib/media-kinds"
-import type { FilterField } from "@/lib/search-filters"
-import { collectionQuery, indexQuery, mediaKey } from "@/queries/archive"
-import {
-  searchPagesQuery,
-  trendingQuery,
-  watchProvidersQuery,
-} from "@/queries/media"
+import { indexQuery } from "@/queries/archive"
+import { searchPagesQuery, trendingQuery } from "@/queries/media"
 
 const SearchParams = z
   .object({
@@ -74,11 +62,11 @@ const SearchParams = z
   .extend(swipeSearch.shape)
 
 const PLACEHOLDER = {
-  movie: "Search movies on TMDB",
-  show: "Search shows on TMDB",
-  game: "Search games on IGDB",
-  book: "Search books by title, author or ISBN",
-  record: "Search vinyl on Discogs",
+  movie: "Movies by title",
+  show: "Shows by title",
+  game: "Games by title",
+  book: "Books by title, author or ISBN",
+  record: "Vinyl on Discogs",
 }
 
 export const Route = createFileRoute("/search")({
@@ -90,25 +78,40 @@ export const Route = createFileRoute("/search")({
     q: search.q,
     browsing: activeFilters(search.type, search).length > 0,
   }),
-  // With no query the page shows what's trending, rendered on the server so
-  // the grid is in the first HTML. prefetchQuery never throws: a provider
-  // error shows inline instead of failing the whole page.
+  // With no query the page is Discover: trending is rendered on the server
+  // so the grid is in the first HTML. The index comes along so that HTML
+  // already leaves out what you have ("new to you", hidden results);
+  // without it they'd show until the client fetched it. prefetchQuery never
+  // throws: a provider error shows inline instead of failing the page.
   loader: ({ context, deps }) =>
-    deps.q || deps.browsing
-      ? undefined
-      : context.queryClient.prefetchQuery(trendingQuery(deps.type)),
+    Promise.all([
+      context.queryClient.prefetchQuery(indexQuery()),
+      deps.q || deps.browsing
+        ? undefined
+        : context.queryClient.prefetchQuery(trendingQuery(deps.type)),
+    ]),
   head: () => ({ meta: [{ title: "Search · Archive" }] }),
   component: SearchPage,
 })
 
+/**
+ * Two states on one page. Discover (no text, no filters): quick filters,
+ * genres, picks from your ratings, trending. Results: the
+ * same search bar stays put (so typing never loses focus), with the active
+ * filters as chips, a count, sort, grid or list, and the swipe view.
+ */
 function SearchPage() {
   const search = Route.useSearch()
   const { type, q } = search
   const filters = filtersFor(type, search)
   const active = activeFilters(type, filters)
+  const discover = !q && !active.length
   const navigate = useNavigate({ from: Route.fullPath })
+  const queryClient = useQueryClient()
   const [input, setInput] = useState(q)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const view = useSearchView()
+  const marks = useArchiveMarks()
 
   const applyFilters = (next: SearchFilters) =>
     navigate({
@@ -116,6 +119,12 @@ function SearchPage() {
       replace: true,
       viewTransition: false,
     })
+
+  // Back to Discover from browsing (typed text has its own clear button).
+  const backToDiscover = () => {
+    setInput("")
+    void navigate({ search: { type }, viewTransition: false })
+  }
 
   // Debounce typing into the URL; the URL is the source of truth for the query.
   useEffect(() => {
@@ -148,180 +157,208 @@ function SearchPage() {
     ],
     [results.data]
   )
+  const hidden = (media: MediaSummary) =>
+    (view.hideHave && marks.have(media)) ||
+    (view.hideBacklog && marks.inBacklog(media))
+  const shown = data.filter((m) => !hidden(m))
   const swipe = useSwipe("results")
-  const [dimHave, setDimHave] = useSearchToggle("archive:search-gray-have")
-  const [hideBacklog, setHideBacklog] = useSearchToggle(
-    "archive:search-hide-backlog"
-  )
-  const have = useHave()
-  const inBacklog = useInBacklog()
-  // Backlogged works are left out of the list; with "Gray out" on,
-  // swiping also skips what you already have.
-  const shown = hideBacklog ? data.filter((m) => !inBacklog(m)) : data
-  const swipeItems = dimHave ? shown.filter((m) => !have(m)) : shown
+
+  /** A random trending pick you don't have yet (Discover's shuffle). */
+  function surprise() {
+    const pool = queryClient.getQueryData(trendingQuery(type).queryKey) ?? []
+    const fresh = pool.filter((m) => !marks.have(m) && !marks.inBacklog(m))
+    const pick = fresh[Math.floor(Math.random() * fresh.length)]
+    if (!pick) {
+      toast("Nothing new to pick here", {
+        description: "Try other filters or another kind.",
+      })
+      return
+    }
+    void navigate({
+      to: DETAIL_ROUTE[pick.type],
+      params: { id: String(pick.id) },
+    })
+  }
 
   return (
     <>
-      <PageHeader title="Search" />
-      <PageBody className="space-y-3">
-        <div className="flex gap-2">
-          <InputGroup className="h-11 flex-1 rounded-xl">
-            <InputGroupAddon>
-              {isFetching ? <Spinner /> : <SearchIcon />}
-            </InputGroupAddon>
-            <InputGroupInput
-              type="search"
-              enterKeyHint="search"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              aria-label="Search"
-              placeholder={PLACEHOLDER[type]}
+      {/*
+       * Browsing results start with Back + search, like their own screen.
+       * Typing keeps the title, so the bar doesn't jump on the first key.
+       */}
+      {discover || q ? <PageHeader title="Search" /> : null}
+      {/*
+       * The search bar is always this block's first child, so switching
+       * between Discover and results never remounts it (typing keeps
+       * focus). In results it sticks, with the active filters.
+       */}
+      <div
+        className={cn(
+          !discover &&
+            "pt-safe sticky top-0 z-30 bg-background/90 backdrop-blur-xl"
+        )}
+      >
+        <PageBody
+          className={discover ? "space-y-4" : "space-y-3 pt-4 pb-3 md:pt-6"}
+        >
+          <div className="flex gap-2">
+            {!discover && !q ? (
+              <Button
+                variant="secondary"
+                size="icon"
+                aria-label="Back to Discover"
+                className="size-12 shrink-0 rounded-full"
+                onClick={backToDiscover}
+              >
+                <ChevronLeftIcon className="size-5" />
+              </Button>
+            ) : null}
+            <SearchField
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="text-base"
+              onChange={setInput}
+              placeholder={
+                discover || q ? PLACEHOLDER[type] : "Search within results"
+              }
+              icon={isFetching && !discover ? <Spinner /> : undefined}
             />
-            {input ? (
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  aria-label="Clear search"
-                  onClick={() => setInput("")}
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            ) : null}
-          </InputGroup>
-          <Button
-            variant="outline"
-            size="lg"
-            className="relative h-11 rounded-xl"
-            aria-label={`Filters${active.length ? ` (${active.length} active)` : ""}`}
-            onClick={() => setFiltersOpen(true)}
-          >
-            <SlidersHorizontalIcon />
-            <span className="max-sm:sr-only">Filters</span>
-            {active.length ? (
-              <span className="flex size-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground tabular-nums">
-                {active.length}
-              </span>
-            ) : null}
-          </Button>
-        </div>
-
-        <KindPills
-          value={type}
-          onChange={(next) =>
-            // Filters are per kind; switching kinds starts clean.
-            navigate({
-              search: { type: next, q },
-              replace: true,
-              viewTransition: false,
-            })
-          }
-        />
-
-        <FilterChips type={type} filters={filters} onChange={applyFilters} />
-
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
-          <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-            <Switch size="sm" checked={dimHave} onCheckedChange={setDimHave} />
-            Gray out what I already have
-          </label>
-          <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-            <Switch
-              size="sm"
-              checked={hideBacklog}
-              onCheckedChange={setHideBacklog}
+            {/* Discover only (results have Back instead); records' trending
+                is your own collection, nothing to discover. */}
+            {!discover || type === "record" ? null : (
+              <SurpriseButton onClick={surprise} />
+            )}
+          </div>
+          {discover ? (
+            <>
+              <KindPills
+                value={type}
+                onChange={(next) =>
+                  // Filters are per kind; switching kinds starts clean.
+                  navigate({
+                    search: { type: next, q },
+                    replace: true,
+                    viewTransition: false,
+                  })
+                }
+              />
+              <QuickFilters
+                type={type}
+                filters={filters}
+                onApply={applyFilters}
+                onOpenFilters={() => setFiltersOpen(true)}
+                hideHave={view.hideHave}
+                onHideHave={view.setHideHave}
+              />
+            </>
+          ) : (
+            <ActiveFilters
+              type={type}
+              filters={filters}
+              onChange={applyFilters}
+              onOpenFilters={() => setFiltersOpen(true)}
             />
-            Hide my backlog
-          </label>
-        </div>
+          )}
+        </PageBody>
+      </div>
+      {/* Text searches can switch kinds; browsing is per kind (Back). */}
+      {!discover && q ? (
+        <PageBody className="pt-3">
+          <KindPills
+            value={type}
+            onChange={(next) =>
+              // Filters are per kind; switching kinds starts clean.
+              navigate({
+                search: { type: next, q },
+                replace: true,
+                viewTransition: false,
+              })
+            }
+          />
+        </PageBody>
+      ) : null}
 
-        <div className="pt-3">
-          {!q && !active.length ? (
+      <PageBody className="space-y-10 pt-4">
+        {discover ? (
+          <>
+            <GenreTiles
+              type={type}
+              onPick={(genre) => applyFilters({ genre })}
+            />
+            {recommends(type) ? (
+              <BecauseYouRated type={type} hide={hidden} />
+            ) : null}
             <Trending
               type={type}
-              dim={dimHave ? have : undefined}
-              hide={hideBacklog ? inBacklog : undefined}
+              hideHave={view.hideHave}
+              hideBacklog={view.hideBacklog}
             />
-          ) : isError ? (
-            <SearchEmpty
-              icon={<SearchXIcon />}
-              title="Search failed"
-              description={error.message}
+          </>
+        ) : isError ? (
+          <SearchEmpty
+            icon={<SearchXIcon />}
+            title="Search failed"
+            description={error.message}
+          />
+        ) : isPending ? (
+          <MediaGridSkeleton />
+        ) : shown.length === 0 && !hasNextPage ? (
+          <EmptyResults
+            type={type}
+            query={q}
+            filters={filters}
+            onChange={applyFilters}
+            onOpenFilters={() => setFiltersOpen(true)}
+            hidden={data.length}
+          />
+        ) : (
+          <div
+            className={
+              // Dim while a new search loads, not while appending pages.
+              isFetching && !isFetchingNextPage
+                ? "opacity-60 transition-opacity"
+                : "transition-opacity"
+            }
+          >
+            <ResultsToolbar
+              type={type}
+              query={q}
+              filters={filters}
+              loaded={shown.length}
+              hasMore={hasNextPage}
+              onSort={(sort) => applyFilters({ ...filters, sort })}
+              layout={view.layout}
+              onLayout={view.setLayout}
+              onSwipe={shown.length ? swipe.openDeck : undefined}
             />
-          ) : isPending ? (
-            <MediaGridSkeleton />
-          ) : data.length === 0 ? (
-            <SearchEmpty
-              icon={<SearchXIcon />}
-              title="No results"
-              description={
-                q
-                  ? `Nothing matched “${q}”${active.length ? " with these filters" : ""}.`
-                  : "Nothing matches these filters."
-              }
+            <SwipeDeck
+              open={swipe.open}
+              items={shown}
+              title={q ? `“${q}”` : "Results"}
+              onClose={swipe.close}
+              hasMore={hasNextPage}
+              loadingMore={isFetchingNextPage}
+              onNearEnd={() => void fetchNextPage()}
             />
-          ) : (
-            <div
-              className={
-                // Dim while a new search loads, not while appending pages.
-                isFetching && !isFetchingNextPage
-                  ? "opacity-60 transition-opacity"
-                  : "transition-opacity"
-              }
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground tabular-nums">
-                  {shown.length}
-                  {hasNextPage ? "+" : ""} result
-                  {shown.length === 1 && !hasNextPage ? "" : "s"}
-                </p>
-                {swipeItems.length ? (
-                  <SwipeButton onClick={swipe.openDeck} />
-                ) : null}
-              </div>
-              <SwipeDeck
-                open={swipe.open}
-                items={swipeItems}
-                title={q ? `“${q}”` : "Results"}
-                onClose={swipe.close}
-                hasMore={hasNextPage}
-                loadingMore={isFetchingNextPage}
-                onNearEnd={() => void fetchNextPage()}
-              />
-              {type === "record" ? (
-                <ReleaseResultList results={shown} dimOwned={dimHave} />
-              ) : (
-                <MediaGrid>
-                  {shown.map((media) => (
-                    <MediaCard
-                      key={`${media.type}-${media.id}`}
-                      media={media}
-                      dimmed={dimHave && have(media)}
-                      badge={<CardBacklogBadge item={toBacklogItem(media)} />}
-                    />
-                  ))}
-                </MediaGrid>
-              )}
-              <LoadMore
-                active={hasNextPage && !isFetchingNextPage}
-                loading={isFetchingNextPage}
-                onVisible={() => void fetchNextPage()}
-              />
-            </div>
-          )}
-        </div>
+            <ResultsList results={shown} layout={view.layout} />
+            <LoadMore
+              active={hasNextPage && !isFetchingNextPage}
+              loading={isFetchingNextPage}
+              onVisible={() => void fetchNextPage()}
+            />
+          </div>
+        )}
       </PageBody>
       <FilterSheet
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
         type={type}
+        query={q}
         filters={filters}
-        hasQuery={Boolean(q)}
-        onApply={applyFilters}
+        view={view}
+        onApply={(next, nextView) => {
+          view.setHideHave(nextView.hideHave)
+          view.setHideBacklog(nextView.hideBacklog)
+          void applyFilters(next)
+        }}
       />
     </>
   )
@@ -339,7 +376,7 @@ function KindPills({
     <div role="radiogroup" aria-label="Media type">
       <ScrollRow className="snap-none gap-2 pb-1">
         {KIND_ORDER.map((type) => {
-          const { plural, icon: Icon } = KINDS[type]
+          const { plural } = KINDS[type]
           const active = type === value
           return (
             <button
@@ -349,241 +386,18 @@ function KindPills({
               aria-checked={active}
               onClick={() => onChange(type)}
               className={cn(
-                "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border ps-3 pe-3.5 text-sm font-medium",
+                "pressable inline-flex h-9 shrink-0 items-center rounded-full px-4 text-sm font-medium",
                 active
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-foreground"
               )}
             >
-              <Icon className="size-4" />
               {plural}
             </button>
           )
         })}
       </ScrollRow>
     </div>
-  )
-}
-
-/** Active filters as removable chips under the search bar. */
-function FilterChips({
-  type,
-  filters,
-  onChange,
-}: {
-  type: MediaType
-  filters: SearchFilters
-  onChange: (filters: SearchFilters) => void
-}) {
-  const { data: providers } = useQuery({
-    ...watchProvidersQuery(type === "show" ? "show" : "movie"),
-    enabled:
-      filters.provider !== undefined && (type === "movie" || type === "show"),
-  })
-  const chips = FILTER_FIELDS[type].flatMap((field) => {
-    const label = chipLabel(field, filters, providers)
-    return label ? [{ key: field.key, label }] : []
-  })
-  if (!chips.length) return null
-  return (
-    <ul className="flex flex-wrap gap-1.5" aria-label="Active filters">
-      {chips.map((chip) => (
-        <li key={chip.key}>
-          <button
-            type="button"
-            onClick={() =>
-              onChange({
-                ...filters,
-                [chip.key]: undefined,
-                ...(chip.key === "from" ? { to: undefined } : {}),
-              })
-            }
-            className="pressable inline-flex h-8 items-center gap-1 rounded-full border bg-card pr-2 pl-3 text-sm"
-            aria-label={`Remove filter ${chip.label}`}
-          >
-            {chip.label}
-            <XIcon className="size-3.5 text-muted-foreground" />
-          </button>
-        </li>
-      ))}
-      <li>
-        <button
-          type="button"
-          onClick={() => onChange({})}
-          className="h-8 px-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          Clear all
-        </button>
-      </li>
-    </ul>
-  )
-}
-
-function chipLabel(
-  field: FilterField,
-  filters: SearchFilters,
-  providers?: Array<{ value: string; label: string }>
-): string | undefined {
-  switch (field.control) {
-    case "years": {
-      const { from, to } = filters
-      if (from === undefined && to === undefined) return undefined
-      if (from === to) return String(from)
-      return `${from ?? "…"}–${to ?? "…"}`
-    }
-    case "rating":
-      return filters.rating === undefined ? undefined : `${filters.rating}★+`
-    case "toggle":
-      return filters.extras === "1" ? "With DLC & editions" : undefined
-    case "providers":
-      return filters.provider === undefined
-        ? undefined
-        : (providers?.find((p) => p.value === filters.provider)?.label ??
-            "Streaming")
-    case "select": {
-      const value = filters[field.key]
-      if (value === undefined) return undefined
-      const option = field.options.find((o) => o.value === String(value))
-      return field.key === "sort"
-        ? option?.label
-        : `${field.label}: ${option?.label ?? value}`
-    }
-    case "text": {
-      const value = filters[field.key]
-      return value === undefined ? undefined : `${field.label}: ${value}`
-    }
-  }
-}
-
-/** Several copies of one release should show once. */
-function uniqueReleases(items: Array<CollectionItem>) {
-  const seen = new Set<number>()
-  return items.filter((c) => !seen.has(c.releaseId) && seen.add(c.releaseId))
-}
-
-const TRENDING_TITLE: Record<MediaType, string> = {
-  movie: "Trending movies this week",
-  show: "Trending shows this week",
-  game: "Popular games right now",
-  book: "Trending books this week",
-  record: "Recently added to your collection",
-}
-
-/** Logged works, and records you own: what search can gray out. */
-function useHave() {
-  const { data: index } = useQuery(indexQuery())
-  return (media: MediaSummary) =>
-    media.type === "record"
-      ? (index?.owned.has(mediaKey(media)) ?? false)
-      : (index?.logged.has(mediaKey(media)) ?? false)
-}
-
-/** In your backlog: what search can hide. */
-function useInBacklog() {
-  const { data: index } = useQuery(indexQuery())
-  return (media: MediaSummary) => index?.backlog.has(mediaKey(media)) ?? false
-}
-
-/** A search switch, on by default; remembered in this browser only. */
-function useSearchToggle(key: string) {
-  const [on, setOn] = useState(true)
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(key) === "off") setOn(false)
-    } catch {
-      // Blocked storage: keep the default.
-    }
-  }, [key])
-  const update = (next: boolean) => {
-    setOn(next)
-    try {
-      localStorage.setItem(key, next ? "on" : "off")
-    } catch {
-      // Not remembered, still applied.
-    }
-  }
-  return [on, update] as const
-}
-
-function Trending({
-  type,
-  dim,
-  hide,
-}: {
-  type: MediaType
-  /** Grays these covers (already in your archive). */
-  dim?: (media: MediaSummary) => boolean
-  /** Leaves these out (in your backlog). */
-  hide?: (media: MediaSummary) => boolean
-}) {
-  const swipe = useSwipe("trending")
-  // Discogs has no trending list: show your own latest additions instead.
-  const trending = useQuery({
-    ...trendingQuery(type),
-    enabled: type !== "record",
-  })
-  const collection = useQuery({
-    ...collectionQuery(),
-    enabled: type === "record",
-  })
-  const isPending =
-    type === "record" ? collection.isPending : trending.isPending
-  const isError = type === "record" ? collection.isError : trending.isError
-  const all: Array<MediaSummary> =
-    type === "record"
-      ? uniqueReleases(collection.data ?? [])
-          .slice(0, 18)
-          .map((c) => ({
-            type: "record",
-            id: c.releaseId,
-            title: c.title,
-            subtitle: c.artist,
-            year: c.year,
-            poster: c.cover,
-          }))
-      : (trending.data ?? [])
-  const data = hide ? all.filter((m) => !hide(m)) : all
-  // Grayed-out covers (already in your archive) are left out of swipe.
-  const swipeItems = dim ? data.filter((m) => !dim(m)) : data
-
-  if (isError || (!isPending && data.length === 0))
-    return (
-      <SearchEmpty
-        icon={<SearchIcon />}
-        title="Find something to log"
-        description="Search by title. Results come from TMDB, IGDB, Google Books and Discogs."
-      />
-    )
-
-  return (
-    <section>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-heading text-lg font-semibold">
-          {TRENDING_TITLE[type]}
-        </h2>
-        {swipeItems.length ? <SwipeButton onClick={swipe.openDeck} /> : null}
-      </div>
-      <SwipeDeck
-        open={swipe.open}
-        items={swipeItems}
-        title={TRENDING_TITLE[type]}
-        onClose={swipe.close}
-      />
-      {isPending ? (
-        <MediaGridSkeleton />
-      ) : (
-        <MediaGrid>
-          {data.map((media) => (
-            <MediaCard
-              key={`${media.type}-${media.id}`}
-              media={media}
-              dimmed={dim?.(media) ?? false}
-              badge={<CardBacklogBadge item={toBacklogItem(media)} />}
-            />
-          ))}
-        </MediaGrid>
-      )}
-    </section>
   )
 }
 

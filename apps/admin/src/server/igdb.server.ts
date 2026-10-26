@@ -1,4 +1,5 @@
 import type { Game, MediaSummary, TimeToBeat } from "@workspace/schemas"
+import { listOf } from "@/lib/search-filters"
 import type { SearchFilters } from "@/lib/search-filters"
 import { getIgdbEnv } from "./env.server"
 
@@ -127,15 +128,19 @@ const IGDB_SORTS: Record<string, string> = {
  * Search by text and/or filters. IGDB can't sort a text search, so `sort`
  * only applies when browsing by filters.
  */
-export async function searchIgdb(
-  query: string | undefined,
-  filters: SearchFilters = {},
-  page = 1
-): Promise<Array<MediaSummary>> {
+/** IGDB `where` clauses for our filters (shared by results and counts). */
+function gameWhere(filters: SearchFilters) {
+  const ids = (value: string | undefined) =>
+    listOf(value)
+      .map(Number)
+      .filter((n) => Number.isInteger(n))
+      .join(",")
   const where = ["version_parent = null"]
   if (filters.extras !== "1") where.push(`game_type = ${MAIN_GAME_TYPES}`)
   if (filters.platform) where.push(`platforms = (${Number(filters.platform)})`)
-  if (filters.genre) where.push(`genres = (${Number(filters.genre)})`)
+  // [a,b]: every one of them; != (a,b): none of them.
+  if (ids(filters.genre)) where.push(`genres = [${ids(filters.genre)}]`)
+  if (ids(filters.xgenre)) where.push(`genres != (${ids(filters.xgenre)})`)
   if (filters.theme) where.push(`themes = (${Number(filters.theme)})`)
   if (filters.mode) where.push(`game_modes = (${Number(filters.mode)})`)
   if (filters.from) where.push(`first_release_date >= ${unix(filters.from)}`)
@@ -144,7 +149,24 @@ export async function searchIgdb(
     where.push(
       `total_rating >= ${filters.rating * 20} & total_rating_count > 5`
     )
+  return where
+}
 
+/** How many games match when browsing (IGDB's count endpoint). */
+export async function countIgdb(filters: SearchFilters): Promise<number> {
+  const data = await igdb<{ count: number }>(
+    "games/count",
+    `where ${gameWhere(filters).join(" & ")};`
+  )
+  return data.count
+}
+
+export async function searchIgdb(
+  query: string | undefined,
+  filters: SearchFilters = {},
+  page = 1
+): Promise<Array<MediaSummary>> {
+  const where = gameWhere(filters)
   const body = query
     ? [`search ${quote(query)}`]
     : (() => {

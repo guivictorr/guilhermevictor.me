@@ -1,6 +1,5 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router"
 import { z } from "zod"
-import { LibraryNav } from "@/components/library/library-nav"
 import { LibraryView } from "@/components/library/library-view"
 import { PageBody, PageHeader } from "@/components/page-header"
 import { swipeSearch } from "@/components/swipe/swipe-search"
@@ -30,7 +29,6 @@ function BooksPage() {
     <>
       <PageHeader title="Books" />
       <PageBody className="space-y-4">
-        <LibraryNav />
         <LibraryView
           type="book"
           layout={view}

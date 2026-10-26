@@ -184,11 +184,8 @@ function splitTitle(raw: string) {
 }
 
 /** Text and/or filters (artist, label, genre, style, year, country, format). */
-export async function searchDiscogs(
-  query: string | undefined,
-  filters: SearchFilters = {},
-  page = 1
-): Promise<Array<MediaSummary>> {
+/** Discogs search params for our filters (shared by results and counts). */
+function searchParams(query: string | undefined, filters: SearchFilters) {
   const format =
     filters.format === "all" ? undefined : (filters.format ?? "Vinyl")
   const params: Record<string, string | undefined> = {
@@ -202,14 +199,36 @@ export async function searchDiscogs(
     country: filters.country,
     // Discogs filters one year; a range uses its start.
     year: filters.from ? String(filters.from) : undefined,
-    per_page: "40",
-    page: String(page),
   }
+  return {
+    format,
+    params: Object.fromEntries(
+      Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
+    ),
+  }
+}
+
+/** How many releases match (Discogs' pagination total). */
+export async function countDiscogs(
+  query: string | undefined,
+  filters: SearchFilters
+): Promise<number> {
+  const data = await discogs<{ pagination: { items: number } }>(
+    "/database/search",
+    { ...searchParams(query, filters).params, per_page: "1" }
+  )
+  return data.pagination.items
+}
+
+export async function searchDiscogs(
+  query: string | undefined,
+  filters: SearchFilters = {},
+  page = 1
+): Promise<Array<MediaSummary>> {
+  const { format, params } = searchParams(query, filters)
   const data = await discogs<{ results: Array<DiscogsSearchResult> }>(
     "/database/search",
-    Object.fromEntries(
-      Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
-    )
+    { ...params, per_page: "40", page: String(page) }
   )
   return data.results.map((r) => {
     const { artist, title } = splitTitle(r.title)

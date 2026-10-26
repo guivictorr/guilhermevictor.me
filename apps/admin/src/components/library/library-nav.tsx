@@ -18,18 +18,16 @@ export function LibraryNav() {
   return (
     <nav ref={ref} aria-label="Library">
       <ScrollRow className="snap-none gap-2 pb-1">
-        {LIBRARY_SECTIONS.map(({ key, plural, icon: Icon, to }) => {
-          return (
-            <Link
-              key={key}
-              to={to}
-              className="pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border ps-3 pe-3.5 text-sm font-medium text-muted-foreground hover:text-foreground data-[status=active]:border-primary data-[status=active]:bg-primary data-[status=active]:text-primary-foreground"
-            >
-              <Icon className="size-4" />
-              {plural}
-            </Link>
-          )
-        })}
+        {/* Same pills as Search's kinds: text only, the current one filled. */}
+        {LIBRARY_SECTIONS.map(({ key, plural, to }) => (
+          <Link
+            key={key}
+            to={to}
+            className="pressable inline-flex h-9 shrink-0 items-center rounded-full bg-muted px-4 text-sm font-medium text-foreground data-[status=active]:bg-foreground data-[status=active]:text-background"
+          >
+            {plural}
+          </Link>
+        ))}
       </ScrollRow>
     </nav>
   )

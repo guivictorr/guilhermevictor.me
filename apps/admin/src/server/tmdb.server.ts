@@ -8,6 +8,7 @@ import type {
   Show,
   Video,
 } from "@workspace/schemas"
+import { listOf } from "@/lib/search-filters"
 import type { SearchFilters } from "@/lib/search-filters"
 import { sortSeasons } from "@/lib/seasons"
 import { getTmdbEnv } from "./env.server"
@@ -292,8 +293,10 @@ export async function fetchTrendingTmdb(
 
 const RUNTIME_RANGES: Record<string, [number, number]> = {
   short: [0, 89],
+  under2h: [0, 119],
+  long: [120, 1000],
+  // Older links.
   standard: [90, 150],
-  long: [151, 1000],
 }
 
 /** Search results don't support TMDB's filters; apply them to the page. */
@@ -302,7 +305,10 @@ function matchesFacets(
   filters: SearchFilters
 ) {
   const year = yearOf(r.date)
-  if (filters.genre && !r.genre_ids?.includes(Number(filters.genre)))
+  const genres = r.genre_ids ?? []
+  if (listOf(filters.genre).some((g) => !genres.includes(Number(g))))
+    return false
+  if (listOf(filters.xgenre).some((g) => genres.includes(Number(g))))
     return false
   if (filters.lang && r.original_language !== filters.lang) return false
   if (filters.rating && (r.vote_average ?? 0) / 2 < filters.rating) return false
@@ -383,12 +389,8 @@ const DISCOVER_SORT: Record<string, { movie: string; show: string }> = {
   oldest: { movie: "primary_release_date.asc", show: "first_air_date.asc" },
 }
 
-/** Browse by filters alone (no text): TMDB's discover endpoints. */
-export async function discoverTmdb(
-  type: "movie" | "show",
-  filters: SearchFilters,
-  page = 1
-): Promise<Array<MediaSummary>> {
+/** TMDB discover's query for our filters (shared by results and counts). */
+function discoverParams(type: "movie" | "show", filters: SearchFilters) {
   const { TMDB_WATCH_REGION: region } = getTmdbEnv()
   const date = type === "movie" ? "primary_release_date" : "first_air_date"
   const sort = DISCOVER_SORT[filters.sort ?? "popular"] ?? DISCOVER_SORT.popular
@@ -397,7 +399,9 @@ export async function discoverTmdb(
     include_adult: "false",
     sort_by: sort?.[type],
     with_genres: filters.genre,
+    without_genres: filters.xgenre,
     with_original_language: filters.lang,
+    with_people: type === "movie" ? filters.people : undefined,
     [`${date}.gte`]: filters.from ? `${filters.from}-01-01` : undefined,
     [`${date}.lte`]: filters.to ? `${filters.to}-12-31` : undefined,
     "vote_average.gte": filters.rating ? String(filters.rating * 2) : undefined,
@@ -410,14 +414,26 @@ export async function discoverTmdb(
     watch_region: filters.provider ? region : undefined,
     with_status: type === "show" ? filters.status : undefined,
   }
-  const defined = Object.fromEntries(
+  return Object.fromEntries(
     Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
   )
+}
+
+const discoverPath = (type: "movie" | "show") =>
+  type === "movie" ? "/discover/movie" : "/discover/tv"
+
+/** Browse by filters alone (no text): TMDB's discover endpoints. */
+export async function discoverTmdb(
+  type: "movie" | "show",
+  filters: SearchFilters,
+  page = 1
+): Promise<Array<MediaSummary>> {
+  const defined = discoverParams(type, filters)
   // Two TMDB pages (40 results) per app page.
   const pages = await Promise.all(
     [2 * page - 1, 2 * page].map((n) =>
       tmdb<{ results: Array<TmdbMovieResult & TmdbTvResult> }>(
-        type === "movie" ? "/discover/movie" : "/discover/tv",
+        discoverPath(type),
         { ...defined, page: String(n) }
       )
     )
@@ -427,6 +443,52 @@ export async function discoverTmdb(
     type === "movie" ? movieSummary(r) : showSummary(r)
   )
 }
+
+/** How many titles match when browsing (TMDB's own total). */
+export async function countTmdb(
+  type: "movie" | "show",
+  filters: SearchFilters
+): Promise<number> {
+  const data = await tmdb<{ total_results: number }>(discoverPath(type), {
+    ...discoverParams(type, filters),
+    page: "1",
+  })
+  return data.total_results
+}
+
+export type PersonSummary = {
+  id: number
+  name: string
+  /** "Directing", "Acting"… */
+  department?: string
+}
+
+type TmdbPerson = {
+  id: number
+  name: string
+  known_for_department?: string
+}
+
+/** People by name, for the "People" filter. */
+export async function searchPeople(
+  query: string
+): Promise<Array<PersonSummary>> {
+  const data = await tmdb<{ results: Array<TmdbPerson> }>("/search/person", {
+    query,
+    include_adult: "false",
+  })
+  return data.results.slice(0, 8).map(personSummary)
+}
+
+export async function fetchPerson(id: number): Promise<PersonSummary> {
+  return personSummary(await tmdb<TmdbPerson>(`/person/${id}`))
+}
+
+const personSummary = (p: TmdbPerson): PersonSummary => ({
+  id: p.id,
+  name: p.name,
+  department: p.known_for_department,
+})
 
 /** Streaming services in your region, most relevant first. */
 export async function fetchWatchProviders(

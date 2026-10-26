@@ -1,6 +1,5 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router"
 import { z } from "zod"
-import { LibraryNav } from "@/components/library/library-nav"
 import { LibraryView } from "@/components/library/library-view"
 import { SteamSyncButton } from "@/components/library/steam-sync-button"
 import { PageBody, PageHeader } from "@/components/page-header"
@@ -31,7 +30,6 @@ function GamesPage() {
     <>
       <PageHeader title="Games" actions={<SteamSyncButton />} />
       <PageBody className="space-y-4">
-        <LibraryNav />
         <LibraryView
           type="game"
           layout={view}

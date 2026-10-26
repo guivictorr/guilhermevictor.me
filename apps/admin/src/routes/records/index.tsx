@@ -10,20 +10,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@workspace/ui/components/input-group"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import { Spinner } from "@workspace/ui/components/spinner"
-import { Disc3Icon, DownloadCloudIcon, SearchIcon } from "lucide-react"
+import { Disc3Icon, DownloadCloudIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { LibraryNav } from "@/components/library/library-nav"
@@ -32,8 +20,9 @@ import {
   MediaGrid,
   MediaGridSkeleton,
 } from "@/components/media-card"
+import { ListToolbar, ViewSwitch } from "@/components/list-toolbar"
 import { PageBody, PageHeader } from "@/components/page-header"
-import { SwipeButton } from "@/components/swipe/swipe-button"
+import { SearchField, SurpriseButton } from "@/components/search-field"
 import { SwipeDeck } from "@/components/swipe/swipe-deck"
 import { swipeSearch, useSwipe } from "@/components/swipe/swipe-search"
 import { collectionQuery, useImportCollection } from "@/queries/archive"
@@ -101,6 +90,19 @@ function RecordsPage() {
   }, [collection, filter, sort])
 
   const hasCollection = Boolean(collection?.length)
+  const navigate = Route.useNavigate()
+  const surprise = () => {
+    const releases = groupByRelease(collection ?? [])
+    const pick = releases[Math.floor(Math.random() * releases.length)]
+    if (!pick) {
+      toast("No records yet")
+      return
+    }
+    void navigate({
+      to: "/records/$id",
+      params: { id: String(pick.releaseId) },
+    })
+  }
   const swipe = useSwipe("list")
   const cards = entries.map((entry) => ({
     type: "record" as const,
@@ -118,6 +120,16 @@ function RecordsPage() {
         actions={hasCollection ? <ImportButton compact /> : null}
       />
       <PageBody className="space-y-4">
+        {/* Same header as Search and the other library pages. */}
+        <div className="flex gap-2">
+          <SearchField
+            value={filter}
+            onChange={setFilter}
+            label="Filter records"
+            placeholder="Artist, title or label"
+          />
+          <SurpriseButton onClick={surprise} />
+        </div>
         <LibraryNav />
         {isPending ? (
           <MediaGridSkeleton />
@@ -140,52 +152,25 @@ function RecordsPage() {
         ) : (
           <>
             <CollectionSummary items={collection ?? []} />
-            <div className="flex gap-2">
-              <InputGroup className="h-10 flex-1 rounded-xl">
-                <InputGroupAddon>
-                  <SearchIcon />
-                </InputGroupAddon>
-                <InputGroupInput
-                  type="search"
-                  aria-label="Filter records"
-                  placeholder="Artist, title or label"
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                />
-              </InputGroup>
-              <Select
-                items={Object.entries(SORTS).map(([value, s]) => ({
+            <ListToolbar
+              count={`${entries.length.toLocaleString("en-US")} ${entries.length === 1 ? "record" : "records"}`}
+              sort={{
+                items: Object.entries(SORTS).map(([value, s]) => ({
                   value,
                   label: s.label,
-                }))}
-                value={sort}
-                onValueChange={(value) => value && setSort(value)}
-              >
-                <SelectTrigger
-                  aria-label="Sort by"
-                  className="h-10! w-auto rounded-xl"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent
-                  align="end"
-                  // A narrow toolbar button: drop below it like a menu instead of
-                  // laying the list over it (which only lines up in full-width
-                  // form fields).
-                  alignItemWithTrigger={false}
-                  className="w-auto"
-                >
-                  {Object.entries(SORTS).map(([value, s]) => (
-                    <SelectItem key={value} value={value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {cards.length ? (
-                <SwipeButton toolbar onClick={swipe.openDeck} />
-              ) : null}
-            </div>
+                })),
+                value: sort,
+                onChange: (value) => {
+                  if (value in SORTS) setSort(value as SortKey)
+                },
+              }}
+              view={
+                <ViewSwitch
+                  options={[]}
+                  onSwipe={cards.length ? swipe.openDeck : undefined}
+                />
+              }
+            />
             <SwipeDeck
               open={swipe.open}
               items={cards}
