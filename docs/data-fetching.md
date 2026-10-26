@@ -86,34 +86,39 @@ per-item data lazily (a menu's queries load when it opens).
 - The swipe deck warms the next two cards and the previous one: details, logs and the
   cover image (fetched into the HTTP cache, not kept decoded: phones reload the page
   when memory runs out).
-- A long press or right-click on a cover warms what the log sheet needs (platforms,
+- A long press or right-click on a cover warms what the log sheet needs (logs, platforms,
   copies, seasons) before the sheet opens.
 
 ## Writes: optimistic, precise
 
 [Optimistic updates](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates)
-· [Invalidation from mutations](https://tanstack.com/query/latest/docs/framework/react/guides/invalidations-from-mutations)
+· [Concurrent optimistic updates](https://tkdodo.eu/blog/concurrent-optimistic-updates-in-react-query)
 
-**Via the cache** when the result shows in several places (rating, logs, backlog, copies,
-flights). Every mutation in `queries/archive.ts` follows the same shape:
+**The screen never waits for the server.** Callers fire `mutate` and move on (a sheet
+closes right away); there is no success toast, since the cache already shows the
+change. Never `await mutateAsync` or disable a button on `isPending` for these writes.
 
-```ts
-onMutate: async (vars) => ({
-  // cancelQueries → snapshot → setQueriesData, for each affected key
-  rollback: await applyOptimistic(queryClient, [patch(key, (old) => next)]),
-}),
-onError: (_e, _v, context) => context?.rollback?.(),
-// Returned, so the mutation stays pending until the refetch is done.
-onSettled: () => invalidateKinds(queryClient, [type]),
-```
+Every write in `queries/archive.ts` (logs, backlog, copies, flights) goes through
+`useArchiveWrite`:
 
-- `cancelQueries` first, so an in-flight refetch can't overwrite the optimistic value.
-- New rows get a temporary uuid and timestamps (`pendingLog`) until the refetch brings
-  the real one.
-- Callers keep their own `toast` for success/error and Undo.
+- `onMutate`: `cancelQueries` → snapshot → `setQueriesData` for each affected key
+  (`applyOptimistic`), returning the rollback.
+- `onError`: rollback, then `toast.error` with **Retry**, which replays the same
+  variables.
+- **One queue** (`scope`): the server applies writes in the order they were made, so
+  editing or deleting a log that is still being created just waits for it. Only
+  `mutationFn` is queued; `onMutate` runs at once.
+- **New rows get their id on the client** (`useAddLog`, `useAddCollectionItem`,
+  `useSaveFlight` pick a uuid), and the server inserts with it (upsert, so a retry of a
+  write that did land isn't duplicated). The optimistic row is the real one, so it can
+  be edited or deleted immediately; Undo after a delete restores the same id.
+- **Refetch after the queue drains** (`refreshAfterWrites`): keys are collected per
+  write and invalidated (not awaited) once no other write is in flight, so a refetch
+  can't wipe a later write's optimistic patch.
 
-**Via the UI** (`variables` / `isPending`) when it shows in one place only: Steam sync,
-imports, Discogs sync.
+Toasts with **Undo** stay, shown at once, only where a write takes something away
+(delete a log/flight, move a log, remove from backlog). Bulk writes (import, Steam and
+Discogs sync) are not optimistic: they show progress through `isPending`.
 
 **Invalidate only what changed**, in parallel, and return the promise:
 

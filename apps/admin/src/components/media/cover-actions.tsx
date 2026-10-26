@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query"
-import { useNavigate } from "@tanstack/react-router"
 import type { LogInput } from "@workspace/schemas"
 import {
   ContextMenu,
@@ -12,16 +11,20 @@ import {
   BookmarkCheckIcon,
   BookmarkPlusIcon,
   CheckIcon,
-  ExternalLinkIcon,
+  HistoryIcon,
   PencilLineIcon,
   Trash2Icon,
 } from "lucide-react"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 import { useBacklogToggle } from "./backlog-button"
-import { useOpenLog, usePrefetchLog } from "@/components/log/log-host"
+import {
+  openLogs,
+  useOpenLog,
+  useOpenLogOrLogs,
+  usePrefetchLog,
+} from "@/components/log/log-host"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { DETAIL_ROUTE } from "@/lib/detail-routes"
 import { today } from "@/lib/format"
 import type { LibraryItemInput } from "@/lib/repo"
 import {
@@ -44,14 +47,16 @@ export function quickActions(
   const date = today()
   switch (item.type) {
     case "movie":
+      // A rewatch is rare enough to go through "Log…".
+      if (again) return []
       return [
         {
-          label: again ? "Watched again today" : "Watched today",
+          label: "Watched today",
           input: () => ({
             kind: "movie",
             mediaId: Number(item.id),
             watchedAt: date,
-            rewatch: again,
+            rewatch: false,
           }),
         },
       ]
@@ -126,8 +131,9 @@ const MOVE_TOLERANCE = 8
 
 /**
  * Actions on a cover without a button on it. Desktop: right-click opens a
- * menu (log, log today, backlog, open, delete last log). Touch: a long
- * press opens the log sheet. A short tap still opens the page.
+ * menu (log, log today, edit logs, backlog, delete last log). Touch: a long
+ * press opens your logs, or the new-log form when there are none. A short
+ * tap still opens the page.
  */
 export function CoverActions({
   item,
@@ -138,6 +144,7 @@ export function CoverActions({
 }) {
   const fine = useMediaQuery("(hover: hover) and (pointer: fine)")
   const openLog = useOpenLog()
+  const openLogOrLogs = useOpenLogOrLogs()
   const prefetch = usePrefetchLog()
   // The menu (and its queries: logs, copies) mounts on first open only. A
   // grid has hundreds of covers; mounted up front, each would fetch its
@@ -162,7 +169,7 @@ export function CoverActions({
   return (
     <LongPress
       onPressStart={() => prefetch(item)}
-      onLongPress={() => void openLog(item)}
+      onLongPress={() => void openLogOrLogs(item)}
     >
       {children}
     </LongPress>
@@ -235,7 +242,6 @@ function CoverMenu({
   item: LibraryItemInput
   onLog: () => void
 }) {
-  const navigate = useNavigate()
   const { data: index } = useQuery(indexQuery())
   const logged = index?.logged.has(mediaKey(item)) ?? false
   const owned = index?.owned.has(mediaKey(item)) ?? false
@@ -256,30 +262,19 @@ function CoverMenu({
   function log(action: QuickAction) {
     const input = action.input()
     if (!input) return
-    addLog.mutate(
-      { input, item },
-      {
-        onSuccess: () =>
-          toast.success("Logged", {
-            description: `${item.title} · ${action.label}`,
-          }),
-        onError: () => toast.error("Couldn't log"),
-      }
-    )
+    addLog.mutate({ input, item })
   }
 
   function deleteLatest() {
     if (!latest) return
     const { id, createdAt: _c, updatedAt: _u, ...input } = latest
-    deleteLog.mutate(id, {
-      onSuccess: () =>
-        toast("Log deleted", {
-          description: item.title,
-          action: {
-            label: "Undo",
-            onClick: () => addLog.mutate({ input, item }),
-          },
-        }),
+    deleteLog.mutate(id)
+    toast("Log deleted", {
+      description: item.title,
+      action: {
+        label: "Undo",
+        onClick: () => addLog.mutate({ input, item, id }),
+      },
     })
   }
 
@@ -295,6 +290,12 @@ function CoverMenu({
           {action.label}
         </ContextMenuItem>
       ))}
+      {logged ? (
+        <ContextMenuItem onClick={() => openLogs(item)}>
+          <HistoryIcon />
+          Edit logs…
+        </ContextMenuItem>
+      ) : null}
       <ContextMenuSeparator />
       {item.type === "record" && owned ? null : (
         <ContextMenuItem onClick={backlog.toggle} disabled={!backlog.ready}>
@@ -302,22 +303,11 @@ function CoverMenu({
           {backlog.inBacklog ? "Remove from backlog" : "Add to backlog"}
         </ContextMenuItem>
       )}
-      <ContextMenuItem
-        onClick={() =>
-          void navigate({
-            to: DETAIL_ROUTE[item.type],
-            params: { id: String(item.id) },
-          })
-        }
-      >
-        <ExternalLinkIcon />
-        Open
-      </ContextMenuItem>
       {logged ? (
         <ContextMenuItem
           variant="destructive"
           onClick={deleteLatest}
-          disabled={!latest || deleteLog.isPending}
+          disabled={!latest}
         >
           <Trash2Icon />
           Delete last log

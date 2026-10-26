@@ -32,7 +32,7 @@ type FormProps<TLog extends { mediaId: unknown }> = {
   /** Provider id: a number, or a Google Books volume id for books. */
   mediaId: TLog["mediaId"]
   initial?: TLog
-  onSubmit: (input: LogInput) => Promise<void>
+  onSubmit: (input: LogInput) => void
   submitLabel: string
 }
 

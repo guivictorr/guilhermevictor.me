@@ -93,7 +93,12 @@ export interface ArchiveRepository {
   ) => Promise<LibraryPage>
   listLogs: (target: LogTarget) => Promise<Array<LogEntry>>
   listRecent: (limit: number) => Promise<Array<RecentLog>>
-  addLog: (input: LogInput, item: LibraryItemInput) => Promise<LogEntry>
+  /** `id`: the client's id for the new log (optimistic UI); the server's otherwise. */
+  addLog: (
+    input: LogInput,
+    item: LibraryItemInput,
+    id?: string
+  ) => Promise<LogEntry>
   updateLog: (id: string, input: LogInput) => Promise<LogEntry>
   /**
    * Moves a log to another work of the same kind (`input.mediaId` is the
@@ -115,7 +120,8 @@ export interface ArchiveRepository {
   listCollection: () => Promise<Array<CollectionItem>>
   addCollectionItem: (
     snapshot: CollectionSnapshot,
-    input: CollectionItemInput
+    input: CollectionItemInput,
+    id?: string
   ) => Promise<CollectionItem>
   updateCollectionItem: (
     id: string,
@@ -137,7 +143,7 @@ export interface ArchiveRepository {
     entries: Array<SteamPlaytimeMatch>
   ) => Promise<SteamFillResult>
   listFlights: () => Promise<Array<Flight>>
-  addFlight: (input: FlightInput) => Promise<Flight>
+  addFlight: (input: FlightInput, id?: string) => Promise<Flight>
   updateFlight: (id: string, input: FlightInput) => Promise<Flight>
   deleteFlight: (id: string) => Promise<void>
   exportAll: () => Promise<ArchiveExport>

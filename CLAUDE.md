@@ -82,9 +82,11 @@ docs/                project documentation (start at docs/README.md)
   server function must use the `requireOwner` middleware (route guards are only UX).
 - Loading and writes follow `docs/data-fetching.md`: loaders prefetch, sections use
   `useSuspenseQuery` in `<SuspenseSection>` with real-size skeletons, mutations are
-  optimistic with rollback and invalidate only the keys they touch.
+  optimistic (fire `mutate` and move on, no success toast; failures roll back and
+  toast with Retry) and invalidate only the keys they touch.
 - Logging from outside a detail page goes through `openLog(item)` / `useOpenLog()`
-  (`components/log/log-host.tsx`), one sheet mounted in the root, no navigation.
+  (new log) or `openLogs(item)` (your logs, tap to edit) in
+  `components/log/log-host.tsx`: one sheet mounted in the root, no navigation.
 - Detail RPCs go through `liveOrStored()` (details.server.ts): provider first, stored
   copy as fallback. Works entering the archive get `ensureDetails()`.
 - Provider responses are normalized at the edge into `@workspace/schemas` types;

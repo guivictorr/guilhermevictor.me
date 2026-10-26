@@ -345,10 +345,16 @@ async function assertOwnedCopy(db: Conn, copyId: string, releaseId: number) {
 }
 
 /** Inserts (no `id`) or updates (`id`) a log in its kind's table. */
+/**
+ * Updates log `id`, or inserts a new one. `newId` is the id the client
+ * already shows (optimistic UI); an insert that finds it updates instead,
+ * so retrying a write that did reach the server is harmless.
+ */
 async function writeLog(
   db: Conn,
   input: LogInput,
-  id?: string
+  id?: string,
+  newId?: string
 ): Promise<LogEntry | undefined> {
   const updatedAt = now()
   switch (input.kind) {
@@ -365,7 +371,14 @@ async function writeLog(
             .set({ ...values, updatedAt })
             .where(eq(movieLogs.id, id))
             .returning()
-        : await db.insert(movieLogs).values(values).returning()
+        : await db
+            .insert(movieLogs)
+            .values({ ...values, id: newId })
+            .onConflictDoUpdate({
+              target: movieLogs.id,
+              set: { ...values, updatedAt },
+            })
+            .returning()
       return row && movieLogEntry(row)
     }
     case "show":
@@ -385,7 +398,14 @@ async function writeLog(
             .set({ ...values, updatedAt })
             .where(eq(showLogs.id, id))
             .returning()
-        : await db.insert(showLogs).values(values).returning()
+        : await db
+            .insert(showLogs)
+            .values({ ...values, id: newId })
+            .onConflictDoUpdate({
+              target: showLogs.id,
+              set: { ...values, updatedAt },
+            })
+            .returning()
       return row && showLogEntry(row)
     }
     case "game": {
@@ -404,7 +424,14 @@ async function writeLog(
             .set({ ...values, updatedAt })
             .where(eq(gameLogs.id, id))
             .returning()
-        : await db.insert(gameLogs).values(values).returning()
+        : await db
+            .insert(gameLogs)
+            .values({ ...values, id: newId })
+            .onConflictDoUpdate({
+              target: gameLogs.id,
+              set: { ...values, updatedAt },
+            })
+            .returning()
       return row && gameLogEntry(row)
     }
     case "book": {
@@ -423,7 +450,14 @@ async function writeLog(
             .set({ ...values, updatedAt })
             .where(eq(bookLogs.id, id))
             .returning()
-        : await db.insert(bookLogs).values(values).returning()
+        : await db
+            .insert(bookLogs)
+            .values({ ...values, id: newId })
+            .onConflictDoUpdate({
+              target: bookLogs.id,
+              set: { ...values, updatedAt },
+            })
+            .returning()
       return row && bookLogEntry(row)
     }
     case "record": {
@@ -439,7 +473,14 @@ async function writeLog(
             .set({ ...values, updatedAt })
             .where(eq(recordLogs.id, id))
             .returning()
-        : await db.insert(recordLogs).values(values).returning()
+        : await db
+            .insert(recordLogs)
+            .values({ ...values, id: newId })
+            .onConflictDoUpdate({
+              target: recordLogs.id,
+              set: { ...values, updatedAt },
+            })
+            .returning()
       return row && recordLogEntry(row, input.mediaId)
     }
   }
@@ -742,11 +783,11 @@ export const pgRepository: ArchiveRepository = {
     return deriveRecent(items, logs, limit)
   },
 
-  async addLog(input, item) {
+  async addLog(input, item, id) {
     const type = mediaTypeOf(input)
     return getDb().transaction(async (tx) => {
       if (type !== "record") await upsertLoggedWork(tx, type, item)
-      const log = await writeLog(tx, input)
+      const log = await writeLog(tx, input, undefined, id)
       if (!log) throw new Error("Log was not saved")
       return log
     })
@@ -996,7 +1037,7 @@ export const pgRepository: ArchiveRepository = {
     return rows.map(toCopy)
   },
 
-  async addCollectionItem(snapshot, input) {
+  async addCollectionItem(snapshot, input, id) {
     return getDb().transaction(async (tx) => {
       // Buying something you wanted turns the want into the copy.
       const [wanted] = await tx
@@ -1009,13 +1050,26 @@ export const pgRepository: ArchiveRepository = {
         ...copyInputValues(input),
         backlogAddedAt: null,
       }
+      // A want has no plays yet, so it can take the id the client shows.
       const [row] = wanted
         ? await tx
             .update(records)
-            .set({ ...values, addedAt: now(), updatedAt: now() })
+            .set({
+              ...values,
+              ...(id ? { id } : {}),
+              addedAt: now(),
+              updatedAt: now(),
+            })
             .where(eq(records.id, wanted.id))
             .returning()
-        : await tx.insert(records).values(values).returning()
+        : await tx
+            .insert(records)
+            .values({ ...values, id })
+            .onConflictDoUpdate({
+              target: records.id,
+              set: { ...values, updatedAt: now() },
+            })
+            .returning()
       if (!row) throw new Error("Copy was not saved")
       return toCopy(row)
     })
@@ -1175,10 +1229,15 @@ export const pgRepository: ArchiveRepository = {
     return rows.map(toFlight)
   },
 
-  async addFlight(input) {
+  async addFlight(input, id) {
+    const values = flightValues(input)
     const [row] = await getDb()
       .insert(flights)
-      .values(flightValues(input))
+      .values({ ...values, id })
+      .onConflictDoUpdate({
+        target: flights.id,
+        set: { ...values, updatedAt: now() },
+      })
       .returning()
     if (!row) throw new Error("Flight was not saved")
     return toFlight(row)

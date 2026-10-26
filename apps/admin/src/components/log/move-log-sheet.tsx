@@ -57,26 +57,16 @@ export function MoveLogSheet({
     const target = toBacklogItem(media)
     const { id, createdAt: _c, updatedAt: _u, ...input } = log
     const moved = { ...input, mediaId: media.id } as typeof input
-    move.mutate(
-      { id, input: moved, item: target },
-      {
-        onSuccess: () => {
-          onOpenChange(false)
-          onMoved()
-          toast.success(`Moved to ${media.title}`, {
-            description: `From ${item.title}`,
-            action: {
-              label: "Undo",
-              onClick: () => move.mutate({ id, input, item }),
-            },
-          })
-        },
-        onError: (error) =>
-          toast.error("Couldn't move the log", {
-            description: error instanceof Error ? error.message : undefined,
-          }),
-      }
-    )
+    move.mutate({ id, input: moved, item: target })
+    onOpenChange(false)
+    onMoved()
+    toast(`Moved to ${media.title}`, {
+      description: `From ${item.title}`,
+      action: {
+        label: "Undo",
+        onClick: () => move.mutate({ id, input, item }),
+      },
+    })
   }
 
   return (
@@ -106,7 +96,6 @@ export function MoveLogSheet({
               <li key={`${media.type}-${media.id}`}>
                 <button
                   type="button"
-                  disabled={move.isPending}
                   onClick={() => moveTo(media)}
                   className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 active:bg-muted disabled:opacity-50"
                 >

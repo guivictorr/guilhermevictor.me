@@ -35,7 +35,7 @@ export const remoteRepository: ArchiveRepository = {
   listLibraryPage: (input) => listLibraryPageFn({ data: input }),
   listLogs: (target) => listLogsFn({ data: target }),
   listRecent: (limit) => listRecentFn({ data: { limit } }),
-  addLog: (input, item) => addLogFn({ data: { input, item } }),
+  addLog: (input, item, id) => addLogFn({ data: { input, item, id } }),
   updateLog: (id, input) => updateLogFn({ data: { id, input } }),
   moveLog: (id, input, item) => moveLogFn({ data: { id, input, item } }),
   deleteLog: (id) => deleteLogFn({ data: { id } }),
@@ -46,15 +46,15 @@ export const remoteRepository: ArchiveRepository = {
   getStats: () => getStatsFn(),
   getFacts: () => getFactsFn(),
   listCollection: () => listCollectionFn(),
-  addCollectionItem: (snapshot, input) =>
-    addCollectionItemFn({ data: { snapshot, input } }),
+  addCollectionItem: (snapshot, input, id) =>
+    addCollectionItemFn({ data: { snapshot, input, id } }),
   updateCollectionItem: (id, input) =>
     updateCollectionItemFn({ data: { id, input } }),
   deleteCollectionItem: (id) => deleteCollectionItemFn({ data: { id } }),
   importCollection: (drafts) => importCollectionFn({ data: { drafts } }),
   fillFromSteam: (entries) => fillFromSteamFn({ data: { entries } }),
   listFlights: () => listFlightsFn(),
-  addFlight: (input) => addFlightFn({ data: input }),
+  addFlight: (input, id) => addFlightFn({ data: { input, id } }),
   updateFlight: (id, input) => updateFlightFn({ data: { id, input } }),
   deleteFlight: (id) => deleteFlightFn({ data: { id } }),
   exportAll: () => exportAllFn(),

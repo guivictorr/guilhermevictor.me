@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import type { QueryClient, QueryKey } from "@tanstack/react-query"
+import { toast } from "sonner"
 import type {
   ArchiveExport,
   BacklogItem,
@@ -36,7 +37,8 @@ export const mediaKey = (target: LogTarget) => `${target.type}:${target.id}`
  * Archive data comes from server functions (Postgres). Route loaders
  * prefetch what a screen needs; components read it with useSuspenseQuery.
  * Writes are optimistic (see docs/data-fetching.md): the cache changes
- * first, rolls back on error, and only the affected queries refetch.
+ * first and callers move on at once; a failure rolls back and offers a
+ * retry in a toast. Only the affected queries refetch.
  */
 
 export const archiveKeys = {
@@ -176,9 +178,73 @@ async function applyOptimistic(
 
 type Rollback = { rollback?: () => void }
 
-/** What a write to a kind's logs can change; refetched in parallel. */
-function invalidateKinds(queryClient: QueryClient, types: Array<MediaType>) {
-  const keys: Array<QueryKey> = [
+/**
+ * Every optimistic write shares one queue (`scope`): the server applies
+ * them in the order they were made, so editing or deleting a log that is
+ * still being created just waits for it. `onMutate` isn't queued, so the
+ * screen never waits.
+ */
+const WRITE_KEY = [...archiveKeys.all, "write"] as const
+const WRITE_SCOPE = { id: "archive-write" }
+
+const staleKeys = new Map<string, QueryKey>()
+
+/**
+ * Refetches what writes touched once the queue is empty: a refetch that
+ * lands between two writes would wipe the second one's optimistic patch.
+ * Not awaited, so a write settles as soon as the server answers.
+ */
+function refreshAfterWrites(queryClient: QueryClient, keys: Array<QueryKey>) {
+  for (const key of keys) staleKeys.set(JSON.stringify(key), key)
+  // The write that's settling still counts.
+  if (queryClient.isMutating({ mutationKey: WRITE_KEY }) > 1) return
+  const queryKeys = [...staleKeys.values()]
+  staleKeys.clear()
+  for (const queryKey of queryKeys)
+    void queryClient.invalidateQueries({ queryKey })
+}
+
+/**
+ * An optimistic archive write. Callers fire `mutate` and move on: success
+ * needs no feedback (the cache already shows it), a failure rolls back and
+ * toasts with Retry, which replays the same variables (ids included, so
+ * a write that did reach the server isn't duplicated).
+ */
+function useArchiveWrite<TData, TVars, TContext extends Rollback>({
+  mutationFn,
+  onMutate,
+  refresh,
+  errorTitle,
+}: {
+  mutationFn: (vars: TVars) => Promise<TData>
+  onMutate: (vars: TVars) => Promise<TContext>
+  /** Query keys the write may have changed. */
+  refresh: (vars: TVars, context: TContext | undefined) => Array<QueryKey>
+  errorTitle: string
+}) {
+  const queryClient = useQueryClient()
+  const mutation = useMutation<TData, Error, TVars, TContext>({
+    mutationKey: WRITE_KEY,
+    scope: WRITE_SCOPE,
+    mutationFn,
+    onMutate,
+    onError: (error, vars, context) => {
+      context?.rollback?.()
+      toast.error(errorTitle, {
+        description: error.message,
+        action: { label: "Retry", onClick: () => retry(vars) },
+      })
+    },
+    onSettled: (_data, _error, vars, context) =>
+      refreshAfterWrites(queryClient, refresh(vars, context)),
+  })
+  const retry = (vars: TVars) => mutation.mutate(vars)
+  return mutation
+}
+
+/** What a write to a kind's logs can change. */
+function kindKeys(types: Array<MediaType>): Array<QueryKey> {
+  return [
     archiveKeys.allRecent(),
     archiveKeys.index(),
     archiveKeys.stats(),
@@ -191,16 +257,18 @@ function invalidateKinds(queryClient: QueryClient, types: Array<MediaType>) {
     ]),
     ...(types.includes("record") ? [archiveKeys.collection()] : []),
   ]
-  return Promise.all(
+}
+
+const invalidateKeys = (queryClient: QueryClient, keys: Array<QueryKey>) =>
+  Promise.all(
     keys.map((queryKey) => queryClient.invalidateQueries({ queryKey }))
   )
-}
 
 const nowIso = () => new Date().toISOString()
 const keyOf = (type: MediaType, id: unknown) => `${type}:${String(id)}`
 
-/** A log as it will look once saved, shown until the server answers. */
-function pendingLog(input: LogInput, id = crypto.randomUUID()): LogEntry {
+/** A log as it will look once saved (same id), shown until the refetch. */
+function pendingLog(input: LogInput, id: string): LogEntry {
   const now = nowIso()
   return { ...input, id, createdAt: now, updatedAt: now }
 }
@@ -210,6 +278,9 @@ const withIndex = (update: (index: ArchiveIndex) => ArchiveIndex) =>
 
 const without = (list: Array<string>, key: string) =>
   list.filter((k) => k !== key)
+
+const withKey = (list: Array<string>, key: string) =>
+  list.includes(key) ? list : [...list, key]
 
 function logPatches(log: LogEntry, item: LibraryItemInput): Array<Patch> {
   const type = mediaTypeOf(log)
@@ -225,9 +296,7 @@ function logPatches(log: LogEntry, item: LibraryItemInput): Array<Patch> {
     ]),
     withIndex((index) => ({
       ...index,
-      logged: index.logged.includes(key)
-        ? index.logged
-        : [...index.logged, key],
+      logged: withKey(index.logged, key),
       backlog: without(index.backlog, key),
     })),
     patch<Array<BacklogItem>>(archiveKeys.backlog(), (items) =>
@@ -265,31 +334,38 @@ function typeOfLog(queryClient: QueryClient, id: string) {
   return undefined
 }
 
+type AddLogVars = {
+  input: LogInput
+  item: LibraryItemInput
+  /** Defaults to a new uuid; pass one to restore a deleted log as it was. */
+  id?: string
+}
+
 export function useAddLog() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({
-      input,
-      item,
-    }: {
-      input: LogInput
-      item: LibraryItemInput
-    }) => repo.addLog(input, item),
-    onMutate: async ({ input, item }): Promise<Rollback> => ({
+  const mutation = useArchiveWrite({
+    mutationFn: ({ input, item, id }: Required<AddLogVars>) =>
+      repo.addLog(input, item, id),
+    onMutate: async ({ input, item, id }): Promise<Rollback> => ({
       rollback: await applyOptimistic(
         queryClient,
-        logPatches(pendingLog(input), item)
+        logPatches(pendingLog(input, id), item)
       ),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: (_d, _e, { input }) =>
-      invalidateKinds(queryClient, [mediaTypeOf(input)]),
+    refresh: ({ input }) => kindKeys([mediaTypeOf(input)]),
+    errorTitle: "Couldn't save the log",
   })
+  return {
+    ...mutation,
+    // The id is picked here, so the cache, the server and a retry agree.
+    mutate: (vars: AddLogVars) =>
+      mutation.mutate({ ...vars, id: vars.id ?? crypto.randomUUID() }),
+  }
 }
 
 export function useUpdateLog() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: ({ id, input }: { id: string; input: LogInput }) =>
       repo.updateLog(id, input),
     onMutate: async ({ id, input }): Promise<Rollback> => ({
@@ -303,15 +379,14 @@ export function useUpdateLog() {
         }))
       ),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: (_d, _e, { input }) =>
-      invalidateKinds(queryClient, [mediaTypeOf(input)]),
+    refresh: ({ input }) => kindKeys([mediaTypeOf(input)]),
+    errorTitle: "Couldn't save the log",
   })
 }
 
 export function useMoveLog() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: ({
       id,
       input,
@@ -321,22 +396,28 @@ export function useMoveLog() {
       input: LogInput
       item: LibraryItemInput
     }) => repo.moveLog(id, input, item),
-    onMutate: async ({ id }): Promise<Rollback> => ({
-      // Off the old work right away; the new one fills in on refetch.
-      rollback: await applyOptimistic(
-        queryClient,
-        replaceLogPatches(id, () => undefined)
-      ),
+    onMutate: async ({ id, input, item }): Promise<Rollback> => ({
+      // Off the old work, onto the new one (same id and dates).
+      rollback: await applyOptimistic(queryClient, [
+        ...replaceLogPatches(id, () => undefined),
+        patch<Array<LogEntry>>(
+          archiveKeys.logs({ type: mediaTypeOf(input), id: input.mediaId }),
+          (logs) => [pendingLog(input, id), ...logs]
+        ),
+        withIndex((index) => ({
+          ...index,
+          logged: withKey(index.logged, keyOf(item.type, item.id)),
+        })),
+      ]),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: (_d, _e, { input }) =>
-      invalidateKinds(queryClient, [mediaTypeOf(input)]),
+    refresh: ({ input }) => kindKeys([mediaTypeOf(input)]),
+    errorTitle: "Couldn't move the log",
   })
 }
 
 export function useDeleteLog() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: (id: string) => repo.deleteLog(id),
     onMutate: async (id): Promise<Rollback & { type?: MediaType }> => ({
       type: typeOfLog(queryClient, id),
@@ -345,11 +426,9 @@ export function useDeleteLog() {
         replaceLogPatches(id, () => undefined)
       ),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: (_d, _e, _id, context) =>
-      context?.type
-        ? invalidateKinds(queryClient, [context.type])
-        : queryClient.invalidateQueries({ queryKey: archiveKeys.all }),
+    refresh: (_id, context) =>
+      context?.type ? kindKeys([context.type]) : [archiveKeys.all],
+    errorTitle: "Couldn't delete the log",
   })
 }
 
@@ -375,20 +454,16 @@ export function useClearArchive() {
   })
 }
 
-function invalidateBacklog(queryClient: QueryClient, type: MediaType) {
-  return Promise.all(
-    [
-      archiveKeys.backlog(),
-      archiveKeys.index(),
-      archiveKeys.facts(),
-      archiveKeys.library(type),
-    ].map((queryKey) => queryClient.invalidateQueries({ queryKey }))
-  )
-}
+const backlogKeys = (type: MediaType): Array<QueryKey> => [
+  archiveKeys.backlog(),
+  archiveKeys.index(),
+  archiveKeys.facts(),
+  archiveKeys.library(type),
+]
 
 export function useAddToBacklog() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: (item: LibraryItemInput) => repo.addToBacklog(item),
     onMutate: async (item): Promise<Rollback> => {
       const key = keyOf(item.type, item.id)
@@ -400,19 +475,19 @@ export function useAddToBacklog() {
           ]),
           withIndex((index) => ({
             ...index,
-            backlog: [...without(index.backlog, key), key],
+            backlog: withKey(index.backlog, key),
           })),
         ]),
       }
     },
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: (_d, _e, item) => invalidateBacklog(queryClient, item.type),
+    refresh: (item) => backlogKeys(item.type),
+    errorTitle: "Couldn't add to the backlog",
   })
 }
 
 export function useRemoveFromBacklog() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: (target: LogTarget) => repo.removeFromBacklog(target),
     onMutate: async (target): Promise<Rollback> => {
       const key = keyOf(target.type, target.id)
@@ -428,32 +503,66 @@ export function useRemoveFromBacklog() {
         ]),
       }
     },
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: (_d, _e, target) => invalidateBacklog(queryClient, target.type),
+    refresh: (target) => backlogKeys(target.type),
+    errorTitle: "Couldn't remove from the backlog",
   })
 }
 
 /** Copies change the records library, plays, value and index. */
-const invalidateCollection = (queryClient: QueryClient) =>
-  invalidateKinds(queryClient, ["record"])
+const collectionKeys = () => kindKeys(["record"])
+
+type AddCopyVars = {
+  snapshot: CollectionSnapshot
+  input: CollectionItemInput
+  id?: string
+}
 
 export function useAddCollectionItem() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({
-      snapshot,
-      input,
-    }: {
-      snapshot: CollectionSnapshot
-      input: CollectionItemInput
-    }) => repo.addCollectionItem(snapshot, input),
-    onSettled: () => invalidateCollection(queryClient),
+  const mutation = useArchiveWrite({
+    mutationFn: ({ snapshot, input, id }: Required<AddCopyVars>) =>
+      repo.addCollectionItem(snapshot, input, id),
+    onMutate: async ({ snapshot, input, id }): Promise<Rollback> => {
+      const key = keyOf("record", snapshot.releaseId)
+      const now = nowIso()
+      const copy: CollectionItem = {
+        ...snapshot,
+        ...input,
+        id,
+        addedAt: now,
+        updatedAt: now,
+      }
+      return {
+        rollback: await applyOptimistic(queryClient, [
+          patch<Array<CollectionItem>>(archiveKeys.collection(), (items) => [
+            ...items,
+            copy,
+          ]),
+          // Buying something you wanted takes it out of the backlog.
+          withIndex((index) => ({
+            ...index,
+            owned: withKey(index.owned, key),
+            backlog: without(index.backlog, key),
+          })),
+          patch<Array<BacklogItem>>(archiveKeys.backlog(), (items) =>
+            items.filter((b) => keyOf(b.type, b.id) !== key)
+          ),
+        ]),
+      }
+    },
+    refresh: collectionKeys,
+    errorTitle: "Couldn't add the copy",
   })
+  return {
+    ...mutation,
+    mutate: (vars: AddCopyVars) =>
+      mutation.mutate({ ...vars, id: vars.id ?? crypto.randomUUID() }),
+  }
 }
 
 export function useUpdateCollectionItem() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: ({ id, input }: { id: string; input: CollectionItemInput }) =>
       repo.updateCollectionItem(id, input),
     onMutate: async ({ id, input }): Promise<Rollback> => ({
@@ -463,14 +572,14 @@ export function useUpdateCollectionItem() {
         ),
       ]),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: () => invalidateCollection(queryClient),
+    refresh: collectionKeys,
+    errorTitle: "Couldn't save the copy",
   })
 }
 
 export function useDeleteCollectionItem() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: (id: string) => repo.deleteCollectionItem(id),
     onMutate: async (id): Promise<Rollback> => ({
       rollback: await applyOptimistic(queryClient, [
@@ -479,8 +588,8 @@ export function useDeleteCollectionItem() {
         ),
       ]),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: () => invalidateCollection(queryClient),
+    refresh: collectionKeys,
+    errorTitle: "Couldn't remove the copy",
   })
 }
 
@@ -489,7 +598,7 @@ export function useImportCollection() {
   return useMutation({
     mutationFn: (drafts: Array<CollectionItemDraft>) =>
       repo.importCollection(drafts),
-    onSuccess: () => invalidateCollection(queryClient),
+    onSuccess: () => invalidateKeys(queryClient, collectionKeys()),
   })
 }
 
@@ -498,23 +607,26 @@ export function useFillFromSteam() {
   return useMutation({
     mutationFn: (entries: Array<SteamPlaytimeMatch>) =>
       repo.fillFromSteam(entries),
-    onSuccess: () => invalidateKinds(queryClient, ["game"]),
+    onSuccess: () => invalidateKeys(queryClient, kindKeys(["game"])),
   })
 }
 
-const invalidateFlights = (queryClient: QueryClient) =>
-  Promise.all(
-    [archiveKeys.flights(), archiveKeys.facts()].map((queryKey) =>
-      queryClient.invalidateQueries({ queryKey })
-    )
-  )
+const flightKeys = () => [archiveKeys.flights(), archiveKeys.facts()]
+
+type SaveFlightVars = {
+  input: FlightInput
+  /** The flight being edited; without it a new one is created. */
+  id?: string
+  /** Id for a new flight; defaults to a new uuid (pass one to restore). */
+  newId?: string
+}
 
 export function useSaveFlight() {
   const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, input }: { id?: string; input: FlightInput }) =>
-      id ? repo.updateFlight(id, input) : repo.addFlight(input),
-    onMutate: async ({ id, input }): Promise<Rollback> => {
+  const mutation = useArchiveWrite({
+    mutationFn: ({ id, newId, input }: SaveFlightVars) =>
+      id ? repo.updateFlight(id, input) : repo.addFlight(input, newId),
+    onMutate: async ({ id, newId, input }): Promise<Rollback> => {
       const now = nowIso()
       return {
         rollback: await applyOptimistic(queryClient, [
@@ -529,7 +641,7 @@ export function useSaveFlight() {
                   ...flights,
                   {
                     ...input,
-                    id: crypto.randomUUID(),
+                    id: newId ?? crypto.randomUUID(),
                     createdAt: now,
                     updatedAt: now,
                   },
@@ -538,14 +650,21 @@ export function useSaveFlight() {
         ]),
       }
     },
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: () => invalidateFlights(queryClient),
+    refresh: flightKeys,
+    errorTitle: "Couldn't save the flight",
   })
+  return {
+    ...mutation,
+    mutate: (vars: SaveFlightVars) =>
+      mutation.mutate(
+        vars.id ? vars : { ...vars, newId: vars.newId ?? crypto.randomUUID() }
+      ),
+  }
 }
 
 export function useDeleteFlight() {
   const queryClient = useQueryClient()
-  return useMutation({
+  return useArchiveWrite({
     mutationFn: (id: string) => repo.deleteFlight(id),
     onMutate: async (id): Promise<Rollback> => ({
       rollback: await applyOptimistic(queryClient, [
@@ -554,7 +673,7 @@ export function useDeleteFlight() {
         ),
       ]),
     }),
-    onError: (_e, _v, context) => context?.rollback?.(),
-    onSettled: () => invalidateFlights(queryClient),
+    refresh: flightKeys,
+    errorTitle: "Couldn't delete the flight",
   })
 }

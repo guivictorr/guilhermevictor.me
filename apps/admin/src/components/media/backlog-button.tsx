@@ -21,18 +21,13 @@ export function useBacklogToggle(item: LibraryItemInput) {
 
   function toggle() {
     if (inBacklog) {
-      remove.mutate(item, {
-        onSuccess: () =>
-          toast("Removed from backlog", {
-            action: { label: "Undo", onClick: () => add.mutate(item) },
-          }),
+      remove.mutate(item)
+      // On the backlog screen the card vanishes, so offer the way back.
+      toast("Removed from backlog", {
+        description: item.title,
+        action: { label: "Undo", onClick: () => add.mutate(item) },
       })
-    } else {
-      add.mutate(item, {
-        onSuccess: () =>
-          toast.success("Added to backlog", { description: item.title }),
-      })
-    }
+    } else add.mutate(item)
   }
 
   return { inBacklog, logged, toggle, ready: index !== undefined }

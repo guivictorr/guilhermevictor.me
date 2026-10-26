@@ -66,32 +66,24 @@ export function LogSheet({
       ? `${target.item.title} · ${target.seasonName}`
       : target.item.title
 
-  async function handleSubmit(input: LogInput) {
-    try {
-      if (editing) {
-        await updateLog.mutateAsync({ id: editing.id, input })
-        toast.success("Log updated")
-      } else {
-        await addLog.mutateAsync({ input, item: target.item })
-        toast.success("Logged", { description: subtitle })
-      }
-      onOpenChange(false)
-    } catch (error) {
-      toast.error("Couldn't save", {
-        description: error instanceof Error ? error.message : undefined,
-      })
-    }
+  // Optimistic: the cache already shows the change, so close right away.
+  // Failures toast with Retry from the mutation itself.
+  function handleSubmit(input: LogInput) {
+    if (editing) updateLog.mutate({ id: editing.id, input })
+    else addLog.mutate({ input, item: target.item })
+    onOpenChange(false)
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!editing) return
-    const { id: _id, createdAt: _c, updatedAt: _u, ...input } = editing
-    await deleteLog.mutateAsync(editing.id)
+    const { id, createdAt: _c, updatedAt: _u, ...input } = editing
+    deleteLog.mutate(id)
     onOpenChange(false)
     toast("Log deleted", {
       action: {
         label: "Undo",
-        onClick: () => addLog.mutate({ input, item: target.item }),
+        // Same id, so the log comes back as it was.
+        onClick: () => addLog.mutate({ input, item: target.item, id }),
       },
     })
   }
@@ -177,7 +169,6 @@ export function LogSheet({
           variant="ghost"
           className="h-11 w-full text-destructive hover:text-destructive"
           onClick={handleDelete}
-          disabled={deleteLog.isPending}
         >
           <Trash2Icon />
           Delete log

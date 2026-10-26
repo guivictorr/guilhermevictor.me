@@ -2,7 +2,6 @@ import { CollectionItemInput, Grade, IsoDate } from "@workspace/schemas"
 import type { CollectionItem } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
 import { Trash2Icon } from "lucide-react"
-import { toast } from "sonner"
 import { z } from "zod"
 import { useAppForm } from "@/components/form/form-hook"
 import { FormShell } from "@/components/log/log-forms"
@@ -62,15 +61,14 @@ export function CopySheet({
   const update = useUpdateCollectionItem()
   const remove = useDeleteCollectionItem()
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!editing) return
     if (
       !window.confirm("Remove this copy? Plays logged on it are deleted too.")
     )
       return
-    await remove.mutateAsync(editing.id)
+    remove.mutate(editing.id)
     onOpenChange(false)
-    toast("Copy removed from collection", { description: snapshot.title })
   }
 
   return (
@@ -84,23 +82,10 @@ export function CopySheet({
         key={`${editing?.id ?? "new"}-${session}`}
         editing={editing}
         submitLabel={editing ? "Save changes" : "Add to collection"}
-        onSubmit={async (input) => {
-          try {
-            if (editing) {
-              await update.mutateAsync({ id: editing.id, input })
-              toast.success("Copy updated")
-            } else {
-              await add.mutateAsync({ snapshot, input })
-              toast.success("Added to collection", {
-                description: snapshot.title,
-              })
-            }
-            onOpenChange(false)
-          } catch (error) {
-            toast.error("Couldn't save", {
-              description: error instanceof Error ? error.message : undefined,
-            })
-          }
+        onSubmit={(input) => {
+          if (editing) update.mutate({ id: editing.id, input })
+          else add.mutate({ snapshot, input })
+          onOpenChange(false)
         }}
       />
       {editing ? (
@@ -108,7 +93,6 @@ export function CopySheet({
           variant="ghost"
           className="mt-3 h-11 w-full text-destructive hover:text-destructive"
           onClick={handleDelete}
-          disabled={remove.isPending}
         >
           <Trash2Icon />
           Remove from collection
@@ -125,7 +109,7 @@ function CopyFormBody({
 }: {
   editing?: CollectionItem
   submitLabel: string
-  onSubmit: (input: CollectionItemInput) => Promise<void>
+  onSubmit: (input: CollectionItemInput) => void
 }) {
   const defaultValues: z.input<typeof CopyForm> = {
     mediaCondition: editing?.mediaCondition,

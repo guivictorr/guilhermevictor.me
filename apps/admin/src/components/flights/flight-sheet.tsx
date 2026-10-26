@@ -258,17 +258,16 @@ export function FlightSheet({
   const remove = useDeleteFlight()
   const { data: flights } = useQuery(flightsQuery())
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!editing) return
-    await remove.mutateAsync(editing.id)
+    const { id, createdAt: _c, updatedAt: _u, ...input } = editing
+    remove.mutate(id)
     onOpenChange(false)
     toast(`Deleted ${editing.from} → ${editing.to}`, {
+      // Same id, so the flight comes back as it was.
       action: {
         label: "Undo",
-        onClick: () => {
-          const { id: _id, createdAt: _c, updatedAt: _u, ...input } = editing
-          save.mutate({ input })
-        },
+        onClick: () => save.mutate({ input, newId: id }),
       },
     })
   }
@@ -291,25 +290,17 @@ export function FlightSheet({
         editing={editing}
         template={template}
         history={flights ?? []}
-        onSubmit={async (input) => {
-          try {
-            await save.mutateAsync({ id: editing?.id, input })
-            toast.success(editing ? "Flight updated" : "Flight logged", {
-              description: `${input.from} → ${input.to}`,
-              action:
-                !editing && onAddConnection
-                  ? {
-                      label: "Add connection",
-                      onClick: () => onAddConnection(input),
-                    }
-                  : undefined,
+        onSubmit={(input) => {
+          save.mutate({ id: editing?.id, input })
+          onOpenChange(false)
+          // Not a confirmation: the shortcut to chain the next leg.
+          if (!editing && onAddConnection)
+            toast(`${input.from} → ${input.to}`, {
+              action: {
+                label: "Add connection",
+                onClick: () => onAddConnection(input),
+              },
             })
-            onOpenChange(false)
-          } catch (error) {
-            toast.error("Couldn't save", {
-              description: error instanceof Error ? error.message : undefined,
-            })
-          }
         }}
       />
       {editing ? (
@@ -317,7 +308,6 @@ export function FlightSheet({
           variant="ghost"
           className="mt-3 h-11 w-full text-destructive hover:text-destructive"
           onClick={handleDelete}
-          disabled={remove.isPending}
         >
           <Trash2Icon />
           Delete flight
@@ -336,7 +326,7 @@ function FlightForm({
   editing?: Flight
   template?: Partial<FlightInput>
   history: Array<Flight>
-  onSubmit: (input: FlightInput) => Promise<void>
+  onSubmit: (input: FlightInput) => void
 }) {
   const flown = useMemo(
     () => new Set(history.flatMap((f) => [f.from, f.to])),

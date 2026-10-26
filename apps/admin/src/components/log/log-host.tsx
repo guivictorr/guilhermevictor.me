@@ -1,26 +1,43 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import type { LogEntry } from "@workspace/schemas"
+import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { PlusIcon } from "lucide-react"
 import { useSyncExternalStore } from "react"
 import { toast } from "sonner"
+import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
 import type { LogTargetContext } from "@/components/log/log-sheet"
 import { SeasonList } from "@/components/log/season-list"
 import { copyOptions } from "@/components/records/copies"
 import { ResponsiveSheet } from "@/components/responsive-sheet"
 import type { LibraryItemInput } from "@/lib/repo"
-import { collectionQuery } from "@/queries/archive"
+import {
+  collectionQuery,
+  indexQuery,
+  logsQuery,
+  mediaKey,
+} from "@/queries/archive"
 import { gameQuery, showQuery } from "@/queries/media"
 
 /*
  * One log sheet for the whole app: "Log" on Home, a long press on a cover,
- * the cover menu… all open it over the current screen, without navigating.
+ * the cover menu… all open it over the current screen, without navigating:
+ * a new log, or your logs of the work (tap one to edit it).
  * It stays mounted, so opening is a real open/close transition (a sheet
  * mounted already open would just pop in).
  */
 
-type State = { item?: LibraryItemInput; open: boolean }
+/** "new": the log form (seasons for shows); "logs": your logs + New log; "edit": one log. */
+type View = "new" | "logs" | "edit"
+type State = {
+  item?: LibraryItemInput
+  open: boolean
+  view: View
+  editing?: LogEntry
+}
 
-let state: State = { open: false }
+let state: State = { open: false, view: "new" }
 const listeners = new Set<() => void>()
 const set = (next: State) => {
   state = next
@@ -32,21 +49,27 @@ const subscribe = (listener: () => void) => {
 }
 const getState = () => state
 
-/** Opens the log sheet for a work, over whatever screen you're on. */
-export function openLog(item: LibraryItemInput) {
+function present(item: LibraryItemInput, view: View, editing?: LogEntry) {
   if (state.item && sameItem(state.item, item)) {
-    set({ item, open: true })
+    // Same work: the current sheet closes as the next one opens.
+    set({ item, open: true, view, editing })
     return
   }
   // Swap the target while closed, then open on the next frame, so the
   // sheet renders closed first and transitions in.
-  set({ item, open: false })
+  set({ item, open: false, view, editing })
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
-      if (state.item === item) set({ item, open: true })
+      if (state.item === item) set({ item, open: true, view, editing })
     })
   )
 }
+
+/** Opens the new-log sheet for a work, over whatever screen you're on. */
+export const openLog = (item: LibraryItemInput) => present(item, "new")
+
+/** Opens your logs of a work (tap one to edit it, or add a new one). */
+export const openLogs = (item: LibraryItemInput) => present(item, "logs")
 
 const sameItem = (a: LibraryItemInput, b: LibraryItemInput) =>
   a.type === b.type && String(a.id) === String(b.id)
@@ -65,6 +88,7 @@ export function usePrefetchLog() {
     if (item.type === "show") void queryClient.prefetchQuery(showQuery(id))
     if (item.type === "record")
       void queryClient.prefetchQuery(collectionQuery())
+    void queryClient.prefetchQuery(logsQuery(item))
   }
 }
 
@@ -85,14 +109,44 @@ export function useOpenLog() {
   }
 }
 
-/** Mounted once, in the root layout. */
-export function LogHost() {
-  const { item, open } = useSyncExternalStore(subscribe, getState, getState)
-  if (!item) return null
-  return <HostSheet item={item} open={open} />
+/**
+ * Your logs of a work when it has any, otherwise straight to a new log
+ * (a long press on a cover).
+ */
+export function useOpenLogOrLogs() {
+  const queryClient = useQueryClient()
+  const openNew = useOpenLog()
+  return async (item: LibraryItemInput) => {
+    // Raw query data: `select` (the Sets) isn't applied here.
+    const index = await queryClient.ensureQueryData(indexQuery())
+    if (index.logged.includes(mediaKey(item))) openLogs(item)
+    else await openNew(item)
+  }
 }
 
-function HostSheet({ item, open }: { item: LibraryItemInput; open: boolean }) {
+/** Mounted once, in the root layout. */
+export function LogHost() {
+  const { item, open, view, editing } = useSyncExternalStore(
+    subscribe,
+    getState,
+    getState
+  )
+  if (!item) return null
+  return <HostSheet item={item} open={open} view={view} editing={editing} />
+}
+
+function HostSheet({
+  item,
+  open,
+  view,
+  editing,
+}: {
+  item: LibraryItemInput
+  open: boolean
+  view: View
+  editing?: LogEntry
+}) {
+  const openNew = useOpenLog()
   const id = Number(item.id)
   const game = useQuery({ ...gameQuery(id), enabled: item.type === "game" })
   const show = useQuery({ ...showQuery(id), enabled: item.type === "show" })
@@ -100,29 +154,70 @@ function HostSheet({ item, open }: { item: LibraryItemInput; open: boolean }) {
     ...collectionQuery(),
     enabled: item.type === "record",
   })
-  const onOpenChange = (next: boolean) => (next ? openLog(item) : close())
+  const onOpenChange = (next: boolean) =>
+    next ? set({ ...state, open: true }) : close()
 
   // Shows are logged per season: the season list, then its own sheet.
-  // Both sheets stay mounted so switching kinds never pops one in.
-  const target: LogTargetContext =
-    item.type === "movie" || item.type === "show"
-      ? { kind: "movie", item }
-      : item.type === "book"
-        ? { kind: "book", item }
-        : item.type === "game"
-          ? { kind: "game", item, platforms: game.data?.platforms ?? [] }
-          : {
-              kind: "record",
-              item,
-              copies: copyOptions(
-                (collection ?? []).filter((c) => c.releaseId === item.id)
-              ),
-            }
+  // Every sheet stays mounted so switching views never pops one in.
+  const target = ((): LogTargetContext => {
+    if (editing?.kind === "season")
+      return {
+        kind: "season",
+        item,
+        seasonNumber: editing.seasonNumber,
+        seasonName:
+          show.data?.seasons.find(
+            (s) => s.seasonNumber === editing.seasonNumber
+          )?.name ?? `Season ${editing.seasonNumber}`,
+      }
+    switch (item.type) {
+      case "movie":
+        return { kind: "movie", item }
+      // Whole-show logs from before seasons-only logging.
+      case "show":
+        return { kind: "show", item }
+      case "book":
+        return { kind: "book", item }
+      case "game":
+        return { kind: "game", item, platforms: game.data?.platforms ?? [] }
+      case "record":
+        return {
+          kind: "record",
+          item,
+          copies: copyOptions(
+            (collection ?? []).filter((c) => c.releaseId === item.id)
+          ),
+        }
+    }
+  })()
 
   return (
     <>
       <ResponsiveSheet
-        open={open && item.type === "show"}
+        open={open && view === "logs"}
+        onOpenChange={(next) => (next ? openLogs(item) : close())}
+        title="Your logs"
+        description={item.title}
+      >
+        <div className="flex flex-col gap-3">
+          <Button
+            size="lg"
+            className="pressable h-11 w-full text-base"
+            onClick={() => void openNew(item)}
+          >
+            <PlusIcon />
+            {item.type === "show" ? "Log a season" : "New log"}
+          </Button>
+          <LogHistory
+            type={item.type}
+            id={item.id}
+            onSelect={(log) => present(item, "edit", log)}
+            emptyLabel="Nothing logged yet."
+          />
+        </div>
+      </ResponsiveSheet>
+      <ResponsiveSheet
+        open={open && view === "new" && item.type === "show"}
         onOpenChange={onOpenChange}
         title="Seasons"
         description={item.title}
@@ -134,9 +229,12 @@ function HostSheet({ item, open }: { item: LibraryItemInput; open: boolean }) {
         )}
       </ResponsiveSheet>
       <LogSheet
-        open={open && item.type !== "show"}
+        open={
+          open && (view === "edit" || (view === "new" && item.type !== "show"))
+        }
         onOpenChange={onOpenChange}
         target={target}
+        editing={view === "edit" ? editing : undefined}
       />
     </>
   )

@@ -86,9 +86,11 @@ export const listRecentFn = createServerFn({ method: "GET" })
 
 export const addLogFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
-  .validator(z.object({ input: LogInput, item: ItemInput }))
+  .validator(
+    z.object({ input: LogInput, item: ItemInput, id: z.uuid().optional() })
+  )
   .handler(async ({ data }) => {
-    const log = await repo.addLog(data.input, data.item)
+    const log = await repo.addLog(data.input, data.item, data.id)
     await ensureDetails(mediaTypeOf(data.input), data.input.mediaId)
     if (data.input.kind === "season")
       await ensureSeasonDetails(data.input.mediaId, data.input.seasonNumber)
@@ -152,9 +154,19 @@ export const listCollectionFn = createServerFn({ method: "GET" })
 
 export const addCollectionItemFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
-  .validator(z.object({ snapshot: Snapshot, input: CollectionItemInput }))
+  .validator(
+    z.object({
+      snapshot: Snapshot,
+      input: CollectionItemInput,
+      id: z.uuid().optional(),
+    })
+  )
   .handler(async ({ data }) => {
-    const copy = await repo.addCollectionItem(data.snapshot, data.input)
+    const copy = await repo.addCollectionItem(
+      data.snapshot,
+      data.input,
+      data.id
+    )
     await ensureDetails("record", copy.releaseId)
     return copy
   })
@@ -196,8 +208,8 @@ export const listFlightsFn = createServerFn({ method: "GET" })
 
 export const addFlightFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
-  .validator(FlightInput)
-  .handler(({ data }) => repo.addFlight(data))
+  .validator(z.object({ input: FlightInput, id: z.uuid().optional() }))
+  .handler(({ data }) => repo.addFlight(data.input, data.id))
 
 export const updateFlightFn = createServerFn({ method: "POST" })
   .middleware([requireOwner])
