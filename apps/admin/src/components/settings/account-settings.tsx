@@ -28,6 +28,34 @@ async function unwrap<T>(
 
 const authKeys = {
   passkeys: ["auth", "passkeys"] as const,
+  sessions: ["auth", "sessions"] as const,
+}
+
+/** "Safari on iPhone"-style label; good enough to tell your devices apart. */
+function describeDevice(userAgent: string | null | undefined) {
+  if (!userAgent) return "Unknown device"
+  const os =
+    (
+      [
+        ["iPhone", "iPhone"],
+        ["iPad", "iPad"],
+        ["Android", "Android"],
+        ["Mac OS X", "Mac"],
+        ["Windows", "Windows"],
+        ["Linux", "Linux"],
+      ] as const
+    ).find(([needle]) => userAgent.includes(needle))?.[1] ?? "Unknown OS"
+  const browser =
+    (
+      [
+        ["Edg/", "Edge"],
+        ["Firefox/", "Firefox"],
+        ["CriOS/", "Chrome"],
+        ["Chrome/", "Chrome"],
+        ["Safari/", "Safari"],
+      ] as const
+    ).find(([needle]) => userAgent.includes(needle))?.[1] ?? "Browser"
+  return `${browser} on ${os}`
 }
 
 const shortDate = (date: Date | string) =>
@@ -71,6 +99,7 @@ export function AccountSettings() {
         </Button>
       </Field>
       <Passkeys />
+      <Sessions />
     </>
   )
 }
@@ -125,6 +154,72 @@ function Passkeys() {
         }))}
         onRemove={(id) => remove.mutate(id)}
         removeLabel="Remove passkey"
+      />
+    </Field>
+  )
+}
+
+function Sessions() {
+  const queryClient = useQueryClient()
+  const current = useQuery({
+    queryKey: [...authKeys.sessions, "current"],
+    queryFn: () => unwrap(authClient.getSession()),
+  })
+  const sessions = useQuery({
+    queryKey: authKeys.sessions,
+    queryFn: () => unwrap(authClient.listSessions()),
+  })
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: authKeys.sessions })
+  const revoke = useMutation({
+    mutationFn: (token: string) => unwrap(authClient.revokeSession({ token })),
+    onSuccess: refresh,
+    onError: fail("Couldn't sign out that device"),
+  })
+  const revokeOthers = useMutation({
+    mutationFn: () => unwrap(authClient.revokeOtherSessions()),
+    onSuccess: () => {
+      toast.success("Signed out everywhere else")
+      return refresh()
+    },
+    onError: fail("Couldn't sign out the other devices"),
+  })
+
+  const currentId = current.data?.session.id
+  // This device is left out: "Sign out" above covers it.
+  const others = (sessions.data ?? []).filter((s) => s.id !== currentId)
+
+  return (
+    <Field>
+      <div className="flex items-center gap-4">
+        <FieldContent>
+          <FieldLabel>Devices</FieldLabel>
+          <FieldDescription>
+            {others.length === 0
+              ? "Only this device is signed in."
+              : `Signed in on ${others.length + 1} devices.`}
+          </FieldDescription>
+        </FieldContent>
+        {others.length > 0 ? (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => revokeOthers.mutate()}
+            disabled={revokeOthers.isPending}
+          >
+            <LogOutIcon />
+            Sign out others
+          </Button>
+        ) : null}
+      </div>
+      <CredentialList
+        items={others.map((s) => ({
+          id: s.token,
+          name: describeDevice(s.userAgent),
+          detail: `Last active ${shortDate(s.updatedAt)}`,
+        }))}
+        onRemove={(token) => revoke.mutate(token)}
+        removeLabel="Sign out this device"
       />
     </Field>
   )

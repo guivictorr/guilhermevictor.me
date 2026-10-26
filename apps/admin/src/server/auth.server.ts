@@ -9,8 +9,12 @@ import { getAuthEnv } from "./env.server"
 
 /*
  * Single-user auth: GitHub to get in the first time, then passkeys.
- * Only OWNER_EMAIL may ever create an account.
+ * Only the GitHub account OWNER_GITHUB_ID may ever be linked, only
+ * OWNER_EMAIL may create the user, and once it exists no one else can.
  */
+
+const forbidden = () =>
+  new APIError("FORBIDDEN", { message: "This archive is private." })
 
 function createAuth() {
   const env = getAuthEnv()
@@ -36,10 +40,24 @@ function createAuth() {
       user: {
         create: {
           before: async (user) => {
-            if (!owners.includes(user.email.toLowerCase()))
-              throw new APIError("FORBIDDEN", {
-                message: "This archive is private.",
-              })
+            if (!owners.includes(user.email.toLowerCase())) throw forbidden()
+            const existing = await getDb()
+              .select({ id: authSchema.user.id })
+              .from(authSchema.user)
+              .limit(1)
+            if (existing.length > 0) throw forbidden()
+          },
+        },
+      },
+      account: {
+        create: {
+          // Covers sign-up and implicit linking: an email match isn't enough.
+          before: async (account) => {
+            if (
+              account.providerId === "github" &&
+              account.accountId !== env.OWNER_GITHUB_ID
+            )
+              throw forbidden()
           },
         },
       },

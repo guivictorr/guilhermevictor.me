@@ -42,10 +42,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
         },
         { title: "Archive" },
+        // Private app: never indexed, cached or used for AI (see also
+        // robots.txt and the X-Robots-Tag header in vite.config.ts).
         {
-          name: "description",
-          content: "My personal archive of movies, shows and games.",
+          name: "robots",
+          content:
+            "noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai",
         },
+        { name: "referrer", content: "same-origin" },
         {
           name: "theme-color",
           media: "(prefers-color-scheme: light)",

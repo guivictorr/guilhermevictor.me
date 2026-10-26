@@ -1,7 +1,6 @@
 {
   "name": "Archive",
   "short_name": "Archive",
-  "description": "My personal archive of movies, shows and games.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

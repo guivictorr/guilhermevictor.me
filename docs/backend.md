@@ -84,15 +84,29 @@ archive (never your account). v1 files (pre-database) are rejected.
 ## Auth (`src/server/auth.server.ts`)
 
 - Better Auth with **GitHub** (first sign-in) and **passkeys** (add in Settings).
-- **Single user:** a database hook refuses to create any account whose email
-  isn't in `OWNER_EMAIL`.
+- **Single user:** database hooks refuse any user whose email isn't in
+  `OWNER_EMAIL`, any user at all once one exists, and any GitHub account other
+  than `OWNER_GITHUB_ID` (so an email match alone never links a stranger).
 - Every server function (archive and provider RPCs) uses the `requireOwner`
   middleware. The root route's `beforeLoad` redirects to `/login`, but that's
   only UX. When offline it lets the cached shell render.
 - CSRF: `src/start.ts` rejects non-GET server-function calls that aren't
   same-origin (`createCsrfMiddleware`). Better Auth checks origins itself.
-- Sessions last 90 days and refresh daily while used. Signing out clears the
-  service worker's page/data caches.
+- Sessions last 90 days and refresh daily while used. Settings → Devices lists
+  them and signs other devices out. Signing out clears the service worker's
+  page/data caches.
+
+## Privacy
+
+- Nothing is indexed: `public/robots.txt` disallows everything (AI crawlers
+  named too), every response carries `X-Robots-Tag: noindex…` and the page a
+  `robots` meta. robots/noindex are requests; the login is the real wall.
+- Security headers (CSP, HSTS, `frame-ancestors 'none'`, `Referrer-Policy:
+same-origin`…) are Nitro route rules in `vite.config.ts`, so Vercel applies
+  them to static files too. The CSP is production-only (Vite's dev client
+  breaks it). Add new image/embed origins there.
+- On Vercel: Deployment Protection "Standard" (only the custom domain is
+  public) and the Firewall's AI-bots rule block what ignores robots.txt.
 
 ## Hosting (plan: $0/month)
 

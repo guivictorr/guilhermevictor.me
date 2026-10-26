@@ -33,6 +33,9 @@ export function YouTubeVideo({
           title={video.name}
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowFullScreen
+          // The page sends no referrer cross-origin, but YouTube refuses to
+          // play embeds without one; the bare origin is enough.
+          referrerPolicy="strict-origin-when-cross-origin"
           className="absolute inset-0 size-full"
         />
       ) : (

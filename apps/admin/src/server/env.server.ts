@@ -55,8 +55,10 @@ const AuthEnv = z.object({
   BETTER_AUTH_URL: z.url(),
   GITHUB_CLIENT_ID: z.string().min(1),
   GITHUB_CLIENT_SECRET: z.string().min(1),
-  /** The only account allowed to sign in (comma-separate to allow more). */
+  /** The email allowed to create the (single) account; comma-separate aliases. */
   OWNER_EMAIL: z.string().min(3),
+  /** Numeric id of the only GitHub account that may sign in (api.github.com/users/<login>). */
+  OWNER_GITHUB_ID: z.string().regex(/^\d+$/, "OWNER_GITHUB_ID must be numeric"),
 })
 
 export const getAuthEnv = () => readEnv(AuthEnv)
