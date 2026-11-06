@@ -66,7 +66,9 @@ Navigation, library chips, home tiles and stats iterate these.
 URL params (`?type=movie&genre=878&provider=8&from=2020`), see `lib/search-filters.ts`.
 Library pages share `?view=grid|table` (defaults stripped from URLs).
 Mobile tab bar: Home · Library · Backlog · Search (Stats was removed to be rebuilt); Library pages switch kinds
-with chips (`LibraryNav`). Desktop: sidebar with a Library section.
+with chips (`LibraryNav`). Desktop: a dock floating at the bottom, every destination at
+once, one glass pill per group (Home · Search | the library kinds and Flights | Backlog |
+Settings); `DOCK_GROUPS` in `components/nav-items.ts`.
 
 ## PWA
 

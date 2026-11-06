@@ -31,7 +31,7 @@ const toItem = (media: CardMedia): LibraryItemInput => ({
 /**
  * A list as full-screen cards: swipe up (or ↓/→) for the next item, Esc or
  * the back button to leave. It reopens on the card you left (per URL, for
- * this browser session). Covers the tab bar and sidebar (z-45) but stays
+ * this browser session). Covers the tab bar and dock (z-45) but stays
  * under sheets and menus (z-50), so logging opens on top. Only the current
  * card and its neighbours render.
  */

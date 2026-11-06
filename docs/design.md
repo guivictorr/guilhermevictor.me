@@ -92,7 +92,7 @@ considered too simple, and Stats is to be rebuilt.
       buttons (`Button` only transitions `transform`/`box-shadow`, for the press).
     - Only the first tooltip waits (500ms, `TooltipProvider`); neighbours open at once
       (`data-instant` skips the transition).
-    - Frequent navigation doesn't animate: tab-bar and sidebar links skip the view
+    - Frequent navigation doesn't animate: tab-bar and dock links skip the view
       transition (`viewTransition={false}`); the crossfade is for going into a page.
     - Decide by frequency and intent, not by input device.
 12. **Interruptible motion** ([interruptibility](https://craft.gustavofior.com/interruptibility)).
@@ -232,25 +232,25 @@ Rules:
 shadcn on Base UI provides behavior and accessibility; the styling is ours. Restyle the
 components, don't fight their logic.
 
-| Component         | Style                                                                                                                                          |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primary button    | Orange pill with `on-accent` label. One per view                                                                                               |
-| Secondary button  | `field` pill with `text` label                                                                                                                 |
-| Ghost button      | Text only, `muted`; becomes `text` on hover                                                                                                    |
-| Icon button       | Round, 44px touch size, always with `aria-label`                                                                                               |
-| Sizes             | 36px (compact) and 44px (default, touch); press `scale(0.97)`                                                                                  |
-| Chips and filters | Pill; may carry a count ("In progress 4"). Active = `text` fill with `ink` label. Removable chips end with ×                                   |
-| Segmented control | `field` track with a `raised` thumb that slides (ease-in-out token)                                                                            |
-| Tab bar           | Floating glass pill above the safe area. Active item: orange icon (filled variant) and label                                                   |
-| Card              | `surface`, hairline `line` border, 20px radius. Media covers never animate on hover (owner's call); other cards may change background on hover |
-| Detail hero       | Blurred cover as backdrop fading into `ink`; the poster/sleeve as an object; overline for the kind; title; one orange action                   |
-| Sheet             | `ResponsiveSheet`: bottom sheet on mobile, side sheet on desktop; 28px top radius; grab handle; drawer easing                                  |
-| Input             | `field` fill, no border at rest; 2px `accent-text` focus ring via `box-shadow`, offset 2px; 16px or larger text on touch                       |
-| Rating            | Orange stars; hover previews on desktop, tap or drag on touch (already built)                                                                  |
-| Toast             | Sonner on a `raised` surface; success and error with icons                                                                                     |
-| Inline feedback   | A check next to the trigger for success; the field itself highlighted for errors                                                               |
-| Loading           | Skeletons shaped like the content. Spinners only inside buttons                                                                                |
-| Empty state       | One line saying what's missing plus one primary action ("Find something")                                                                      |
+| Component         | Style                                                                                                                                                                                                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary button    | Orange pill with `on-accent` label. One per view                                                                                                                                                                                                                                                     |
+| Secondary button  | `field` pill with `text` label                                                                                                                                                                                                                                                                       |
+| Ghost button      | Text only, `muted`; becomes `text` on hover                                                                                                                                                                                                                                                          |
+| Icon button       | Round, 44px touch size, always with `aria-label`                                                                                                                                                                                                                                                     |
+| Sizes             | 36px (compact) and 44px (default, touch); press `scale(0.97)`                                                                                                                                                                                                                                        |
+| Chips and filters | Pill; may carry a count ("In progress 4"). Active = `text` fill with `ink` label. Removable chips end with ×                                                                                                                                                                                         |
+| Segmented control | `field` track with a `raised` thumb that slides (ease-in-out token)                                                                                                                                                                                                                                  |
+| Tab bar and dock  | Floating glass pill above the safe area. Active item: orange icon (filled variant) and label. Desktop dock: one pill per group, 8px apart; icons only (56px circles, named by a tooltip), so a one-item pill is a circle; no top highlight on its pills (on a circle it reads as a thicker top edge) |
+| Card              | `surface`, hairline `line` border, 20px radius. Media covers never animate on hover (owner's call); other cards may change background on hover                                                                                                                                                       |
+| Detail hero       | Blurred cover as backdrop fading into `ink`; the poster/sleeve as an object; overline for the kind; title; one orange action                                                                                                                                                                         |
+| Sheet             | `ResponsiveSheet`: bottom sheet on mobile, side sheet on desktop; 28px top radius; grab handle; drawer easing                                                                                                                                                                                        |
+| Input             | `field` fill, no border at rest; 2px `accent-text` focus ring via `box-shadow`, offset 2px; 16px or larger text on touch                                                                                                                                                                             |
+| Rating            | Orange stars; hover previews on desktop, tap or drag on touch (already built)                                                                                                                                                                                                                        |
+| Toast             | Sonner on a `raised` surface; success and error with icons                                                                                                                                                                                                                                           |
+| Inline feedback   | A check next to the trigger for success; the field itself highlighted for errors                                                                                                                                                                                                                     |
+| Loading           | Skeletons shaped like the content. Spinners only inside buttons                                                                                                                                                                                                                                      |
+| Empty state       | One line saying what's missing plus one primary action ("Find something")                                                                                                                                                                                                                            |
 
 Other rules:
 
@@ -397,6 +397,6 @@ A simple hover or fade never needs a library; use CSS.
 | Color tokens (both themes), fonts                                                                                                 | `packages/ui/src/styles/globals.css`                                              |
 | Type roles (`type-display`, `type-title`, `type-heading`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, motion tokens | `apps/admin/src/styles/app.css`                                                   |
 | Buttons, inputs, toggles                                                                                                          | `packages/ui/src/components/*` (restyled shadcn)                                  |
-| Sidebar (desktop, collapsible ⌘B) and tab bar (phones)                                                                            | `apps/admin/src/components/app-shell.tsx`                                         |
+| Dock (desktop) and tab bar (phones)                                                                                               | `apps/admin/src/components/app-shell.tsx`                                         |
 | Covers (record sleeve + vinyl)                                                                                                    | `components/poster.tsx`                                                           |
 | Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                      | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |

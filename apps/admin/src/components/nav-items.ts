@@ -1,4 +1,10 @@
-import { BookmarkIcon, HouseIcon, LibraryIcon, SearchIcon } from "lucide-react"
+import {
+  BookmarkIcon,
+  HouseIcon,
+  LibraryIcon,
+  SearchIcon,
+  SettingsIcon,
+} from "lucide-react"
 import { LIBRARY_SECTIONS } from "@/lib/media-kinds"
 
 /** Phone tab bar. "Library" covers every kind; pages switch kinds with chips. */
@@ -14,16 +20,20 @@ export const TAB_ITEMS = [
   { to: "/search", label: "Search", icon: SearchIcon, match: ["/search"] },
 ] as const
 
-/** Desktop sidebar, in sections. */
-export const SIDEBAR_SECTIONS = [
+/**
+ * Desktop dock: one pill per group, with a gap between groups. `exact`
+ * items only light up on their own path ("/" would match everything).
+ */
+export const DOCK_GROUPS = [
   {
+    label: "Main",
     items: [
       { to: "/", label: "Home", icon: HouseIcon, exact: true },
       { to: "/search", label: "Search", icon: SearchIcon, exact: false },
     ],
   },
   {
-    title: "Library",
+    label: "Library",
     items: LIBRARY_SECTIONS.map((section) => ({
       to: section.to,
       label: section.plural,
@@ -32,8 +42,15 @@ export const SIDEBAR_SECTIONS = [
     })),
   },
   {
+    label: "Lists",
     items: [
       { to: "/backlog", label: "Backlog", icon: BookmarkIcon, exact: false },
+    ],
+  },
+  {
+    label: "App",
+    items: [
+      { to: "/settings", label: "Settings", icon: SettingsIcon, exact: false },
     ],
   },
 ] as const

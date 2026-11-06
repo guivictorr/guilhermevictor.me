@@ -10,7 +10,7 @@ import {
 import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { ThemeProvider } from "next-themes"
-import { AppShell, readSidebarOpen } from "@/components/app-shell"
+import { AppShell } from "@/components/app-shell"
 import { LogHost } from "@/components/log/log-host"
 import { PwaRegister } from "@/components/pwa-register"
 import { ThemeColorSync } from "@/components/theme-color-sync"
@@ -37,7 +37,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       if (!viewer)
         throw redirect({ to: "/login", search: { redirect: location.href } })
     },
-    loader: () => ({ sidebarOpen: readSidebarOpen() }),
     head: () => ({
       meta: [
         { charSet: "utf-8" },
@@ -90,10 +89,9 @@ function RootComponent() {
   const bare = useRouterState({
     select: (s) => s.location.pathname === "/login",
   })
-  const { sidebarOpen } = Route.useLoaderData()
   if (bare) return <Outlet />
   return (
-    <AppShell sidebarOpen={sidebarOpen}>
+    <AppShell>
       <Outlet />
     </AppShell>
   )
