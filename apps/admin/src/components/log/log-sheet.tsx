@@ -4,7 +4,6 @@ import type {
   LogEntry,
   LogInput,
   MovieLog,
-  RecordLog,
   SeasonLog,
   ShowLog,
 } from "@workspace/schemas"
@@ -16,7 +15,6 @@ import {
   BookLogForm,
   GameLogForm,
   MovieLogForm,
-  RecordLogForm,
   SeasonLogForm,
   ShowLogForm,
 } from "./log-forms"
@@ -36,12 +34,6 @@ export type LogTargetContext =
       seasonName: string
     }
   | { kind: "game"; item: LibraryItemInput; platforms: Array<string> }
-  | {
-      kind: "record"
-      item: LibraryItemInput
-      /** Your copies of this release (plays are logged on one). */
-      copies: Array<{ value: string; label: string }>
-    }
   | { kind: "show"; item: LibraryItemInput }
   | { kind: "book"; item: LibraryItemInput }
 
@@ -134,15 +126,6 @@ export function LogSheet({
           onSubmit={handleSubmit}
           submitLabel={submitLabel}
         />
-      ) : target.kind === "record" ? (
-        <RecordLogForm
-          key={formKey}
-          mediaId={Number(target.item.id)}
-          copies={target.copies}
-          initial={editing as RecordLog | undefined}
-          onSubmit={handleSubmit}
-          submitLabel={submitLabel}
-        />
       ) : (
         <GameLogForm
           key={formKey}
@@ -153,8 +136,7 @@ export function LogSheet({
           submitLabel={submitLabel}
         />
       )}
-      {/* Plays belong to a copy you own, so they don't move. */}
-      {editing && editing.kind !== "record" ? (
+      {editing ? (
         <Button
           variant="ghost"
           className="mt-3 h-11 w-full"
@@ -174,7 +156,7 @@ export function LogSheet({
           Delete log
         </Button>
       ) : null}
-      {editing && editing.kind !== "record" ? (
+      {editing ? (
         <MoveLogSheet
           open={moving}
           onOpenChange={setMoving}

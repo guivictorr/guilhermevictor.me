@@ -1,7 +1,6 @@
 import {
   GameLogInput,
   MovieLogInput,
-  RecordLogInput,
   BookLogInput,
   SeasonLogInput,
   ShowLogInput,
@@ -11,7 +10,6 @@ import type {
   GameLog,
   LogInput,
   MovieLog,
-  RecordLog,
   SeasonLog,
   ShowLog,
 } from "@workspace/schemas"
@@ -360,56 +358,6 @@ export function BookLogForm({
       <form.AppField name="notes">
         {(f) => (
           <f.TextareaField label="Notes" placeholder="Thoughts, quotes…" />
-        )}
-      </form.AppField>
-      <form.AppForm>
-        <form.SubmitButton>{submitLabel}</form.SubmitButton>
-      </form.AppForm>
-    </FormShell>
-  )
-}
-
-/** Plays go on a copy you own; the picker only shows when you own several. */
-export function RecordLogForm({
-  mediaId,
-  copies,
-  initial,
-  onSubmit,
-  submitLabel,
-}: FormProps<RecordLog> & {
-  copies: Array<{ value: string; label: string }>
-}) {
-  const defaultValues: z.input<typeof RecordLogInput> = {
-    kind: "record",
-    mediaId,
-    copyId: initial?.copyId ?? copies[0]?.value ?? "",
-    playedAt: initial ? initial.playedAt : today(),
-    rating: initial?.rating,
-    notes: initial?.notes,
-  }
-  const form = useAppForm({
-    defaultValues,
-    validators: { onSubmit: RecordLogInput },
-    onSubmit: ({ value }) => onSubmit(RecordLogInput.parse(value)),
-  })
-
-  return (
-    <FormShell onSubmit={form.handleSubmit}>
-      {copies.length > 1 ? (
-        <form.AppField name="copyId">
-          {(f) => <f.SelectField label="Copy" options={copies} />}
-        </form.AppField>
-      ) : null}
-      <form.AppField name="playedAt">
-        {(f) => <f.DateField label="Listened on" optional max={today()} />}
-      </form.AppField>
-      <form.AppField name="rating">{(f) => <f.RatingField />}</form.AppField>
-      <form.AppField name="notes">
-        {(f) => (
-          <f.TextareaField
-            label="Notes"
-            placeholder="Which side, how it sounded…"
-          />
         )}
       </form.AppField>
       <form.AppForm>

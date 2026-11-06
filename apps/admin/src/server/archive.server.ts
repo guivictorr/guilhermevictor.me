@@ -42,7 +42,6 @@ import {
   games,
   movieLogs,
   movies,
-  recordLogs,
   records,
   showLogs,
   shows,
@@ -246,20 +245,6 @@ const bookLogEntry = (row: typeof bookLogs.$inferSelect): LogEntry =>
     })
   )
 
-const recordLogEntry = (
-  row: typeof recordLogs.$inferSelect,
-  releaseId: number
-): LogEntry =>
-  LogEntry.parse(
-    compact({
-      kind: "record",
-      mediaId: releaseId,
-      copyId: row.recordId,
-      playedAt: row.playedAt,
-      ...logCommon(row),
-    })
-  )
-
 /** Logs of one kind, optionally of one work. */
 async function selectLogs(
   db: Conn,
@@ -302,24 +287,15 @@ async function selectLogs(
           .where(id === undefined ? undefined : eq(bookLogs.bookId, bookId(id)))
       ).map(bookLogEntry)
     case "record":
-      return (
-        await db
-          .select({ log: recordLogs, releaseId: records.releaseId })
-          .from(recordLogs)
-          .innerJoin(records, eq(records.id, recordLogs.recordId))
-          .where(
-            id === undefined ? undefined : eq(records.releaseId, numericId(id))
-          )
-      ).map((r) => recordLogEntry(r.log, r.releaseId))
+      // Records have copies, not logs.
+      return []
   }
 }
 
 const allLogs = async (db: Conn) =>
   (
     await Promise.all(
-      (["movie", "show", "game", "book", "record"] as const).map((t) =>
-        selectLogs(db, t)
-      )
+      (["movie", "show", "game", "book"] as const).map((t) => selectLogs(db, t))
     )
   ).flat()
 
@@ -327,21 +303,6 @@ const logFields = (input: { rating?: number; notes?: string }) => ({
   rating: input.rating ?? null,
   notes: input.notes ?? null,
 })
-
-/** Plays only go on copies you own. */
-async function assertOwnedCopy(db: Conn, copyId: string, releaseId: number) {
-  const [copy] = await db
-    .select({ id: records.id })
-    .from(records)
-    .where(
-      and(
-        eq(records.id, copyId),
-        eq(records.releaseId, releaseId),
-        isNull(records.backlogAddedAt)
-      )
-    )
-  if (!copy) throw new Error("Plays can only be logged on a copy you own")
-}
 
 /** Inserts (no `id`) or updates (`id`) a log in its kind's table. */
 /**
@@ -458,29 +419,6 @@ async function writeLog(
             })
             .returning()
       return row && bookLogEntry(row)
-    }
-    case "record": {
-      await assertOwnedCopy(db, input.copyId, input.mediaId)
-      const values = {
-        recordId: input.copyId,
-        playedAt: input.playedAt ?? null,
-        ...logFields(input),
-      }
-      const [row] = id
-        ? await db
-            .update(recordLogs)
-            .set({ ...values, updatedAt })
-            .where(eq(recordLogs.id, id))
-            .returning()
-        : await db
-            .insert(recordLogs)
-            .values({ ...values, id: newId })
-            .onConflictDoUpdate({
-              target: recordLogs.id,
-              set: { ...values, updatedAt },
-            })
-            .returning()
-      return row && recordLogEntry(row, input.mediaId)
     }
   }
 }
@@ -785,7 +723,7 @@ export const pgRepository: ArchiveRepository = {
   async addLog(input, item, id) {
     const type = mediaTypeOf(input)
     return getDb().transaction(async (tx) => {
-      if (type !== "record") await upsertLoggedWork(tx, type, item)
+      await upsertLoggedWork(tx, type, item)
       const log = await writeLog(tx, input, undefined, id)
       if (!log) throw new Error("Log was not saved")
       return log
@@ -794,7 +732,6 @@ export const pgRepository: ArchiveRepository = {
 
   async moveLog(id, input, item) {
     const type = mediaTypeOf(input)
-    if (type === "record") throw new Error("Plays stay with their copy")
     return getDb().transaction(async (tx) => {
       const from = await loggedWorkId(tx, type, id)
       if (from === undefined) throw new Error("Log not found")
@@ -852,8 +789,6 @@ export const pgRepository: ArchiveRepository = {
         .where(eq(bookLogs.id, id))
         .returning()
       if (book) return pruneWork(tx, "book", book.bookId)
-      // A play: the copy stays, you still own it.
-      await tx.delete(recordLogs).where(eq(recordLogs.id, id))
     })
   },
 
@@ -1047,7 +982,7 @@ export const pgRepository: ArchiveRepository = {
         ...copyInputValues(input),
         backlogAddedAt: null,
       }
-      // A want has no plays yet, so it can take the id the client shows.
+      // A want becomes the copy, so it can take the id the client shows.
       const [row] = wanted
         ? await tx
             .update(records)
@@ -1390,7 +1325,5 @@ function logTable(log: LogEntry) {
       return "game_logs"
     case "book":
       return "book_logs"
-    case "record":
-      return "record_logs"
   }
 }

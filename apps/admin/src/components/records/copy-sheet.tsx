@@ -63,10 +63,7 @@ export function CopySheet({
 
   function handleDelete() {
     if (!editing) return
-    if (
-      !window.confirm("Remove this copy? Plays logged on it are deleted too.")
-    )
-      return
+    if (!window.confirm("Remove this copy?")) return
     remove.mutate(editing.id)
     onOpenChange(false)
   }

@@ -2,7 +2,7 @@ import { z } from "zod"
 import { CollectionItemInput, Money } from "./collection"
 import { ImageRef, IsoDateTime } from "./common"
 import { Flight } from "./flight"
-import { LogEntry } from "./log"
+import { LogEntries } from "./log"
 import { Book, Game, Movie, Release, Season, Show } from "./media"
 
 /*
@@ -94,7 +94,7 @@ export const ArchiveExport = z.object({
   games: z.array(GameRow).default([]),
   books: z.array(BookRow).default([]),
   records: z.array(RecordRow).default([]),
-  logs: z.array(LogEntry).default([]),
+  logs: LogEntries.default([]),
   flights: z.array(Flight).default([]),
 })
 export type ArchiveExport = z.infer<typeof ArchiveExport>

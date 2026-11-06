@@ -4,20 +4,13 @@ import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { PlusIcon } from "lucide-react"
 import { useSyncExternalStore } from "react"
-import { toast } from "sonner"
 import { LogHistory } from "@/components/log/log-history"
 import { LogSheet } from "@/components/log/log-sheet"
 import type { LogTargetContext } from "@/components/log/log-sheet"
 import { SeasonList } from "@/components/log/season-list"
-import { copyOptions } from "@/components/records/copies"
 import { ResponsiveSheet } from "@/components/responsive-sheet"
 import type { LibraryItemInput } from "@/lib/repo"
-import {
-  collectionQuery,
-  indexQuery,
-  logsQuery,
-  mediaKey,
-} from "@/queries/archive"
+import { indexQuery, logsQuery, mediaKey } from "@/queries/archive"
 import { gameQuery, showQuery } from "@/queries/media"
 
 /*
@@ -50,6 +43,8 @@ const subscribe = (listener: () => void) => {
 const getState = () => state
 
 function present(item: LibraryItemInput, view: View, editing?: LogEntry) {
+  // Records have copies, not logs: nothing to open.
+  if (item.type === "record") return
   if (state.item && sameItem(state.item, item)) {
     // Same work: the current sheet closes as the next one opens.
     set({ item, open: true, view, editing })
@@ -83,30 +78,17 @@ const close = () => set({ ...state, open: false })
 export function usePrefetchLog() {
   const queryClient = useQueryClient()
   return (item: LibraryItemInput) => {
+    if (item.type === "record") return
     const id = Number(item.id)
     if (item.type === "game") void queryClient.prefetchQuery(gameQuery(id))
     if (item.type === "show") void queryClient.prefetchQuery(showQuery(id))
-    if (item.type === "record")
-      void queryClient.prefetchQuery(collectionQuery())
     void queryClient.prefetchQuery(logsQuery(item))
   }
 }
 
-/** Opens the sheet, unless a record has no copy to log a play on. */
+/** Opens the new-log sheet (records have no logs: nothing opens). */
 export function useOpenLog() {
-  const queryClient = useQueryClient()
-  return async (item: LibraryItemInput) => {
-    if (item.type === "record") {
-      const copies = await queryClient.ensureQueryData(collectionQuery())
-      if (!copies.some((c) => c.releaseId === item.id)) {
-        toast("Add a copy first", {
-          description: "Plays are logged on a copy you own.",
-        })
-        return
-      }
-    }
-    openLog(item)
-  }
+  return (item: LibraryItemInput) => openLog(item)
 }
 
 /**
@@ -120,7 +102,7 @@ export function useOpenLogOrLogs() {
     // Raw query data: `select` (the Sets) isn't applied here.
     const index = await queryClient.ensureQueryData(indexQuery())
     if (index.logged.includes(mediaKey(item))) openLogs(item)
-    else await openNew(item)
+    else openNew(item)
   }
 }
 
@@ -150,16 +132,12 @@ function HostSheet({
   const id = Number(item.id)
   const game = useQuery({ ...gameQuery(id), enabled: item.type === "game" })
   const show = useQuery({ ...showQuery(id), enabled: item.type === "show" })
-  const { data: collection } = useQuery({
-    ...collectionQuery(),
-    enabled: item.type === "record",
-  })
   const onOpenChange = (next: boolean) =>
     next ? set({ ...state, open: true }) : close()
 
   // Shows are logged per season: the season list, then its own sheet.
   // Every sheet stays mounted so switching views never pops one in.
-  const target = ((): LogTargetContext => {
+  const target = ((): LogTargetContext | undefined => {
     if (editing?.kind === "season")
       return {
         kind: "season",
@@ -181,15 +159,10 @@ function HostSheet({
       case "game":
         return { kind: "game", item, platforms: game.data?.platforms ?? [] }
       case "record":
-        return {
-          kind: "record",
-          item,
-          copies: copyOptions(
-            (collection ?? []).filter((c) => c.releaseId === item.id)
-          ),
-        }
+        return undefined
     }
   })()
+  if (!target) return null
 
   return (
     <>
@@ -203,7 +176,7 @@ function HostSheet({
           <Button
             size="lg"
             className="pressable h-11 w-full text-base"
-            onClick={() => void openNew(item)}
+            onClick={() => openNew(item)}
           >
             <PlusIcon />
             {item.type === "show" ? "Log a season" : "New log"}

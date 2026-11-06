@@ -31,14 +31,14 @@ Other scripts: `db:generate` (new migration after editing `src/server/db/schema.
 
 One table per kind of work, one log table per kind, and flights:
 
-| Table                                                              | Holds                                                                                                                                                                                     |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `movies`, `shows`, `games`, `books`                                | One row per work in the archive, PK = provider id. `data` (jsonb) = provider details; columns copied from it for SQL (runtime, directors, imdb_id, developers, steam_id, authors, isbns…) |
-| `records`                                                          | One row **per physical copy** (uuid), or per wanted release (backlog, no copy fields). `release_id` = Discogs release; copy fields (conditions, price, store…); release columns + `data`  |
-| `movie_logs`, `show_logs`, `game_logs`, `book_logs`, `record_logs` | One row per log, FK to its work (cascade). `show_logs.season_number` null = whole show. `record_logs.record_id` = the copy played                                                         |
-| `flights`                                                          | Local times as `timestamp` without time zone                                                                                                                                              |
-| views `all_logs`, `all_backlog`                                    | Every log / every backlog entry across kinds, for SQL                                                                                                                                     |
-| `user`, `session`, `account`, `verification`, `passkey`            | Better Auth (generated: `pnpm dlx auth@1.7.7 generate`)                                                                                                                                   |
+| Table                                                   | Holds                                                                                                                                                                                     |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `movies`, `shows`, `games`, `books`                     | One row per work in the archive, PK = provider id. `data` (jsonb) = provider details; columns copied from it for SQL (runtime, directors, imdb_id, developers, steam_id, authors, isbns…) |
+| `records`                                               | One row **per physical copy** (uuid), or per wanted release (backlog, no copy fields). `release_id` = Discogs release; copy fields (conditions, price, store…); release columns + `data`  |
+| `movie_logs`, `show_logs`, `game_logs`, `book_logs`     | One row per log, FK to its work (cascade). `show_logs.season_number` null = whole show. Records have no logs (`record_logs` was dropped in migration 0007)                                |
+| `flights`                                               | Local times as `timestamp` without time zone                                                                                                                                              |
+| views `all_logs`, `all_backlog`                         | Every log / every backlog entry across kinds, for SQL                                                                                                                                     |
+| `user`, `session`, `account`, `verification`, `passkey` | Better Auth (generated: `pnpm dlx auth@1.7.7 generate`)                                                                                                                                   |
 
 Rules:
 
@@ -47,8 +47,8 @@ Rules:
   clears the backlog flag; deleting the last log of a non-backlogged work, or
   removing a never-logged work from the backlog, deletes the row.
 - **Records**: wanting a release adds a row with `backlog_added_at`; buying it
-  turns that row into the copy. A second copy is a second row. **Plays can only
-  be logged on a copy you own**; deleting a copy deletes its plays.
+  turns that row into the copy. A second copy is a second row. Records have no
+  logs: copies are all there is.
 - Columns like `title`, `year`, `poster`, `genres` come from the snapshot the UI
   sends when you log/backlog, and are overwritten from `data` once fetched.
 - Check constraints: ratings 1–10, game/book statuses, price amount and currency

@@ -51,7 +51,7 @@ export function YourStatsCard({ type, id }: { type: MediaType; id: WorkId }) {
 
   const rows: Array<[string, React.ReactNode]> = [
     [
-      type === "game" || type === "record"
+      type === "game"
         ? "Times played"
         : type === "book"
           ? "Times read"

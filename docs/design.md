@@ -34,7 +34,7 @@ playful-bouncy, and it is not neon-techy.
 
 **Voice:** short and specific labels. Write "Log watch", "Owned ×2", "Date unknown",
 "1h 50m connection in LIS". No exclamation marks, no jargon, no cute copy. Name things
-for what they contain ("Backlog", "Plays"), not with vague umbrella words.
+for what they contain ("Backlog", "My copies"), not with vague umbrella words.
 
 **References (mood, not to copy):** dark flight trackers (departure-board codes, bento
 fact tiles, boarding passes), a VHS-spine film archive (objects on a shelf, editorial

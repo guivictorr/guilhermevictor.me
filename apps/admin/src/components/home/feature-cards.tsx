@@ -204,7 +204,7 @@ export function NowCard({
               : "The only one in progress"}
           </p>
           {/* Opens the log sheet over Home; no navigation. */}
-          <Button size="sm" onClick={() => void openLog(current)}>
+          <Button size="sm" onClick={() => openLog(current)}>
             <PlusIcon />
             {type === "show" ? "Log season" : "Log"}
           </Button>

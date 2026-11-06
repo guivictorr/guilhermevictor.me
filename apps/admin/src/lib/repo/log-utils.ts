@@ -1,6 +1,9 @@
 import type { LogEntry, LogInput, MediaType } from "@workspace/schemas"
 
-export function mediaTypeOf(log: Pick<LogInput, "kind">): MediaType {
+/** The kinds that have logs: every kind but records (you own copies). */
+export type LoggedType = Exclude<MediaType, "record">
+
+export function mediaTypeOf(log: Pick<LogInput, "kind">): LoggedType {
   return log.kind === "season" ? "show" : log.kind
 }
 
@@ -10,7 +13,6 @@ export function mediaTypeOf(log: Pick<LogInput, "kind">): MediaType {
  */
 export function logDate(log: LogEntry): string | undefined {
   if (log.kind === "movie") return log.watchedAt
-  if (log.kind === "record") return log.playedAt
   return log.finishedAt ?? log.startedAt
 }
 

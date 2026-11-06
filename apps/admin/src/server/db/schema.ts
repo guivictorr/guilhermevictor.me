@@ -313,25 +313,6 @@ export const bookLogs = pgTable(
   ]
 )
 
-/** A play of a copy you own. Deleting the copy deletes its plays. */
-export const recordLogs = pgTable(
-  "record_logs",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    recordId: uuid("record_id")
-      .notNull()
-      .references(() => records.id, { onDelete: "cascade" }),
-    playedAt: date("played_at"),
-    rating: rating(),
-    notes: text("notes"),
-    ...logTimestamps,
-  },
-  (t) => [
-    index("record_logs_record_idx").on(t.recordId),
-    ratingCheck("record_logs_rating", t.rating),
-  ]
-)
-
 // --- flights -----------------------------------------------------------------
 
 /** Flights. Times are local to each airport (no offset), like a boarding pass. */
@@ -382,9 +363,6 @@ export const allLogs = pgView("all_logs", {
   union all
   select l.id, 'book', l.book_id, w.title, coalesce(l.finished_at, l.started_at), l.rating, l.created_at
     from book_logs l join books w on w.id = l.book_id
-  union all
-  select l.id, 'record', w.release_id::text, w.title, l.played_at, l.rating, l.created_at
-    from record_logs l join records w on w.id = l.record_id
 `)
 
 /** Everything in the backlog, any kind. */

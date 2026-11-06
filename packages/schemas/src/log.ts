@@ -121,25 +121,11 @@ const bookLogFields = z.object({
   notes: optionalText,
 })
 
-/** A listening session of a copy you own. */
-const recordLogFields = z.object({
-  kind: z.literal("record"),
-  /** Discogs release id. */
-  mediaId: z.number().int(),
-  /** The copy you played (a row in `records`). */
-  copyId: z.uuid(),
-  playedAt: IsoDate.optional(),
-  rating: Rating.optional(),
-  notes: optionalText,
-})
-
 export const MovieLogInput = movieLogFields
-export const RecordLogInput = recordLogFields
 export const ShowLogInput = finishAfterStart(showLogFields)
 export const BookLogInput = finishAfterStart(bookLogFields)
 export type BookLogInput = z.infer<typeof BookLogInput>
 export type ShowLogInput = z.infer<typeof ShowLogInput>
-export type RecordLogInput = z.infer<typeof RecordLogInput>
 export const SeasonLogInput = finishAfterStart(seasonLogFields)
 export const GameLogInput = finishAfterStart(gameLogFields)
 export type MovieLogInput = z.infer<typeof MovieLogInput>
@@ -150,7 +136,6 @@ export const LogInput = z.union([
   MovieLogInput,
   SeasonLogInput,
   GameLogInput,
-  RecordLogInput,
   ShowLogInput,
   BookLogInput,
 ])
@@ -163,8 +148,6 @@ export const BookLog = finishAfterStart(bookLogFields.extend(stored))
 export type BookLog = z.infer<typeof BookLog>
 export type ShowLog = z.infer<typeof ShowLog>
 export const GameLog = finishAfterStart(gameLogFields.extend(stored))
-export const RecordLog = recordLogFields.extend(stored)
-export type RecordLog = z.infer<typeof RecordLog>
 export type MovieLog = z.infer<typeof MovieLog>
 export type SeasonLog = z.infer<typeof SeasonLog>
 export type GameLog = z.infer<typeof GameLog>
@@ -175,9 +158,24 @@ export const LogEntry = z.union([
   SeasonLog,
   GameLog,
   BookLog,
-  RecordLog,
 ])
 export type LogEntry = z.infer<typeof LogEntry>
+
+/**
+ * Records have no logs (you own copies instead); older exports carry plays
+ * of them, which are left out on import.
+ */
+export const LogEntries = z.preprocess(
+  (logs) =>
+    Array.isArray(logs)
+      ? logs.filter(
+          (log: unknown) =>
+            !(log && typeof log === "object" && "kind" in log) ||
+            log.kind !== "record"
+        )
+      : logs,
+  z.array(LogEntry)
+)
 
 /**
  * Denormalized snapshot of a work saved when it is first logged,
@@ -207,7 +205,7 @@ export const LegacyArchiveExport = z.object({
   version: z.literal(1),
   exportedAt: IsoDateTime,
   items: z.array(LibraryItem),
-  logs: z.array(LogEntry),
+  logs: LogEntries,
   backlog: z.array(BacklogItem).default([]),
   collection: z.array(CollectionItem).default([]),
   flights: z.array(Flight).default([]),

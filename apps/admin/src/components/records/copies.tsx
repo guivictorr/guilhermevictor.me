@@ -24,19 +24,6 @@ export function snapshotOf(release: Release): CollectionSnapshot {
   }
 }
 
-/** Your copies as options for the record log form (plays are on a copy). */
-export function copyOptions(copies: Array<CollectionItem>) {
-  return copies.map((copy, i) => ({
-    value: copy.id,
-    label:
-      joinDefined([
-        copy.variant,
-        copy.mediaCondition,
-        formatDate(copy.acquiredAt),
-      ]) || `Copy ${i + 1}`,
-  }))
-}
-
 /** Your copies of a release (condition, price, store); tap one to edit. */
 export function Copies({
   copies,

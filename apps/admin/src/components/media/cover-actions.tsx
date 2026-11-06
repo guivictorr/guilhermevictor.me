@@ -28,7 +28,6 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { today } from "@/lib/format"
 import type { LibraryItemInput } from "@/lib/repo"
 import {
-  collectionQuery,
   indexQuery,
   logsQuery,
   mediaKey,
@@ -41,8 +40,7 @@ type QuickAction = { label: string; input: () => LogInput | undefined }
 /** One-tap logs for today, per kind. `again` = you've logged it before. */
 export function quickActions(
   item: LibraryItemInput,
-  again: boolean,
-  copyId: string | undefined
+  again: boolean
 ): Array<QuickAction> {
   const date = today()
   switch (item.type) {
@@ -108,20 +106,8 @@ export function quickActions(
         },
       ]
     case "record":
-      // Plays need a copy you own.
-      return copyId
-        ? [
-            {
-              label: "Played today",
-              input: () => ({
-                kind: "record",
-                mediaId: Number(item.id),
-                copyId,
-                playedAt: date,
-              }),
-            },
-          ]
-        : []
+      // Records have copies, not logs.
+      return []
   }
 }
 
@@ -133,7 +119,7 @@ const MOVE_TOLERANCE = 8
  * Actions on a cover without a button on it. Desktop: right-click opens a
  * menu (log, log today, edit logs, backlog, delete last log). Touch: a long
  * press opens your logs, or the new-log form when there are none. A short
- * tap still opens the page.
+ * tap still opens the page. Records have copies, not logs: a plain cover.
  */
 export function CoverActions({
   item,
@@ -151,6 +137,7 @@ export function CoverActions({
   // logs on page load.
   const [menuUsed, setMenuUsed] = useState(false)
 
+  if (item.type === "record") return children
   if (fine)
     return (
       <ContextMenu
@@ -162,7 +149,7 @@ export function CoverActions({
       >
         <ContextMenuTrigger className="block">{children}</ContextMenuTrigger>
         {menuUsed ? (
-          <CoverMenu item={item} onLog={() => void openLog(item)} />
+          <CoverMenu item={item} onLog={() => openLog(item)} />
         ) : null}
       </ContextMenu>
     )
@@ -244,19 +231,13 @@ function CoverMenu({
 }) {
   const { data: index } = useQuery(indexQuery())
   const logged = index?.logged.has(mediaKey(item)) ?? false
-  const owned = index?.owned.has(mediaKey(item)) ?? false
   const { data: logs } = useQuery({
     ...logsQuery({ type: item.type, id: item.id }),
     enabled: logged,
   })
-  const { data: collection } = useQuery({
-    ...collectionQuery(),
-    enabled: item.type === "record",
-  })
   const backlog = useBacklogToggle(item)
   const addLog = useAddLog()
   const deleteLog = useDeleteLog()
-  const copyId = collection?.find((c) => c.releaseId === item.id)?.id
   const latest = logs?.[0]
 
   function log(action: QuickAction) {
@@ -284,7 +265,7 @@ function CoverMenu({
         <PencilLineIcon />
         {item.type === "show" ? "Log a season…" : "Log…"}
       </ContextMenuItem>
-      {quickActions(item, logged, copyId).map((action) => (
+      {quickActions(item, logged).map((action) => (
         <ContextMenuItem key={action.label} onClick={() => log(action)}>
           <CheckIcon />
           {action.label}
@@ -297,12 +278,10 @@ function CoverMenu({
         </ContextMenuItem>
       ) : null}
       <ContextMenuSeparator />
-      {item.type === "record" && owned ? null : (
-        <ContextMenuItem onClick={backlog.toggle} disabled={!backlog.ready}>
-          {backlog.inBacklog ? <BookmarkCheckIcon /> : <BookmarkPlusIcon />}
-          {backlog.inBacklog ? "Remove from backlog" : "Add to backlog"}
-        </ContextMenuItem>
-      )}
+      <ContextMenuItem onClick={backlog.toggle} disabled={!backlog.ready}>
+        {backlog.inBacklog ? <BookmarkCheckIcon /> : <BookmarkPlusIcon />}
+        {backlog.inBacklog ? "Remove from backlog" : "Add to backlog"}
+      </ContextMenuItem>
       {logged ? (
         <ContextMenuItem
           variant="destructive"

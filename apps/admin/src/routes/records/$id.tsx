@@ -2,7 +2,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import type { CollectionItem, Release } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
-import { ExternalLinkIcon, PlusIcon } from "lucide-react"
+import { ExternalLinkIcon } from "lucide-react"
 import { useState } from "react"
 import {
   DetailBody,
@@ -14,16 +14,11 @@ import {
   RatingsRow,
   SideCard,
 } from "@/components/detail-layout"
-import { LogHistory } from "@/components/log/log-history"
-import { LogSheet } from "@/components/log/log-sheet"
-import { logSearch, useOpenLogFromSearch } from "@/components/log/log-search"
-import { useLogSheet } from "@/components/log/use-log-sheet"
 import { BacklogButton } from "@/components/media/backlog-button"
-import { LogsTabLabel } from "@/components/media/detail-sections"
 import { ScrollRow } from "@/components/media/media-rail"
-import { YourStatsCard } from "@/components/media/your-stats-card"
+import { swipeSearch } from "@/components/swipe/swipe-search"
 import { CopySheet } from "@/components/records/copy-sheet"
-import { Copies, copyOptions, snapshotOf } from "@/components/records/copies"
+import { Copies, snapshotOf } from "@/components/records/copies"
 import {
   OtherVersionsSection,
   PlayReleaseButton,
@@ -37,16 +32,14 @@ import { formatDate, joinDefined } from "@/lib/format"
 import { formatMoney } from "@/lib/grades"
 import { imageUrl } from "@/lib/images"
 import { parseId } from "@/lib/params"
-import { collectionQuery, logsQuery } from "@/queries/archive"
+import { collectionQuery } from "@/queries/archive"
 import { releaseQuery } from "@/queries/media"
 
 export const Route = createFileRoute("/records/$id")({
-  validateSearch: logSearch,
+  // Its rails open a swipe view (`?swipe=`).
+  validateSearch: swipeSearch,
   loader: ({ context, params }) => {
-    // Your logs load alongside the details, not after them.
-    void context.queryClient.prefetchQuery(
-      logsQuery({ type: "record", id: parseId(params.id) })
-    )
+    // Your copies load alongside the details, not after them.
     void context.queryClient.prefetchQuery(collectionQuery())
     return context.queryClient.ensureQueryData(releaseQuery(parseId(params.id)))
   },
@@ -68,8 +61,6 @@ function RecordPage() {
   const { data: release } = useSuspenseQuery(releaseQuery(parseId(id)))
   const { data: collection } = useQuery(collectionQuery())
   const copies = (collection ?? []).filter((c) => c.releaseId === release.id)
-  const logSheet = useLogSheet()
-  useOpenLogFromSearch(logSheet.openNew)
   const [copySheet, setCopySheet] = useState<{
     open: boolean
     editing?: CollectionItem
@@ -108,17 +99,6 @@ function RecordPage() {
         }
         actions={
           <>
-            {/* Plays are logged on a copy you own. */}
-            {copies.length ? (
-              <Button
-                size="lg"
-                className="h-11 text-base"
-                onClick={logSheet.openNew}
-              >
-                <PlusIcon />
-                Log play
-              </Button>
-            ) : null}
             <Button
               variant={copies.length ? "secondary" : "outline"}
               size="lg"
@@ -185,22 +165,9 @@ function RecordPage() {
               />
             ),
           },
-          {
-            value: "plays",
-            label: <LogsTabLabel type="record" id={release.id} label="Plays" />,
-            content: (
-              <LogHistory
-                type="record"
-                id={release.id}
-                onSelect={logSheet.openEdit}
-                emptyLabel="You haven't logged a listen yet."
-              />
-            ),
-          },
         ]}
         aside={
           <>
-            <YourStatsCard type="record" id={release.id} />
             <DetailsCard
               facts={[
                 ["Artist", artist],
@@ -221,16 +188,6 @@ function RecordPage() {
         }
       />
 
-      <LogSheet
-        open={logSheet.open}
-        onOpenChange={logSheet.onOpenChange}
-        editing={logSheet.editing}
-        target={{
-          kind: "record",
-          item,
-          copies: copyOptions(copies),
-        }}
-      />
       <CopySheet
         open={copySheet.open}
         onOpenChange={(open) => setCopySheet((s) => ({ ...s, open }))}

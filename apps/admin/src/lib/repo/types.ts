@@ -101,7 +101,7 @@ export interface ArchiveRepository {
   updateLog: (id: string, input: LogInput) => Promise<LogEntry>
   /**
    * Moves a log to another work of the same kind (`input.mediaId` is the
-   * new one): same log id and data. Not for record plays (tied to a copy).
+   * new one): same log id and data.
    */
   moveLog: (
     id: string,

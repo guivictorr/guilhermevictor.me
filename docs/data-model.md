@@ -17,7 +17,8 @@ the export file format depends on them.
 
 ## Logs (`log.ts`)
 
-A log = one experience of a work. Many logs per work. Common: `rating?` (1–10),
+A log = one experience of a work (movies, shows, games, books; records have copies
+instead). Many logs per work. Common: `rating?` (1–10),
 `notes?`, `id/createdAt/updatedAt` when stored. Dates are optional everywhere;
 missing = "Date unknown" (sorted last, excluded from per-year stats).
 
@@ -28,9 +29,8 @@ missing = "Date unknown" (sorted last, excluded from per-year stats).
 | `season`          | `seasonNumber`, `startedAt?`, `finishedAt?`, `rewatch`                                                                                                                                                                                                                                    |
 | `game`            | `status` (playing/finished/completed=100%/played = nothing to finish/paused/abandoned), `platform?`, `hoursPlayed?`, dates                                                                                                                                                                |
 | `book`            | `status` (reading/finished/abandoned), `format?` (physical/ebook/audiobook), `reread`, dates                                                                                                                                                                                              |
-| `record`          | a listening session: `playedAt?`                                                                                                                                                                                                                                                          |
 
-`mediaTypeOf(log)` maps `season`/`show` → `show`. `logDate()` = watched/played date,
+`mediaTypeOf(log)` maps `season`/`show` → `show`. `logDate()` = watched date (movies),
 else finished, else started, else undefined.
 
 ## Library items, backlog
@@ -39,7 +39,8 @@ else finished, else started, else undefined.
   built from the work's row. Only works with logs appear in the library.
 - `BacklogItem`: same shape, any kind; a work row with `backlog_added_at` set.
   Logging a work or owning a record removes it from the backlog.
-- Record plays (`kind: "record"`) carry `copyId`, the owned copy that was played.
+- Records have no logs: you own copies (`CollectionItem`, below) and that's it. Plays
+  in older exports (`kind: "record"`) are left out on import.
 
 ## Collection (`collection.ts`)
 

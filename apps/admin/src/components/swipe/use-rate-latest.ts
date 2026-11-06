@@ -1,18 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import type { LogInput } from "@workspace/schemas"
 import type { LibraryItemInput } from "@/lib/repo"
-import {
-  collectionQuery,
-  logsQuery,
-  useAddLog,
-  useUpdateLog,
-} from "@/queries/archive"
+import { logsQuery, useAddLog, useUpdateLog } from "@/queries/archive"
 
 /** An undated log carrying just a rating ("Date unknown"). */
 function ratedLog(
   item: LibraryItemInput,
-  rating: number,
-  copyId: string | undefined
+  rating: number
 ): LogInput | undefined {
   switch (item.type) {
     case "movie":
@@ -36,9 +30,8 @@ function ratedLog(
         reread: false,
       }
     case "record":
-      return copyId
-        ? { kind: "record", mediaId: Number(item.id), copyId, rating }
-        : undefined
+      // Records have copies, not logs; the swipe view shows no stars.
+      return undefined
   }
 }
 
@@ -48,17 +41,10 @@ function ratedLog(
  */
 export function useRateLatest(item: LibraryItemInput) {
   const { data: logs } = useQuery(logsQuery({ type: item.type, id: item.id }))
-  const { data: collection } = useQuery({
-    ...collectionQuery(),
-    enabled: item.type === "record",
-  })
   const addLog = useAddLog()
   const updateLog = useUpdateLog()
 
   const latest = logs?.[0]
-  const copyId = collection?.find((c) => c.releaseId === item.id)?.id
-  // Plays need a copy you own, so an unowned record can't be rated here.
-  const canRate = item.type !== "record" || Boolean(latest ?? copyId)
 
   // Optimistic: the stars already show the change; failures toast with Retry.
   function rate(rating: number | undefined) {
@@ -68,14 +54,13 @@ export function useRateLatest(item: LibraryItemInput) {
       return
     }
     if (rating === undefined) return
-    const input = ratedLog(item, rating, copyId)
+    const input = ratedLog(item, rating)
     if (input) addLog.mutate({ input, item })
   }
 
   return {
     value: latest?.rating,
     logCount: logs?.length ?? 0,
-    canRate,
     rate,
   }
 }

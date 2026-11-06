@@ -28,7 +28,7 @@ import { useLogSheet } from "@/components/log/use-log-sheet"
 import { MediaLink } from "@/components/media-card"
 import { useBacklogToggle } from "@/components/media/backlog-button"
 import { Poster } from "@/components/poster"
-import { copyOptions, snapshotOf } from "@/components/records/copies"
+import { snapshotOf } from "@/components/records/copies"
 import { CopySheet } from "@/components/records/copy-sheet"
 import { ResponsiveSheet } from "@/components/responsive-sheet"
 import { StarRatingInput } from "@/components/star-rating"
@@ -46,7 +46,7 @@ import {
 /**
  * One item of a list's swipe view: big cover over its own blurred art, a
  * line of facts, and quick actions (rate, log, backlog, your logs; seasons
- * for shows) pinned to the bottom.
+ * for shows; add a copy for records) pinned to the bottom.
  */
 export function SwipeSlide({ item }: { item: LibraryItemInput }) {
   const details = useWorkDetails(item)
@@ -72,7 +72,7 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
   // the bytes.
   const background = imageUrl(item.poster, "thumb")
 
-  const target = (editing?: LogEntry): LogTargetContext => {
+  const target = (editing?: LogEntry): LogTargetContext | undefined => {
     if (editing?.kind === "season")
       return {
         kind: "season",
@@ -90,9 +90,11 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
       case "book":
         return { kind: "book", item }
       case "record":
-        return { kind: "record", item, copies: copyOptions(copies) }
+        // Records have copies, not logs.
+        return undefined
     }
   }
+  const logTarget = target(sheet.editing)
 
   const reveal = useImageReveal(background)
   return (
@@ -181,21 +183,11 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
       {/* Quick actions; the one orange button is Log. */}
       <div className="pb-safe px-4 pt-4">
         <div className="mx-auto flex max-w-md flex-col items-center gap-3 pb-4">
-          {/* Shows are rated per season (in Seasons); "Mine" shows the average. */}
-          {item.type === "show" ? null : (
-            <div
-              className={cn(
-                !rating.canRate && "pointer-events-none opacity-40"
-              )}
-            >
-              <StarRatingInput value={rating.value} onChange={rating.rate} />
-            </div>
+          {/* Shows are rated per season (in Seasons); "Mine" shows the
+              average. Records have copies, not logs, so no stars. */}
+          {item.type === "show" || item.type === "record" ? null : (
+            <StarRatingInput value={rating.value} onChange={rating.rate} />
           )}
-          {!rating.canRate ? (
-            <p className="text-xs text-muted-foreground">
-              Add a copy to your collection to rate plays.
-            </p>
-          ) : null}
           <div className="grid w-full [grid-auto-columns:minmax(0,1fr)] grid-flow-col gap-2">
             {item.type === "show" ? (
               <Button
@@ -207,13 +199,18 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
                 <ListOrderedIcon />
                 Log season
               </Button>
-            ) : (
+            ) : item.type === "record" ? (
               <Button
                 size="lg"
                 className="h-12"
-                onClick={sheet.openNew}
-                disabled={item.type === "record" && !copies.length}
+                onClick={() => setCopySheet({ open: true })}
+                disabled={!details.release}
               >
+                <PlusIcon />
+                {copies.length ? "Add copy" : "Collect"}
+              </Button>
+            ) : (
+              <Button size="lg" className="h-12" onClick={sheet.openNew}>
                 <PlusIcon />
                 Log
               </Button>
@@ -231,20 +228,22 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
                 {inBacklog ? "Saved" : "Backlog"}
               </Button>
             )}
-            <Button
-              variant="secondary"
-              size="lg"
-              className="h-12"
-              onClick={() => setPanel("logs")}
-            >
-              <HistoryIcon />
-              Logs
-              {rating.logCount ? (
-                <span className="text-muted-foreground tabular-nums">
-                  {rating.logCount}
-                </span>
-              ) : null}
-            </Button>
+            {item.type === "record" ? null : (
+              <Button
+                variant="secondary"
+                size="lg"
+                className="h-12"
+                onClick={() => setPanel("logs")}
+              >
+                <HistoryIcon />
+                Logs
+                {rating.logCount ? (
+                  <span className="text-muted-foreground tabular-nums">
+                    {rating.logCount}
+                  </span>
+                ) : null}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -283,12 +282,14 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
           snapshot={snapshotOf(details.release)}
         />
       ) : null}
-      <LogSheet
-        open={sheet.open}
-        onOpenChange={sheet.onOpenChange}
-        editing={sheet.editing}
-        target={target(sheet.editing)}
-      />
+      {logTarget ? (
+        <LogSheet
+          open={sheet.open}
+          onOpenChange={sheet.onOpenChange}
+          editing={sheet.editing}
+          target={logTarget}
+        />
+      ) : null}
     </div>
   )
 }

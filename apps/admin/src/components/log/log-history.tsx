@@ -18,7 +18,6 @@ const showStatusLabel = (status: string) =>
 export function describeLogDates(log: LogEntry) {
   const unknown = "Date unknown"
   if (log.kind === "movie") return formatDate(log.watchedAt) ?? unknown
-  if (log.kind === "record") return formatDate(log.playedAt) ?? unknown
   const start = formatDate(log.startedAt)
   const end = formatDate(log.finishedAt)
   if (start && end) return start === end ? end : `${start} → ${end}`
@@ -119,8 +118,6 @@ export function describeLogExtras(log: LogEntry) {
       ])
     case "movie":
       return log.rewatch ? "Rewatch" : ""
-    case "record":
-      return ""
   }
 }
 
@@ -164,9 +161,8 @@ export function LogBadges({ log }: { log: LogEntry }) {
       </>
     )
   }
-  const rewatch =
-    (log.kind === "movie" || log.kind === "season" || log.kind === "show") &&
-    log.rewatch
+  // Movies, seasons and whole-show logs from here on.
+  const rewatch = log.rewatch
   return (
     <>
       {log.kind === "show" ? (

@@ -499,7 +499,7 @@ export function useRemoveFromBacklog() {
   })
 }
 
-/** Copies change the records library, plays, value and index. */
+/** Copies change the records library, value and index. */
 const collectionKeys = () => kindKeys(["record"])
 
 type AddCopyVars = {
