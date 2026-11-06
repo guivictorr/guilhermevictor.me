@@ -51,11 +51,11 @@ revalidateIfStale: true })`, and `viewerQuery` has `gcTime: Infinity`, so after 
    `<SuspenseSection fallback={…}>` per section. Several queries in one component use
    `useSuspenseQueries`: separate `useSuspenseQuery` calls run one after another.
 3. **Fallbacks have the section's real size** (`CardRowSkeleton`, `ListSkeleton`,
-   `FactsSkeleton`, `MediaGridSkeleton`, `DetailSkeleton`), so nothing shifts when data
+   `MediaGridSkeleton`, `DetailSkeleton`), so nothing shifts when data
    lands. Content that waited fades in once (`animate-reveal`); content already in the
    cache renders with no fallback and no animation.
-4. **Client-only sections** (the facts deck, the next-flight countdown: browser clock,
-   localStorage, airports file) render inside `<ClientOnly fallback={skeleton}>`.
+4. **Client-only sections** (the next-flight countdown: browser clock and
+   airports file) render inside `<ClientOnly fallback={skeleton}>`.
 5. Router: `defaultPendingMs: 0`, `defaultPendingMinMs: 300`. A detail page that has to
    fetch shows its skeleton at once (never the old page); cached or preloaded data
    settles before the timer, so it shows no skeleton; a skeleton that does show never
@@ -133,13 +133,13 @@ Discogs sync) are not optimistic: they show progress through `isPending`.
 
 **Invalidate only what changed**, in parallel, and return the promise:
 
-| Write                          | Refetches                                                                                 |
-| ------------------------------ | ----------------------------------------------------------------------------------------- |
-| Log add / edit / move / delete | that kind's logs and library, recent, index, stats, facts, backlog (+ copies for records) |
-| Backlog add / remove           | backlog, index, facts, that kind's library                                                |
-| Copies                         | as a record log write                                                                     |
-| Flights                        | flights, facts                                                                            |
-| Import / clear archive         | everything under `["archive"]`                                                            |
+| Write                          | Refetches                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| Log add / edit / move / delete | that kind's logs and library, recent, index, stats, backlog (+ copies for records) |
+| Backlog add / remove           | backlog, index, that kind's library                                                |
+| Copies                         | as a record log write                                                              |
+| Flights                        | flights                                                                            |
+| Import / clear archive         | everything under `["archive"]`                                                     |
 
 ## Scroll restoration
 

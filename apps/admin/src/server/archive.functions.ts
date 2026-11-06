@@ -140,10 +140,6 @@ export const getIndexFn = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .handler(() => repo.getIndex())
 
-export const getFactsFn = createServerFn({ method: "GET" })
-  .middleware([requireOwner])
-  .handler(() => repo.getFacts())
-
 export const getStatsFn = createServerFn({ method: "GET" })
   .middleware([requireOwner])
   .handler(() => repo.getStats())

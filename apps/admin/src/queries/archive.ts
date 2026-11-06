@@ -53,7 +53,6 @@ export const archiveKeys = {
   backlog: () => [...archiveKeys.all, "backlog"] as const,
   index: () => [...archiveKeys.all, "index"] as const,
   stats: () => [...archiveKeys.all, "stats"] as const,
-  facts: () => [...archiveKeys.all, "facts"] as const,
   collection: () => [...archiveKeys.all, "collection"] as const,
   flights: () => [...archiveKeys.all, "flights"] as const,
 }
@@ -132,12 +131,6 @@ export const flightsQuery = () =>
   queryOptions({
     queryKey: archiveKeys.flights(),
     queryFn: () => repo.listFlights(),
-  })
-
-export const factsQuery = () =>
-  queryOptions({
-    queryKey: archiveKeys.facts(),
-    queryFn: () => repo.getFacts(),
   })
 
 export const statsQuery = () =>
@@ -248,7 +241,6 @@ function kindKeys(types: Array<MediaType>): Array<QueryKey> {
     archiveKeys.allRecent(),
     archiveKeys.index(),
     archiveKeys.stats(),
-    archiveKeys.facts(),
     // Logging a work takes it out of the backlog.
     archiveKeys.backlog(),
     ...types.flatMap((type) => [
@@ -457,7 +449,6 @@ export function useClearArchive() {
 const backlogKeys = (type: MediaType): Array<QueryKey> => [
   archiveKeys.backlog(),
   archiveKeys.index(),
-  archiveKeys.facts(),
   archiveKeys.library(type),
 ]
 
@@ -611,7 +602,7 @@ export function useFillFromSteam() {
   })
 }
 
-const flightKeys = () => [archiveKeys.flights(), archiveKeys.facts()]
+const flightKeys = () => [archiveKeys.flights()]
 
 type SaveFlightVars = {
   input: FlightInput

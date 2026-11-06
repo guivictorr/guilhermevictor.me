@@ -22,7 +22,6 @@ import { swipeSearch } from "@/components/swipe/swipe-search"
 import { Poster } from "@/components/poster"
 import { StarRating } from "@/components/star-rating"
 import { SwipeAction } from "@/components/swipe/swipe-button"
-import { FactsDeck, FactsSkeleton } from "@/components/home/facts-deck"
 import { NextFlightCard } from "@/components/home/next-flight-card"
 import {
   CardRow,
@@ -41,7 +40,6 @@ import { prefetchWorkDetails } from "@/components/media/use-work-details"
 import { airportsQuery } from "@/lib/airports"
 import {
   backlogQuery,
-  factsQuery,
   flightsQuery,
   libraryQuery,
   logsQuery,
@@ -54,7 +52,6 @@ export const Route = createFileRoute("/")({
   // the navigation: sections suspend into skeletons of their own size.
   loader: ({ context: { queryClient } }) => {
     void queryClient.prefetchQuery(recentQuery(RECENT))
-    void queryClient.prefetchQuery(factsQuery())
     void queryClient.prefetchQuery(flightsQuery())
     void queryClient.prefetchQuery(backlogQuery())
     for (const type of NOW_TYPES)
@@ -62,7 +59,7 @@ export const Route = createFileRoute("/")({
     // Browser only from here: the server renders the cards without their
     // details, and details streamed in mid-hydration wouldn't match.
     if (typeof window === "undefined") return
-    // Flight facts and the next flight need the airports file.
+    // The next flight needs the airports file.
     void queryClient.prefetchQuery(airportsQuery())
     // Dependent prefetch: the cards' details (and the latest log of what's
     // in progress), as soon as the lists that pick them land.
@@ -108,9 +105,6 @@ function HomePage() {
         }
       />
       <PageBody className="space-y-8">
-        <SuspenseSection fallback={<FactsSkeleton />}>
-          <FactsDeck />
-        </SuspenseSection>
         <SuspenseSection fallback={null}>
           <NextFlightCard />
         </SuspenseSection>

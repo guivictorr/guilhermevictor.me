@@ -73,7 +73,7 @@ considered too simple, and Stats is to be rebuilt.
 9. **Concentric corners** ([nested border radius](https://craft.gustavofior.com/nested-border-radius)).
    Inner radius = outer radius − inset (the padding, plus any border), never the same
    radius on both, and never below zero (`max(0px, …)` → square).
-   - Feature cards: 24px − 16px padding → 8px covers. Fact cards: 20 − 16 → 4px.
+   - Feature cards: 24px − 16px padding → 8px covers.
    - Menus and selects: 12px popup (`rounded-lg`) − 4px padding → 8px items
      (`rounded-[calc(var(--radius-lg)-4px)]`).
    - A pill inside a pill of the same height stays `rounded-full`.
@@ -400,4 +400,3 @@ A simple hover or fade never needs a library; use CSS.
 | Sidebar (desktop, collapsible ⌘B) and tab bar (phones)                                                                            | `apps/admin/src/components/app-shell.tsx`                                         |
 | Covers (record sleeve + vinyl)                                                                                                    | `components/poster.tsx`                                                           |
 | Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                      | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |
-| Home facts                                                                                                                        | `server/facts.server.ts`, `components/home/facts-deck.tsx`                        |
