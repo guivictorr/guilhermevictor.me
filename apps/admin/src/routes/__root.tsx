@@ -24,7 +24,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       if (location.pathname === "/login") return
       let viewer
       try {
-        viewer = await context.queryClient.ensureQueryData(viewerQuery())
+        // A cached viewer answers at once (refreshed in the background), so
+        // only the first load ever waits here.
+        viewer = await context.queryClient.ensureQueryData({
+          ...viewerQuery(),
+          revalidateIfStale: true,
+        })
       } catch {
         // Offline (PWA): let the cached shell render instead of bouncing.
         return

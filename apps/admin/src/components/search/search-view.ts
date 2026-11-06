@@ -66,8 +66,10 @@ export function useSearchView() {
 
 /** Logged works, and records you own; and what's in your backlog. */
 export function useArchiveMarks() {
-  const { data: index } = useQuery(indexQuery())
+  const { data: index, isPending } = useQuery(indexQuery())
   return {
+    /** The index hasn't loaded yet: marks would all read false. */
+    isPending,
     have: (media: Pick<MediaSummary, "type" | "id">) =>
       media.type === "record"
         ? (index?.owned.has(mediaKey(media)) ?? false)

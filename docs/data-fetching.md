@@ -38,6 +38,15 @@ mutations), `src/components/loaders.tsx` (Suspense helpers, skeletons, image rev
      discovered by a component after it renders.
    - browser-only data (`/data/airports.json`, a relative URL) is prefetched only when
      `typeof window !== "undefined"`.
+   - **A tap never waits on a list screen.** Only detail routes (which have a
+     `pendingComponent`) await in the browser. A loader that should await for the server
+     render (Search's trending, so it's in the first HTML) returns its promise only when
+     `typeof window === "undefined"` and `void`s it otherwise. Otherwise the tab bar
+     highlights the new tab (it reads `location`, which changes when navigation starts)
+     while the old page stays up until the data lands.
+   - The root guard reads the viewer with `ensureQueryData({ ...viewerQuery(),
+revalidateIfStale: true })`, and `viewerQuery` has `gcTime: Infinity`, so after the
+     first load no navigation waits on the session check.
 2. **Components read with `useSuspenseQuery`** (data is always defined) inside a
    `<SuspenseSection fallback={…}>` per section. Several queries in one component use
    `useSuspenseQueries`: separate `useSuspenseQuery` calls run one after another.
@@ -47,8 +56,10 @@ mutations), `src/components/loaders.tsx` (Suspense helpers, skeletons, image rev
    cache renders with no fallback and no animation.
 4. **Client-only sections** (the facts deck, the next-flight countdown: browser clock,
    localStorage, airports file) render inside `<ClientOnly fallback={skeleton}>`.
-5. Router: `defaultPendingMs: 150`, `defaultPendingMinMs: 300`. Fast loads never show
-   a skeleton, and a skeleton that does show never flashes.
+5. Router: `defaultPendingMs: 0`, `defaultPendingMinMs: 300`. A detail page that has to
+   fetch shows its skeleton at once (never the old page); cached or preloaded data
+   settles before the timer, so it shows no skeleton; a skeleton that does show never
+   flashes.
 6. On a key change inside a mounted screen (filters, search kind), keep the old UI with
    `useTransition` / `placeholderData: (prev) => prev` instead of falling back to a
    skeleton.

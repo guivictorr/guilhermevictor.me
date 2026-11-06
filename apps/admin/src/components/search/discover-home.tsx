@@ -372,8 +372,11 @@ export function Trending({
     ...collectionQuery(),
     enabled: type === "record",
   })
+  // Hiding what you have needs the index: without it the grid would show
+  // those works and then drop them when it lands.
   const isPending =
-    type === "record" ? collection.isPending : trending.isPending
+    (type === "record" ? collection.isPending : trending.isPending) ||
+    (type !== "record" && (hideHave || hideBacklog) && marks.isPending)
   const all: Array<MediaSummary> =
     type === "record"
       ? uniqueReleases(collection.data ?? [])

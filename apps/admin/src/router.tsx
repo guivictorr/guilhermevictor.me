@@ -31,9 +31,11 @@ export function getRouter() {
     // Query owns caching; the router should always ask it.
     defaultPreloadStaleTime: 0,
     defaultViewTransition: true,
-    // A route waiting on its loader shows its pending skeleton after 150ms
-    // (never for fast loads) and keeps it at least 300ms (never a flash).
-    defaultPendingMs: 150,
+    // A route waiting on its loader (detail pages) shows its skeleton at
+    // once instead of leaving the old page up, and keeps it at least 300ms
+    // (never a flash). Cached or preloaded data settles before the timer, so
+    // it renders with no skeleton.
+    defaultPendingMs: 0,
     defaultPendingMinMs: 300,
     defaultErrorComponent: DefaultCatchBoundary,
     defaultNotFoundComponent: NotFound,

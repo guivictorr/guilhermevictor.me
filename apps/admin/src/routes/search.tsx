@@ -78,18 +78,22 @@ export const Route = createFileRoute("/search")({
     q: search.q,
     browsing: activeFilters(search.type, search).length > 0,
   }),
-  // With no query the page is Discover: trending is rendered on the server
-  // so the grid is in the first HTML. The index comes along so that HTML
-  // already leaves out what you have ("new to you", hidden results);
-  // without it they'd show until the client fetched it. prefetchQuery never
-  // throws: a provider error shows inline instead of failing the page.
-  loader: ({ context, deps }) =>
-    Promise.all([
+  // With no query the page is Discover. On the server the loader waits, so
+  // trending is in the first HTML along with the index (which leaves out
+  // what you have: "new to you", hidden results). In the browser it never
+  // waits: the tab switches at once and the sections show skeletons until
+  // their queries land. prefetchQuery never throws: a provider error shows
+  // inline instead of failing the page.
+  loader: ({ context, deps }) => {
+    const loading = Promise.all([
       context.queryClient.prefetchQuery(indexQuery()),
       deps.q || deps.browsing
         ? undefined
         : context.queryClient.prefetchQuery(trendingQuery(deps.type)),
-    ]),
+    ])
+    if (typeof window === "undefined") return loading
+    void loading
+  },
   head: () => ({ meta: [{ title: "Search · Archive" }] }),
   component: SearchPage,
 })
