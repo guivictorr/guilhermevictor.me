@@ -55,7 +55,7 @@ export function TitleSkeleton({ className }: { className?: string }) {
   return <Skeleton className={cn("mb-3 h-7 w-40", className)} />
 }
 
-/** Large feature cards in a row (Home's "Now" and "For today"). */
+/** Large feature cards in a row (Home's "Now"). */
 export function CardRowSkeleton({ count = 3 }: { count?: number }) {
   return (
     <section aria-hidden>

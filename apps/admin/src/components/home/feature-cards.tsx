@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
-import type { BacklogItem, MediaType } from "@workspace/schemas"
+import type { BacklogItem } from "@workspace/schemas"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import { PlusIcon } from "lucide-react"
-import { useMemo } from "react"
 import { RatingsRow } from "@/components/detail-layout"
 import {
   describeLogDates,
@@ -17,7 +16,6 @@ import { Poster } from "@/components/poster"
 import { shuffle } from "@/lib/daily-picks"
 import { joinDefined, today } from "@/lib/format"
 import { imageUrl } from "@/lib/images"
-import { KINDS } from "@/lib/media-kinds"
 import type { LibraryEntry, LibraryItemInput } from "@/lib/repo"
 import { logsQuery } from "@/queries/archive"
 
@@ -115,25 +113,47 @@ function FeatureCard({
   )
 }
 
-/** Each kind's works in progress, by the status of their latest log. */
-export function nowGroups([games, shows, books]: ReadonlyArray<
-  Array<LibraryEntry>
->) {
-  return [
-    {
-      type: "game" as const,
-      entries: (games ?? []).filter((e) => e.status === "playing"),
-    },
-    {
-      type: "show" as const,
-      entries: (shows ?? []).filter((e) => e.status === "watching"),
-    },
-    {
-      type: "book" as const,
-      entries: (books ?? []).filter((e) => e.status === "reading"),
-    },
-  ].filter((group) => group.entries.length > 0)
+/** The kinds Home follows, each with the status that means "in progress". */
+const IN_PROGRESS = {
+  game: "playing",
+  show: "watching",
+  book: "reading",
+} as const
+
+export type NowType = keyof typeof IN_PROGRESS
+export const NOW_TYPES = Object.keys(IN_PROGRESS) as Array<NowType>
+
+export type HomeSlot =
+  | { type: NowType; now: Array<LibraryEntry> }
+  | { type: NowType; picks: Array<BacklogItem> }
+
+/**
+ * One card per kind (game, show, book): what you're in the middle of, by
+ * the status of each work's latest log; with nothing in progress, a pick
+ * from that kind's backlog holds the spot instead (seeded by the date: the
+ * same all day, new tomorrow). A kind with neither is left out.
+ */
+export function homeSlots(
+  libraries: Record<NowType, Array<LibraryEntry>>,
+  backlog: Array<BacklogItem>,
+  day = today()
+): Array<HomeSlot> {
+  return NOW_TYPES.flatMap((type): Array<HomeSlot> => {
+    const now = libraries[type].filter((e) => e.status === IN_PROGRESS[type])
+    if (now.length) return [{ type, now: latestFirst(now) }]
+    // Sorted first: the backlog's order can vary between fetches (ties in
+    // when things were added), and the day's pick must not.
+    const pool = backlog
+      .filter((b) => b.type === type)
+      .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+    const picks = shuffle(pool, `${day}:${type}`).slice(0, 2)
+    return picks.length ? [{ type, picks }] : []
+  })
 }
+
+/** The works a slot shows, the featured one first. */
+export const slotItems = (slot: HomeSlot): Array<LibraryItemInput> =>
+  "now" in slot ? slot.now : slot.picks
 
 /** Most recently logged first. */
 export const latestFirst = (entries: Array<LibraryEntry>) =>
@@ -142,9 +162,9 @@ export const latestFirst = (entries: Array<LibraryEntry>) =>
   )
 
 const NOW = {
-  game: { overline: "Now playing", also: "Also playing" },
-  show: { overline: "Now watching", also: "Also watching" },
-  book: { overline: "Now reading", also: "Also reading" },
+  game: { overline: "Now playing", also: "Also playing", next: "Play next" },
+  show: { overline: "Now watching", also: "Also watching", next: "Watch next" },
+  book: { overline: "Now reading", also: "Also reading", next: "Read next" },
 } as const
 
 /**
@@ -156,7 +176,7 @@ export function NowCard({
   type,
   entries,
 }: {
-  type: keyof typeof NOW
+  type: NowType
   entries: Array<LibraryEntry>
 }) {
   const [current, ...others] = latestFirst(entries)
@@ -195,66 +215,45 @@ export function NowCard({
 }
 
 /**
- * Today's suggestions: three cards, each a different kind from your
- * backlog, one pick featured and a second one beside it. Same all day
- * (seeded by the date), new tomorrow.
+ * A backlog pick holding a kind's spot while nothing of it is in progress:
+ * one featured, a second one underneath.
  */
-export function todayPicks(backlog: Array<BacklogItem>, day = today()) {
-  const byKind = Map.groupBy(backlog, (b) => b.type)
-  const kinds = shuffle([...byKind.keys()], day).slice(0, 3)
-  return kinds.map((type) => ({
-    type,
-    picks: shuffle(byKind.get(type) ?? [], `${day}:${type}`).slice(0, 2),
-  }))
-}
-
-export function useTodayPicks(backlog: Array<BacklogItem>) {
-  return useMemo(() => todayPicks(backlog), [backlog])
-}
-
-export function ForTodayCards({
-  groups,
+export function SuggestionCard({
+  type,
+  picks: [main, alt],
 }: {
-  groups: Array<{ type: MediaType; picks: Array<BacklogItem> }>
+  type: NowType
+  picks: Array<BacklogItem>
 }) {
+  if (!main) return null
   return (
-    <CardRow>
-      {groups.map(({ type, picks: [main, alt] }) =>
-        main ? (
-          <FeatureCard
-            key={type}
-            item={main}
-            overline={KINDS[type].label}
-            footer={
-              alt ? (
-                <MediaLink
-                  media={alt}
-                  className="flex items-center gap-3 border-t border-border/60 px-4 py-2 hover:bg-muted/40"
-                >
-                  <Poster
-                    image={alt.poster}
-                    type={alt.type}
-                    title={alt.title}
-                    size="thumb"
-                    className="w-7 shrink-0"
-                  />
-                  <span className="min-w-0 truncate text-xs">
-                    <span className="text-muted-foreground">Or </span>
-                    <span className="font-medium">{alt.title}</span>
-                    {alt.year ? (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · {alt.year}
-                      </span>
-                    ) : null}
-                  </span>
-                </MediaLink>
-              ) : null
-            }
-          />
+    <FeatureCard
+      item={main}
+      overline={NOW[type].next}
+      footer={
+        alt ? (
+          <MediaLink
+            media={alt}
+            className="flex items-center gap-3 border-t border-border/60 px-4 py-2 hover:bg-muted/40"
+          >
+            <Poster
+              image={alt.poster}
+              type={alt.type}
+              title={alt.title}
+              size="thumb"
+              className="w-7 shrink-0"
+            />
+            <span className="min-w-0 truncate text-xs">
+              <span className="text-muted-foreground">Or </span>
+              <span className="font-medium">{alt.title}</span>
+              {alt.year ? (
+                <span className="text-muted-foreground"> · {alt.year}</span>
+              ) : null}
+            </span>
+          </MediaLink>
         ) : null
-      )}
-    </CardRow>
+      }
+    />
   )
 }
 

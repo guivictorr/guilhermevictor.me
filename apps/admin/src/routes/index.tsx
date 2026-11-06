@@ -25,13 +25,12 @@ import { SwipeAction } from "@/components/swipe/swipe-button"
 import { FactsDeck, FactsSkeleton } from "@/components/home/facts-deck"
 import { NextFlightCard } from "@/components/home/next-flight-card"
 import {
-  ForTodayCards,
   CardRow,
+  NOW_TYPES,
   NowCard,
-  latestFirst,
-  nowGroups,
-  todayPicks,
-  useTodayPicks,
+  SuggestionCard,
+  homeSlots,
+  slotItems,
 } from "@/components/home/feature-cards"
 import {
   CardRowSkeleton,
@@ -65,21 +64,20 @@ export const Route = createFileRoute("/")({
     if (typeof window === "undefined") return
     // Flight facts and the next flight need the airports file.
     void queryClient.prefetchQuery(airportsQuery())
-    // Dependent prefetch: the cards' details, as soon as their lists land.
-    void Promise.all(
-      NOW_TYPES.map((type) => queryClient.ensureQueryData(libraryQuery(type)))
-    ).then((libraries) => {
-      for (const { entries } of nowGroups(libraries)) {
-        const current = latestFirst(entries)[0]
-        if (!current) continue
-        void prefetchWorkDetails(queryClient, current)
-        void queryClient.prefetchQuery(logsQuery(current))
+    // Dependent prefetch: the cards' details (and the latest log of what's
+    // in progress), as soon as the lists that pick them land.
+    void Promise.all([
+      queryClient.ensureQueryData(backlogQuery()),
+      queryClient.ensureQueryData(libraryQuery("game")),
+      queryClient.ensureQueryData(libraryQuery("show")),
+      queryClient.ensureQueryData(libraryQuery("book")),
+    ]).then(([backlog, game, show, book]) => {
+      for (const slot of homeSlots({ game, show, book }, backlog)) {
+        const [featured] = slotItems(slot)
+        if (!featured) continue
+        void prefetchWorkDetails(queryClient, featured)
+        if ("now" in slot) void queryClient.prefetchQuery(logsQuery(featured))
       }
-    }, noop)
-    void queryClient.ensureQueryData(backlogQuery()).then((backlog) => {
-      for (const { picks } of todayPicks(backlog))
-        for (const pick of picks.slice(0, 1))
-          void prefetchWorkDetails(queryClient, pick)
     }, noop)
   },
   head: () => ({ meta: [{ title: "Archive" }] }),
@@ -87,7 +85,6 @@ export const Route = createFileRoute("/")({
 })
 
 const RECENT = 15
-const NOW_TYPES = ["game", "show", "book"] as const
 const noop = () => undefined
 
 function HomePage() {
@@ -118,9 +115,6 @@ function HomePage() {
           <NextFlightCard />
         </SuspenseSection>
         <SuspenseSection fallback={<CardRowSkeleton />}>
-          <ForToday />
-        </SuspenseSection>
-        <SuspenseSection fallback={<CardRowSkeleton />}>
           <Now />
         </SuspenseSection>
         <SuspenseSection fallback={<ListSkeleton title rows={5} />}>
@@ -131,30 +125,48 @@ function HomePage() {
   )
 }
 
-/** What you're in the middle of, by the status of each work's latest log. */
+/**
+ * What you're in the middle of: a card per kind (game, show, book). A kind
+ * with nothing in progress shows a pick from its backlog in that spot.
+ */
 function Now() {
-  const libraries = useSuspenseQueries({
-    queries: NOW_TYPES.map((type) => libraryQuery(type)),
-    combine: (results) => results.map((r) => r.data),
+  // One hook for all four lists: separate suspense hooks would wait in turn.
+  const slots = useSuspenseQueries({
+    queries: [
+      backlogQuery(),
+      libraryQuery("game"),
+      libraryQuery("show"),
+      libraryQuery("book"),
+    ],
+    combine: ([backlog, game, show, book]) =>
+      homeSlots(
+        { game: game.data, show: show.data, book: book.data },
+        backlog.data
+      ),
   })
-  const now = nowGroups(libraries)
-  if (!now.length) return null
+  if (!slots.length) return null
+  const suggesting = slots.some((slot) => !("now" in slot))
   return (
     <section>
       <SectionTitle
         title="Now"
+        to={suggesting ? "/backlog" : undefined}
         swipe={
-          <SwipeAction
-            id="now"
-            items={now.flatMap((group) => group.entries)}
-            title="In progress"
-          />
+          <SwipeAction id="now" items={slots.flatMap(slotItems)} title="Now" />
         }
       />
       <CardRow>
-        {now.map((group) => (
-          <NowCard key={group.type} type={group.type} entries={group.entries} />
-        ))}
+        {slots.map((slot) =>
+          "now" in slot ? (
+            <NowCard key={slot.type} type={slot.type} entries={slot.now} />
+          ) : (
+            <SuggestionCard
+              key={slot.type}
+              type={slot.type}
+              picks={slot.picks}
+            />
+          )
+        )}
       </CardRow>
     </section>
   )
@@ -249,28 +261,5 @@ function SectionTitle({
         </Link>
       ) : null}
     </div>
-  )
-}
-
-/** Deciding what to do: today's picks from the backlog. */
-function ForToday() {
-  const { data: backlog } = useSuspenseQuery(backlogQuery())
-  const groups = useTodayPicks(backlog)
-  if (!groups.length) return null
-  return (
-    <section>
-      <SectionTitle
-        title="For today"
-        to="/backlog"
-        swipe={
-          <SwipeAction
-            id="today"
-            items={groups.flatMap((g) => g.picks)}
-            title="For today"
-          />
-        }
-      />
-      <ForTodayCards groups={groups} />
-    </section>
   )
 }
