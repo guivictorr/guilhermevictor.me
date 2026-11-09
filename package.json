@@ -1,10 +1,11 @@
 {
-  "name": "archive",
+  "name": "guilhermevictor.me",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev --filter=archive",
+    "dev:site": "turbo dev --filter=site",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"

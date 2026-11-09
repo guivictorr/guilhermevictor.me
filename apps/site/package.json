@@ -1,14 +1,14 @@
 {
-  "name": "guilhermevictor.me",
+  "name": "site",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3001",
     "build": "next build",
     "start": "next start",
-    "lint:eslint:check": "eslint ./src",
-    "lint:prettier:check": "prettier ./src --check",
-    "lint:prettier:fix": "prettier ./src --write"
+    "lint": "eslint ./src",
+    "format": "prettier ./src --write",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -35,12 +35,11 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "20",
-    "@types/react": "19.1.0",
-    "@types/react-dom": "19.1.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.2",
     "eslint-config-prettier": "^10.1.8",
-    "lefthook": "^2.0.15",
     "prettier": "^3.8.0",
     "typescript": "5"
   }

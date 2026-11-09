@@ -1,4 +1,14 @@
-# Archive
+# guilhermevictor.me
+
+Monorepo for the owner's personal apps; `packages/ui` is the design system they are
+meant to share (the site does not use it yet):
+
+- `apps/archive`: the archive PWA (below). Most of this file is about it.
+- `apps/site`: the public personal website at guilhermevictor.me (Next.js, next-intl,
+  MDX writing, Last.fm + Discogs). Merged in with its full git history; keeps its own
+  Prettier style (semicolons, single quotes) and env vars (`apps/site/.env.example`).
+
+## Archive
 
 Personal archive: one place to own and log everything the owner watches, plays,
 reads, collects and flies — movies, shows (per season; a show's rating is its seasons' average), games,
@@ -23,6 +33,7 @@ pnpm --filter archive db:studio            # browse the tables in the browser
 pnpm --filter archive db:backfill-details  # store provider details for works missing them
 pnpm --filter archive import-obsidian ../../References  # vault → References/.import/
 pnpm dev                                   # archive app on http://localhost:3000 (LAN too)
+pnpm dev:site                              # website on http://localhost:3001
 pnpm typecheck                             # all packages (turbo)
 pnpm lint
 pnpm --filter archive build
@@ -38,7 +49,7 @@ Run `prettier --write`, `tsc --noEmit` and `pnpm lint` before calling work done
 ## Repo map
 
 ```
-apps/archive/        TanStack Start PWA (the only app so far)
+apps/archive/        TanStack Start PWA
   src/routes/        file-based routes (movies, shows/$id/seasons/$season, games, books,
                      records, flights, search, backlog, settings)
   src/server/        *.server.ts provider clients + media.functions.ts (createServerFn RPCs)
@@ -53,6 +64,7 @@ apps/archive/        TanStack Start PWA (the only app so far)
   scripts/           seed.ts, backfill-details.ts, build-airports.mjs, build-aircraft.mjs,
                      import-obsidian.ts (vault → export v2)
   public/            sw.js (hand-written), manifest, icons, data/airports.json
+apps/site/           Next.js personal website (guilhermevictor.me)
 packages/schemas/    Zod schemas = the data contract (shared with the future API)
 packages/ui/         shadcn/ui on Base UI (import as @workspace/ui/components/*)
 References/          owner's Obsidian vault export — GITIGNORED, private (see rules)
@@ -71,7 +83,7 @@ docs/                project documentation (start at docs/README.md)
 - The owner may be running `pnpm dev` on port 3000 with real keys. Don't kill it;
   run your own server on another port (`pnpm exec vite dev --port 3005 --strictPort`).
 - Commit/push only when asked. Commit messages end with the Co-Authored-By line.
-- Repo: `github.com/guivictorr/archive` (private), branch `master`.
+- Repo: `github.com/guivictorr/guilhermevictor.me`, branch `master`.
 
 ## Conventions
 
