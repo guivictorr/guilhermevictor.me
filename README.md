@@ -8,12 +8,12 @@ browser (`localStorage`) behind a repository interface until the API + DB exist.
 ## Structure
 
 ```
-apps/admin          TanStack Start PWA (Router, Query, Form, Table) + shadcn/ui (Base UI) + Tailwind v4
+apps/archive        TanStack Start PWA (Router, Query, Form, Table) + shadcn/ui (Base UI) + Tailwind v4
 packages/schemas    Zod domain schemas (media, logs, export format) — shared with the future API
 packages/ui         shadcn/ui components (Base UI primitives)
 ```
 
-Key seams in `apps/admin/src`:
+Key seams in `apps/archive/src`:
 
 - `server/*.server.ts` — TMDB/IGDB clients + normalizers (API keys never reach the browser)
 - `server/media.functions.ts` — `createServerFn` RPCs used by the UI
@@ -25,7 +25,7 @@ Key seams in `apps/admin/src`:
 
 ```bash
 pnpm install
-cp apps/admin/.env.example apps/admin/.env   # fill in TMDB + IGDB (Twitch) credentials
+cp apps/archive/.env.example apps/archive/.env   # fill in TMDB + IGDB (Twitch) credentials
 pnpm dev                                     # http://localhost:3000 (also on your LAN IP)
 ```
 
@@ -39,17 +39,17 @@ pnpm dev                                     # http://localhost:3000 (also on yo
 ## Scripts
 
 ```bash
-pnpm dev          # admin dev server
+pnpm dev          # archive dev server
 pnpm build        # production build
 pnpm typecheck    # all packages
 pnpm lint
-pnpm --filter admin generate-pwa-assets   # regenerate icons from public/icon.svg
+pnpm --filter archive generate-pwa-assets  # regenerate icons from public/icon.svg
 ```
 
 ## Adding UI components
 
 ```bash
-pnpm dlx shadcn@latest add <component> -c apps/admin
+pnpm dlx shadcn@latest add <component> -c apps/archive
 ```
 
 Components land in `packages/ui/src/components` and are imported from `@workspace/ui/components/*`.

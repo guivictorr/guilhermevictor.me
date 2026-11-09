@@ -2,7 +2,7 @@
  * Builds public/data/airports.json from mwgg/Airports (MIT license):
  * every airport with an IATA code, as compact rows
  * [iata, name, city, countryCode, lat, lon, timezone].
- * Run: pnpm --filter admin build-airports
+ * Run: pnpm --filter archive build-airports
  */
 import { writeFile } from "node:fs/promises"
 

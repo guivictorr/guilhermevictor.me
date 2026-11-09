@@ -3,7 +3,7 @@
  * episodes of logged seasons. Skips what's already stored, so it's safe to
  * re-run after a provider outage or an import.
  *
- *   pnpm --filter admin db:backfill-details [--refresh] [--type=movie,show]
+ *   pnpm --filter archive db:backfill-details [--refresh] [--type=movie,show]
  *
  * --refresh re-fetches stored copies too (e.g. after changing what's kept);
  * --type limits the run to some kinds ("season" for logged seasons).

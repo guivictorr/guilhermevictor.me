@@ -5,7 +5,7 @@ reads, collects and flies — movies, shows (per season; a show's rating is its 
 books, vinyl records and flights. Replaces Letterboxd/IMDb-style services: the
 data must stay fully owned and portable (export/import as JSON at any time).
 
-Current phase: **deployed**. The admin PWA stores everything in Postgres
+Current phase: **deployed**. The archive PWA stores everything in Postgres
 (Drizzle) through server functions, with Better Auth (GitHub + passkeys, single
 user). One table per kind (movies, shows, games, books, records = one row per copy)
 with the provider details in a `data` column, one log table per kind, flights.
@@ -17,19 +17,19 @@ the Obsidian vault is imported with `import-obsidian` → `db:seed`. Details in 
 ```bash
 pnpm install
 docker compose up -d                       # local Postgres on :5433
-pnpm --filter admin db:migrate             # apply migrations (db:generate after schema edits)
-pnpm --filter admin db:seed <export.json>  # load a v2 export (--replace to overwrite)
-pnpm --filter admin db:studio              # browse the tables in the browser
-pnpm --filter admin db:backfill-details    # store provider details for works missing them
-pnpm --filter admin import-obsidian ../../References  # vault → References/.import/
-pnpm dev                                   # admin app on http://localhost:3000 (LAN too)
+pnpm --filter archive db:migrate           # apply migrations (db:generate after schema edits)
+pnpm --filter archive db:seed <export.json>  # load a v2 export (--replace to overwrite)
+pnpm --filter archive db:studio            # browse the tables in the browser
+pnpm --filter archive db:backfill-details  # store provider details for works missing them
+pnpm --filter archive import-obsidian ../../References  # vault → References/.import/
+pnpm dev                                   # archive app on http://localhost:3000 (LAN too)
 pnpm typecheck                             # all packages (turbo)
 pnpm lint
-pnpm --filter admin build
-pnpm --filter admin exec tsr generate      # regenerate routeTree.gen.ts after adding routes
-pnpm --filter admin build-airports         # rebuild public/data/airports.json
-pnpm --filter admin build-aircraft         # rebuild public/data/aircraft.json (ICAO types)
-pnpm dlx shadcn@latest add <name> -c apps/admin        # UI components → packages/ui
+pnpm --filter archive build
+pnpm --filter archive exec tsr generate    # regenerate routeTree.gen.ts after adding routes
+pnpm --filter archive build-airports       # rebuild public/data/airports.json
+pnpm --filter archive build-aircraft       # rebuild public/data/aircraft.json (ICAO types)
+pnpm dlx shadcn@latest add <name> -c apps/archive        # UI components → packages/ui
 ```
 
 Run `prettier --write`, `tsc --noEmit` and `pnpm lint` before calling work done
@@ -38,7 +38,7 @@ Run `prettier --write`, `tsc --noEmit` and `pnpm lint` before calling work done
 ## Repo map
 
 ```
-apps/admin/          TanStack Start PWA (the only app so far)
+apps/archive/        TanStack Start PWA (the only app so far)
   src/routes/        file-based routes (movies, shows/$id/seasons/$season, games, books,
                      records, flights, search, backlog, settings)
   src/server/        *.server.ts provider clients + media.functions.ts (createServerFn RPCs)
@@ -66,7 +66,7 @@ docs/                project documentation (start at docs/README.md)
   screenshots of imported data). Before every commit, review `git status` untracked
   files — don't blindly `git add -A`. Keep test artifacts in the session scratchpad
   with absolute paths.
-- **Never read `apps/admin/.env`**. API keys live there and are only used inside
+- **Never read `apps/archive/.env`**. API keys live there and are only used inside
   `*.server.ts` / `createServerFn`. `.env.example` lists the variables.
 - The owner may be running `pnpm dev` on port 3000 with real keys. Don't kill it;
   run your own server on another port (`pnpm exec vite dev --port 3005 --strictPort`).

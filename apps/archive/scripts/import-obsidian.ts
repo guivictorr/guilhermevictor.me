@@ -5,7 +5,7 @@
  * matches them to TMDB / IGDB / Google Books / Discogs ids and writes an
  * export (format v2) for `db:seed` or Settings → Import.
  *
- *   pnpm --filter admin import-obsidian ../../References
+ *   pnpm --filter archive import-obsidian ../../References
  *
  * Writes into <vault>/.import/ (inside the gitignored vault folder):
  *   archive-import.json  the export
@@ -240,7 +240,7 @@ async function readJson<T>(file: string, fallback: T): Promise<T> {
 // TMDB --------------------------------------------------------------------
 async function tmdb<T>(p: string, params: Record<string, string>) {
   const token = env("TMDB_READ_TOKEN")
-  if (!token) throw new Error("TMDB_READ_TOKEN missing in apps/admin/.env")
+  if (!token) throw new Error("TMDB_READ_TOKEN missing in apps/archive/.env")
   const url = new URL(`https://api.themoviedb.org/3${p}`)
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
   const res = await fetch(url, {
@@ -309,7 +309,7 @@ async function igdb<T>(endpoint: string, body: string): Promise<T> {
   const clientId = env("IGDB_CLIENT_ID")
   const secret = env("IGDB_CLIENT_SECRET")
   if (!clientId || !secret)
-    throw new Error("IGDB keys missing in apps/admin/.env")
+    throw new Error("IGDB keys missing in apps/archive/.env")
   if (!igdbToken) {
     const res = await fetch(
       `https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${secret}&grant_type=client_credentials`,

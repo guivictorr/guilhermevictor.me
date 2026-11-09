@@ -1,7 +1,7 @@
 # Data model
 
 Source of truth: `packages/schemas/src/` (Zod). The Postgres tables
-(`apps/admin/src/server/db/schema.ts`, see `docs/backend.md`) map to these shapes;
+(`apps/archive/src/server/db/schema.ts`, see `docs/backend.md`) map to these shapes;
 the export file format depends on them.
 
 ## Kinds and ids

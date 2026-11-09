@@ -1,4 +1,4 @@
-# Architecture (admin app)
+# Architecture (archive app)
 
 ## Layers
 
@@ -78,7 +78,7 @@ Settings); `DOCK_GROUPS` in `components/nav-items.ts`.
   `/data/*` and provider images. `/api/*` is never cached; sign-out clears the page
   and data caches.
   **Bump `VERSION`** when changing it. It only registers in production builds.
-- Icons generated from `public/icon.svg` (`pnpm --filter admin generate-pwa-assets`).
+- Icons generated from `public/icon.svg` (`pnpm --filter archive generate-pwa-assets`).
 - "Add to Home Screen" needs HTTPS (Vercel preview or a tunnel) to test on a phone.
 - Build: Nitro (`nitro/vite`) outputs `.output/` (Node) or `.vercel/output` on Vercel.
 
@@ -89,6 +89,6 @@ Settings); `DOCK_GROUPS` in `components/nav-items.ts`.
 - TanStack Start server functions use `.validator(zodSchema)`.
 - shadcn here imports `cn` from the `cn` package inside `packages/ui`; app code uses
   `@workspace/ui/lib/utils`.
-- `noUncheckedIndexedAccess` is on in `apps/admin`.
+- `noUncheckedIndexedAccess` is on in `apps/archive`.
 - Zod v4: don't `.extend()` a refined object — refine after extending
   (see `finishAfterStart` in log.ts).

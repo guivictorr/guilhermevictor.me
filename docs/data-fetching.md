@@ -4,7 +4,7 @@ How screens load and write data with TanStack Query (v5) and TanStack Router. Th
 goal: nothing pops in, nothing waits on something it didn't need, and writes feel
 instant. Based on the TanStack Query guides we adopted (linked per section).
 
-Code: `apps/admin/src/router.tsx` (defaults), `src/queries/*` (query options and
+Code: `apps/archive/src/router.tsx` (defaults), `src/queries/*` (query options and
 mutations), `src/components/loaders.tsx` (Suspense helpers, skeletons, image reveal).
 
 ## Defaults and caching

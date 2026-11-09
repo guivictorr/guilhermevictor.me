@@ -1,7 +1,7 @@
 # Providers
 
-All calls happen server-side (`apps/admin/src/server/*.server.ts`). Env vars in
-`apps/admin/.env` (see `.env.example`).
+All calls happen server-side (`apps/archive/src/server/*.server.ts`). Env vars in
+`apps/archive/.env` (see `.env.example`).
 
 ## TMDB — movies & shows (`TMDB_READ_TOKEN`, optional `TMDB_LANGUAGE`)
 

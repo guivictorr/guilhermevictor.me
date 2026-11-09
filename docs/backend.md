@@ -1,6 +1,6 @@
 # Backend: database, auth, hosting
 
-The admin app is also the backend: TanStack Start server functions talk to
+The archive app is also the backend: TanStack Start server functions talk to
 Postgres through Drizzle. No separate API service to run, and no public API
 (API keys were removed until a client needs one).
 
@@ -13,10 +13,10 @@ browser ── server fns (session cookie) ──► archive.functions.ts ──
 
 ```bash
 docker compose up -d                       # Postgres 17 on localhost:5433
-cp apps/admin/.env.example apps/admin/.env # then fill the auth values
-pnpm --filter admin db:migrate             # apply drizzle/ migrations
+cp apps/archive/.env.example apps/archive/.env # then fill the auth values
+pnpm --filter archive db:migrate             # apply drizzle/ migrations
 pnpm dev
-pnpm --filter admin db:studio              # browse the tables (local.drizzle.studio)
+pnpm --filter archive db:studio              # browse the tables (local.drizzle.studio)
 ```
 
 Sign-in locally needs a GitHub OAuth app whose callback is
@@ -111,7 +111,7 @@ same-origin`…) are Nitro route rules in `vite.config.ts`, so Vercel applies
 ## Hosting (plan: $0/month)
 
 - **Vercel Hobby** runs the app. Nitro detects Vercel at build time; anywhere
-  else the same build is a plain Node server (`pnpm --filter admin start`), so
+  else the same build is a plain Node server (`pnpm --filter archive start`), so
   moving to a VPS is just running that behind a reverse proxy.
 - **Neon free tier** for Postgres. Pick São Paulo (`aws-sa-east-1`) and set the
   Vercel function region to `gru1` so they sit together.
@@ -119,10 +119,10 @@ same-origin`…) are Nitro route rules in `vite.config.ts`, so Vercel applies
 Deploy checklist (owner's accounts):
 
 1. Neon: create the project (Postgres 17+). Run `DATABASE_URL=<neon url>
-pnpm --filter admin db:migrate`.
+pnpm --filter archive db:migrate`.
 2. GitHub OAuth app for production with callback
    `https://archive.guilhermevictor.me/api/auth/callback/github`.
-3. Vercel: import the repo with root directory `apps/admin` and the env vars
+3. Vercel: import the repo with root directory `apps/archive` and the env vars
    from `.env.example` (`BETTER_AUTH_URL=https://archive.guilhermevictor.me`,
    a fresh `BETTER_AUTH_SECRET`). Set the function region to `gru1`.
 4. Add the domain `archive.guilhermevictor.me` in Vercel (CNAME at the DNS host).

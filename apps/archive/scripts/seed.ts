@@ -1,11 +1,11 @@
 /*
  * Loads an archive export (Settings → Export, format v2) into the database.
  *
- *   pnpm --filter admin db:seed path/to/archive-export.json
+ *   pnpm --filter archive db:seed path/to/archive-export.json
  *
  * REPLACES all archive data (not your account). Refuses to touch a
  * non-empty archive unless --replace is passed. Uses DATABASE_URL from the
- * environment or apps/admin/.env.
+ * environment or apps/archive/.env.
  */
 import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"

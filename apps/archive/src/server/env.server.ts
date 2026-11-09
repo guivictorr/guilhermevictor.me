@@ -22,7 +22,7 @@ function readEnv<T extends z.ZodType>(schema: T): z.infer<T> {
   if (!parsed.success) {
     const missing = parsed.error.issues.map((i) => i.path.join(".")).join(", ")
     throw new Error(
-      `Missing or invalid env vars: ${missing}. See apps/admin/.env.example`
+      `Missing or invalid env vars: ${missing}. See apps/archive/.env.example`
     )
   }
   return parsed.data

@@ -6,7 +6,7 @@ source for seeding the archive.
 ## Run
 
 ```bash
-cd apps/admin
+cd apps/archive
 pnpm import-obsidian ../../References                     # writes References/.import/
 pnpm db:seed ../../References/.import/archive-import.json  # empty archive (or --replace)
 pnpm db:backfill-details                                  # provider details for every work
@@ -25,7 +25,7 @@ Writes `References/.import/`:
 | `cache.json`          | match cache; delete entries to re-match them                                                      |
 
 First run ~8 min (IGDB rate limit); cached re-runs ~2 min. The script loads
-`apps/admin/.env` itself.
+`apps/archive/.env` itself.
 
 ## Vault format
 

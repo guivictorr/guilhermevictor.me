@@ -21,7 +21,7 @@ importers:
         specifier: ^6.0.2
         version: 6.0.3
 
-  apps/admin:
+  apps/archive:
     dependencies:
       '@better-auth/passkey':
         specifier: 1.7.7

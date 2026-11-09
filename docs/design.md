@@ -292,7 +292,7 @@ Each kind looks like the thing it is:
 
 ## 10. Motion
 
-Easing tokens already exist in `apps/admin/src/styles/app.css`: `--ease-out`,
+Easing tokens already exist in `apps/archive/src/styles/app.css`: `--ease-out`,
 `--ease-in-out`, `--ease-drawer`.
 
 **First, the gate.** How often is it seen, and why does it move?
@@ -395,8 +395,8 @@ A simple hover or fade never needs a library; use CSS.
 | Piece                                                                                                                             | File                                                                              |
 | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Color tokens (both themes), fonts                                                                                                 | `packages/ui/src/styles/globals.css`                                              |
-| Type roles (`type-display`, `type-title`, `type-heading`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, motion tokens | `apps/admin/src/styles/app.css`                                                   |
+| Type roles (`type-display`, `type-title`, `type-heading`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, motion tokens | `apps/archive/src/styles/app.css`                                                   |
 | Buttons, inputs, toggles                                                                                                          | `packages/ui/src/components/*` (restyled shadcn)                                  |
-| Dock (desktop) and tab bar (phones)                                                                                               | `apps/admin/src/components/app-shell.tsx`                                         |
+| Dock (desktop) and tab bar (phones)                                                                                               | `apps/archive/src/components/app-shell.tsx`                                         |
 | Covers (record sleeve + vinyl)                                                                                                    | `components/poster.tsx`                                                           |
 | Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                      | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |

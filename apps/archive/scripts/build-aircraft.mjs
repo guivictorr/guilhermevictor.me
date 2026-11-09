@@ -3,7 +3,7 @@
  * every aircraft type with an ICAO designator, as rows [icao, name, iata].
  * Flights store the ICAO code ("B738"), so stats group by type however
  * the name was typed.
- * Run: pnpm --filter admin build-aircraft
+ * Run: pnpm --filter archive build-aircraft
  */
 import { writeFile } from "node:fs/promises"
 
