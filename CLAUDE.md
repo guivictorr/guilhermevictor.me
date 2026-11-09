@@ -83,7 +83,7 @@ docs/                project documentation (start at docs/README.md)
 - The owner may be running `pnpm dev` on port 3000 with real keys. Don't kill it;
   run your own server on another port (`pnpm exec vite dev --port 3005 --strictPort`).
 - Commit/push only when asked. Commit messages end with the Co-Authored-By line.
-- Repo: `github.com/guivictorr/guilhermevictor.me`, branch `master`.
+- Repo: `github.com/guivictorr/guilhermevictor.me` (public), branch `main`.
 
 ## Conventions
 
