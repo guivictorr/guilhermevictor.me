@@ -1,0 +1,70 @@
+'use client';
+
+import * as Slider from '@radix-ui/react-slider';
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useTransform,
+} from 'motion/react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+export function TextReveal() {
+  const t = useTranslations('post-page.components.text-reveal');
+  const [debug, setDebug] = useState(false);
+  const sliderMotionValue = useMotionValue(0);
+  const radialGradientValue = useTransform(
+    sliderMotionValue,
+    [0, 100],
+    ['-300%', '40%'],
+  );
+  const radialGradient = useMotionTemplate`radial-gradient(circle at 50% ${radialGradientValue}, var(--color-primary) 30%, rgba(0,0,0,0) 80%)`;
+
+  return (
+    <motion.div
+      className='flex flex-col items-center justify-center'
+      style={{
+        backgroundImage: radialGradient,
+        backgroundClip: debug ? 'initial' : 'text',
+      }}
+    >
+      <pre className='my-0!'>
+        <motion.code className='text-primary tabular-nums'>
+          {radialGradient}
+        </motion.code>
+      </pre>
+      <p
+        className='text-3xl md:text-6xl font-bold'
+        style={{
+          WebkitTextFillColor: 'transparent',
+          WebkitTextStrokeColor: 'var(--primary)',
+          WebkitTextStroke: debug ? 1 : 0,
+        }}
+      >
+        Text Reveal
+      </p>
+
+      <button
+        aria-pressed={debug}
+        onClick={() => setDebug(prev => !prev)}
+        className='absolute bottom-4 right-4 text-sm aria-pressed:bg-primary aria-pressed:text-background bg-background border rounded-full py-1 px-2 text-primary'
+      >
+        {t('debug-mode')}
+      </button>
+      <Slider.Root
+        className='relative flex h-5 w-50 touch-none select-none items-center'
+        onValueChange={value => sliderMotionValue.set(value[0])}
+        defaultValue={[0]}
+        max={100}
+        step={1}
+      >
+        <Slider.Track className='relative h-0.75 grow rounded-full bg-lowcontrast/50'>
+          <Slider.Range className='absolute h-full rounded-full bg-primary' />
+        </Slider.Track>
+        <Slider.Thumb className='block size-5 rounded-full bg-primary' />
+      </Slider.Root>
+      <span className='text-sm text-lowcontrast'>{t('slide-to-animate')}</span>
+    </motion.div>
+  );
+}
