@@ -49,7 +49,7 @@ Done (backend phase, 2026-10-14; runs locally, see `docs/backend.md`):
   flights, SQL views `all_logs`/`all_backlog`; server-function repository
   replacing localStorage; export/import v2
 - Better Auth: GitHub + passkeys, single owner (`OWNER_EMAIL` + `OWNER_GITHUB_ID`), sessions, CSRF check
-- Nitro build (Vercel or plain Node), daily `pg_dump` GitHub Action
+- Nitro build (Vercel or plain Node)
 - Stored provider details (full cast), so pages work when a provider is down;
   external ids (IMDb, Steam…, ISBNs, barcodes) kept for portability
 

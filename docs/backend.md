@@ -127,12 +127,8 @@ pnpm --filter archive db:migrate`.
    a fresh `BETTER_AUTH_SECRET`). Set the function region to `gru1`.
 4. Add the domain `archive.guilhermevictor.me` in Vercel (CNAME at the DNS host).
 5. Sign in with GitHub, then add a passkey in Settings.
-6. Backups: add `DATABASE_URL` as a GitHub Actions secret.
 
 ## Backups
 
-`.github/workflows/backup.yml` runs `pg_dump` daily and keeps each dump as a
-workflow artifact for 90 days. It skips itself until the `DATABASE_URL` secret
-exists. To restore:
-`pg_restore --clean --if-exists --no-owner -d "$DATABASE_URL" archive.dump`.
-The JSON export (Settings → Export) is the portable copy.
+No backup job runs from the repo (it is public, and workflow artifacts would be
+downloadable). The JSON export (Settings → Export) is the portable copy.
