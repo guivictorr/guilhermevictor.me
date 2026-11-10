@@ -5,6 +5,28 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "env": [
+        "LASTFM_API_KEY",
+        "LASTFM_USERNAME",
+        "DISCOGS_USERNAME",
+        "DISCOGS_KEY",
+        "DISCOGS_SECRET",
+        "TMDB_READ_TOKEN",
+        "TMDB_LANGUAGE",
+        "IGDB_CLIENT_ID",
+        "IGDB_CLIENT_SECRET",
+        "DISCOGS_TOKEN",
+        "GOOGLE_BOOKS_KEY",
+        "STEAM_API_KEY",
+        "STEAM_ID",
+        "DATABASE_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "OWNER_EMAIL",
+        "OWNER_GITHUB_ID"
+      ],
       "outputs": [
         "dist/**",
         ".output/**",
