@@ -140,7 +140,7 @@ function Totals({ stats }: { stats: FlightStats }) {
       {tiles.map((tile) => (
         <div
           key={tile.label}
-          className="edge-highlight min-w-0 rounded-[20px] border bg-card p-4"
+          className="edge-highlight min-w-0 rounded-xl border bg-card p-4"
         >
           <div className="text-xs text-muted-foreground">{tile.label}</div>
           {/* Departure-board digits (Doto, ≥20px per design.md §4). */}
@@ -204,7 +204,7 @@ function Highlights({ stats }: { stats: FlightStats }) {
   ].filter((row): row is [string, string] => Boolean(row[1]))
 
   return (
-    <section className="edge-highlight rounded-[20px] border bg-card p-4">
+    <section className="edge-highlight rounded-xl border bg-card p-4">
       <h2 className="mb-3 font-heading font-semibold">Highlights</h2>
       <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
         {items.map(([label, value]) => (

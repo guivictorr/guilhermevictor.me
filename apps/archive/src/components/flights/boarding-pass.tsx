@@ -76,7 +76,7 @@ export function BoardingPass({
     <div
       className={cn(
         "edge-highlight relative isolate overflow-hidden border bg-card",
-        compact ? "rounded-[24px]" : "rounded-[28px]",
+        compact ? "rounded-2xl" : "rounded-2xl",
         className
       )}
     >

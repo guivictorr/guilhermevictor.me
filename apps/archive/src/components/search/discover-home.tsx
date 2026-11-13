@@ -69,7 +69,7 @@ export function QuickFilters({
         <button
           type="button"
           onClick={onOpenFilters}
-          className="pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border ps-3 pe-3.5 text-sm font-medium"
+          className="pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border ps-3 pe-3.5 text-sm font-medium"
         >
           <SlidersHorizontalIcon className="size-4" />
           Filters
@@ -113,7 +113,7 @@ function QuickChip({
       aria-pressed={on}
       onClick={() => onChange(!on)}
       className={cn(
-        "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium",
+        "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md px-3.5 text-sm font-medium",
         on ? "bg-foreground ps-3 text-background" : "bg-muted"
       )}
     >
@@ -234,7 +234,7 @@ function GenreTile({
     <button
       type="button"
       onClick={onPick}
-      className="pressable edge-highlight relative block h-[72px] w-full overflow-hidden rounded-[20px] border bg-card text-left hover:bg-muted/50"
+      className="pressable edge-highlight relative block h-[72px] w-full overflow-hidden rounded-xl border bg-card text-left hover:bg-muted/50"
     >
       {/* Two covers peeking from the right edge, the first one behind. */}
       <CoverImage
@@ -247,7 +247,7 @@ function GenreTile({
       <CoverImage
         media={covers?.[1]}
         className={cn(
-          "absolute top-[18px] right-[22px] -rotate-6 rounded-[5px] shadow-md",
+          "absolute top-[18px] right-[22px] -rotate-6 rounded-sm shadow-md",
           square ? "size-[42px]" : "h-[51px] w-[34px]"
         )}
       />

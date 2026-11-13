@@ -262,7 +262,7 @@ function SegmentedField<T extends string>({
           <ToggleGroupItem
             key={option.value}
             value={option.value}
-            className="h-9 rounded-full px-3.5 data-pressed:border-primary data-pressed:bg-primary data-pressed:text-primary-foreground"
+            className="h-9 rounded-md px-3.5 data-pressed:border-primary data-pressed:bg-primary data-pressed:text-primary-foreground"
           >
             {option.label}
           </ToggleGroupItem>

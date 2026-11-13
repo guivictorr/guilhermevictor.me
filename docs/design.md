@@ -1,6 +1,7 @@
 # Design
 
-Archive's visual identity and the rules every screen follows. `ui.md` covers the
+The visual identity (Vellum) and the rules every screen follows. It started as the
+archive's and is becoming the shared system for every app (`design-system.md`). `ui.md` covers the
 implementation side (components, native-feel utilities); this file covers how things
 should look, move and read. When the two disagree, this file wins, and `ui.md` should
 be updated to match.
@@ -14,29 +15,37 @@ Read the relevant guide first. They are the source of most rules below.
 | `.claude/skills/emil-design-eng`                                                  | Any UI work: philosophy, component details, animation decisions |
 | `.claude/skills/apple-design`                                                     | Gestures, sheets, springs, materials, typography                |
 | `.claude/skills/animate` / `review-animations`                                    | Before adding or reviewing any motion                           |
+| `.claude/skills/choreograph` / `gestures`                                         | Several things moving together; drags, swipes, sheets           |
+| `.claude/skills/remove-animations` / `learn-taste`                                | Toning motion down; building taste from references              |
 | `.claude/skills/mobile-native`                                                    | Anything touch: tap, scroll, inputs, safe areas                 |
 | `.claude/skills/break-ui`                                                         | New list, card or detail view: try the worst-case data          |
 | `.claude/skills/pick-ui-library`                                                  | Before adding a UI dependency                                   |
 | [You don't need animations](https://emilkowal.ski/ui/you-dont-need-animations)    | Deciding whether something should animate at all                |
 | [7 practical animation tips](https://emilkowal.ski/ui/7-practical-animation-tips) | Concrete values for press, easing, origin, speed                |
-| [Web Interface Guidelines](https://interfaces.rauno.me/)                          | Forms, typography, touch, accessibility details                 |
+| `docs/web-interface-guidelines.md` ([source](https://interfaces.rauno.me/))       | Baseline rules: forms, typography, touch, a11y, performance     |
+| `docs/design-system.md`                                                           | Shared components across apps, Base UI inventory, blocks        |
 | [Craft](https://craft.gustavofior.com/resources) (principles 8–12 below)          | Alignment, radii, scroll edges, hover and interruptible motion  |
 
 ## 1. Brand
 
 **Idea: a personal museum of what you lived.** Every movie, show, game, book, record and
 flight is an object you collected: a poster, a game case, a book with a spine, a record
-sleeve, a boarding pass. The app's chrome is the instrument panel around them: precise,
-quiet, and dark.
+sleeve, a boarding pass. The chrome around them is **Vellum**: paper and tracing paper,
+monospace labels like a catalogue, a serif for names, and one blue pencil. Plain like a
+text editor, warm like paper. Flights are the one exception: an amber LED board.
 
-**Personality:** collected · precise · warm · confident and quiet. It is not
-playful-bouncy, and it is not neon-techy.
+**Personality:** collected · precise · warm · plain. It is not playful-bouncy, and it is
+not neon-techy.
 
 **Voice:** short and specific labels. Write "Log watch", "Owned ×2", "Date unknown",
 "1h 50m connection in LIS". No exclamation marks, no jargon, no cute copy. Name things
 for what they contain ("Backlog", "My copies"), not with vague umbrella words.
 
-**References (mood, not to copy):** dark flight trackers (departure-board codes, bento
+**Philosophy:** Airbnb's design principles and UX thinking (`design-system.md`
+"Principles"), never its look.
+
+**References (mood, not to copy):** Acme (plain, text-first), index cards and
+contact sheets (analog objects), tracing paper and glass (material), dark flight trackers (departure-board codes, bento
 fact tiles, boarding passes), a VHS-spine film archive (objects on a shelf, editorial
 calm), a game tracker (expanded uppercase titles, status chips with counts). Layout
 references the owner liked: yourmovieprofile.com / yourgamerprofile.com detail pages
@@ -46,13 +55,14 @@ considered too simple, and Stats is to be rebuilt.
 ## 2. Principles
 
 1. **Content is the color.** Posters, covers and sleeves bring all the color. The
-   chrome stays ink, so the collection is what you see.
-2. **One signal.** Orange marks the single primary action, or "you" (your rating,
-   your active tab). Never more than one orange call to action per view.
+   chrome stays paper and ink, so the collection is what you see.
+2. **One signal.** The blue pencil marks the single primary action, or "you" (your
+   rating, your active tab, focus). Never more than one blue call to action per view.
 3. **Objects, not rows.** Each kind has a physical form (§8). Prefer showing the object
    over a text row whenever there's room.
-4. **Instrument precision.** Numbers line up (tabular), data aligns to a grid, and
-   flight codes and times use the dot-matrix face like a departure board.
+4. **Catalogue precision.** Numbers line up (tabular), data aligns to a grid, labels
+   read like a catalogue (monospace), and flight codes and times use the dot-matrix
+   face on an LED board.
 5. **Native feel first.** It should feel like an installed app on a phone. The
    mobile-native rules in `ui.md` are not optional.
 6. **Motion needs a reason.** Every animation passes the frequency and purpose gate
@@ -73,8 +83,8 @@ considered too simple, and Stats is to be rebuilt.
 9. **Concentric corners** ([nested border radius](https://craft.gustavofior.com/nested-border-radius)).
    Inner radius = outer radius − inset (the padding, plus any border), never the same
    radius on both, and never below zero (`max(0px, …)` → square).
-   - Feature cards: 24px − 16px padding → 8px covers.
-   - Menus and selects: 12px popup (`rounded-lg`) − 4px padding → 8px items
+   - Feature cards: `rounded-2xl` (≈11px) − 8px inset → `rounded-sm` (≈4px) covers.
+   - Menus and selects: `rounded-lg` (6px) popup − 4px padding → 2px items
      (`rounded-[calc(var(--radius-lg)-4px)]`).
    - A pill inside a pill of the same height stays `rounded-full`.
    - Tune by eye when the inset isn't even or the inner element doesn't reach the
@@ -111,65 +121,64 @@ considered too simple, and Stats is to be rebuilt.
 
 ## 3. Color
 
-Dark is the hero theme and is tuned first. Light uses the same roles with its own
-values. Tokens are semantic: use the role name, never a raw hex value in components.
+Light (paper) is the hero theme; dark is the same paper at night, with the same roles.
+Tokens are semantic: use the role name, never a raw hex value in components. Values live
+in `packages/ui/src/styles/globals.css`.
 
 Contrast ratios below were computed with the WCAG 2 formula.
 
-| Token         | Dark        | Light              | Role and contrast                                                                                     |
-| ------------- | ----------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| `ink`         | `#0B0B0C`   | `#F5F2EB` (paper)  | Page background                                                                                       |
-| `surface`     | `#151517`   | `#FFFFFF`          | Cards, lists                                                                                          |
-| `raised`      | `#1D1D20`   | `#FFFFFF` + shadow | Sheets, popovers, menus                                                                               |
-| `field`       | `#26262A`   | `#ECE8DF`          | Inputs, chips, segmented tracks                                                                       |
-| `line`        | white at 8% | black at 10%       | Hairlines and dividers                                                                                |
-| `text`        | `#F4F1EA`   | `#121212`          | Primary text: 13–19:1 on every surface                                                                |
-| `muted`       | `#ADA79C`   | `#5C5850`          | Secondary text: at least 5.8:1 on every surface                                                       |
-| `subtle`      | `#837E75`   | `#6B665E`          | Metadata, **only on `ink`/`surface`** (dark 4.5–4.9:1, light 5.1–5.7:1). Never on `raised` or `field` |
-| `accent`      | `#FF6A1F`   | `#FF6A1F` (fill)   | Primary action, active state, stars                                                                   |
-| `accent-text` | `#FF7E3D`   | `#B8410A`          | Orange text and focus rings (dark 6.0–7.8:1, light 4.5–5.5:1)                                         |
-| `on-accent`   | `#0B0B0C`   | `#121212`          | Text on orange: 6.5–6.9:1                                                                             |
-| `success`     | `#3FD27F`   | `#187040`          | Finished, on time (≥5:1 on every surface)                                                             |
-| `danger`      | `#FF5C7A`   | `#C8243F`          | Destructive (≥4.5:1 on every surface)                                                                 |
-| `info`        | `#5AA9FF`   | `#1F66C9`          | Links in prose, neutral info                                                                          |
+| Token       | Light                    | Dark         | Role and contrast                                                                                  |
+| ----------- | ------------------------ | ------------ | -------------------------------------------------------------------------------------------------- |
+| `ink`       | `#EFECE4` (paper)        | `#15140F`    | Page background                                                                                    |
+| `surface`   | `#FBF9F3` (vellum)       | `#1E1D18`    | Cards, lists                                                                                       |
+| `raised`    | `#FBF9F3` + float shadow | `#25241E`    | Sheets, popovers, menus                                                                            |
+| `field`     | `#E5E1D6`                | `#2D2B25`    | Inputs, chips, segmented tracks                                                                    |
+| `line`      | warm black at 14%        | white at 10% | Hairlines and dividers                                                                             |
+| `text`      | `#1E1D1A`                | `#EEEAE0`    | Primary text: 11.8–16:1 on every surface                                                           |
+| `muted`     | `#524F47`                | `#AAA596`    | Secondary text: at least 5.7:1 on every surface                                                    |
+| `subtle`    | `#67635A`                | `#8F8A7C`    | Metadata, **only on `ink`/`surface`** (light 5.1–5.7:1, dark 4.9–5.4:1). Never on `raised`/`field` |
+| `signal`    | `#2F4FB3` (blue pencil)  | `#9FB4FF`    | Primary action, active state, stars, focus rings, links (light 5.6–6.9:1, dark 7–9.2:1)            |
+| `on-signal` | `#FBF9F3`                | `#15140F`    | Text on the signal fill: 6.9:1 light, 9.2:1 dark                                                   |
+| `success`   | `#1F6B3A`                | `#5FD08E`    | Finished, on time (≥5:1 on every surface)                                                          |
+| `danger`    | `#B3261E`                | `#FF7A6B`    | Destructive (≥5:1 on every surface)                                                                |
+
+In code `signal` is `--primary` (fill) and `--signal-text` (text and rings); they are the
+same colour in Vellum.
 
 Rules:
 
-- **Never put white text on orange.** It fails at 2.9:1. Orange fills always take
-  `on-accent` text.
-- **In the light theme, orange is a fill, not a line.** The orange fill reaches only
-  2.6:1 on paper, so focus rings, underlines and thin indicators use `accent-text`.
-- **Accent covers at most about 5% of a screen.** If orange is everywhere, it signals
+- **Signal covers at most about 5% of a screen.** If blue is everywhere, it signals
   nothing.
-- **Danger is pink-red, not orange.** It is always paired with an icon and a label, so
-  it can't be confused with the brand color.
 - **Color is never the only signal.** Status always comes with an icon, a word or a
   shape.
-- **Stars use the accent.** Your rating is "you".
+- **Stars use the signal.** Your rating is "you".
 - **No per-kind colors.** Kinds are told apart by icon and object shape (§8), not by hue.
+- **The LED board is the only other colour system:** amber `#FF9D2E` on `#0D0B08`, the
+  same in both themes, only for flights (`led-panel`, `led-glow`, `led-label`).
 - **Theme switches never animate,** and `theme-color` is set per scheme.
 
 ## 4. Typography
 
-Two families:
+Three families, each with one job (self-hosted, `packages/ui/src/fonts/README.md`):
 
-- **Archivo** (`@fontsource-variable/archivo/wdth.css`, weight 100–900, width 62–125)
-  does everything: display, titles, UI and prose. The width axis gives the expanded,
-  poster-like display style without a third font.
-- **Doto** (`@fontsource-variable/doto`), a dot-matrix face, is used **only** for airport
-  codes, flight times, and big counters or countdowns. Minimum size 20px; below that the
-  dots stop reading as letters.
+- **Erode** (Fontshare, 400–600), a warm serif, for names, titles and prose: the
+  things you collected and what you wrote about them.
+- **IBM Plex Mono** (400–600) for the interface: labels, buttons, metadata, numbers.
+  It's the body default, so UI reads like a catalogue card.
+- **Doto** (`@fontsource-variable/doto`), a dot-matrix face, **only** for airport codes,
+  flight times and big counters or countdowns. Minimum size 20px; below that the dots
+  stop reading as letters.
 
-| Role        | Size / leading                    | Weight · width       | Tracking | Example                           |
-| ----------- | --------------------------------- | -------------------- | -------- | --------------------------------- |
-| Display     | `clamp(2rem, 6vw, 3.5rem)` / 0.95 | 900 · 125, UPPERCASE | −0.02em  | Page titles: "ARCHIVE", "FLIGHTS" |
-| Title       | 1.75–2.5rem / 1.05                | 750 · 100            | −0.02em  | Detail hero title                 |
-| Heading     | 1.125–1.25rem / 1.25              | 650 · 100            | −0.01em  | Section headings                  |
-| Body        | 0.9375–1rem / 1.5                 | 400 · 100            | 0        | Descriptions, notes               |
-| Label       | 0.875rem / 1.3                    | 500 · 100            | 0        | Buttons, field labels             |
-| Caption     | 0.75–0.8125rem / 1.35             | 450 · 100            | +0.01em  | Metadata: year, runtime           |
-| Overline    | 0.6875rem / 1.2                   | 600 · 112, UPPERCASE | +0.08em  | Eyebrows: "RECORD", "BOOKING ZZ9" |
-| Code (Doto) | 1.5–3.5rem / 1                    | 700                  | +0.02em  | `GRU` · `21:30`                   |
+| Role        | Utility         | Size / leading                  | Family · weight      | Tracking | Example                       |
+| ----------- | --------------- | ------------------------------- | -------------------- | -------- | ----------------------------- |
+| Display     | `type-display`  | `clamp(2rem, 6vw, 3.25rem)` / 1 | Erode 500            | −0.025em | Page titles: "Archive"        |
+| Title       | `type-title`    | 1.75–2.5rem / 1.08              | Erode 600            | −0.02em  | Detail hero title             |
+| Heading     | `type-heading`  | 1.125–1.25rem / 1.25            | Erode 600            | −0.01em  | Section headings              |
+| Prose       | `type-prose`    | 1.0625rem / 1.55                | Erode 400            | 0        | Descriptions, notes           |
+| Label/body  | (default)       | 0.8125–0.875rem / 1.4           | Plex Mono 400–500    | 0        | Buttons, field labels, lists  |
+| Caption     | (default)       | 0.75rem / 1.35                  | Plex Mono 400        | 0        | Metadata: year, runtime       |
+| Overline    | `type-overline` | 0.6875rem / 1.2                 | Plex Mono 500, UPPER | +0.06em  | Eyebrows: "RECORD", "BOOKING" |
+| Code (Doto) | `font-dots`     | 1.25–3.5rem / 1                 | Doto 700–800         | +0.02em  | `GRU` · `21:30`               |
 
 Rules:
 
@@ -181,7 +190,8 @@ Rules:
   that shifts the layout.
 - **Every number people compare uses `tabular-nums`:** ratings, years, durations, prices,
   counts.
-- **Expanded uppercase is for display text and overlines only,** never for paragraphs.
+- **Uppercase is for overlines only,** never for titles or paragraphs.
+- **Monospace is wide:** keep UI labels short, and let titles (Erode) carry long text.
 - Titles use `text-wrap: balance`; prose uses `text-wrap: pretty`.
 - **Doto text must stay readable to everyone.** A dot-matrix code gets an accessible name
   with plain text, for example `aria-label="São Paulo, GRU"`.
@@ -195,13 +205,17 @@ Rules:
 - **Widths:** content up to 72rem; forms and settings up to 32rem.
 - **Radii:**
 
-  | Element                                     | Radius    |
-  | ------------------------------------------- | --------- |
-  | Buttons, chips, segmented controls, tab bar | full pill |
-  | Inputs                                      | 12px      |
-  | Posters and covers                          | 10px      |
-  | Cards                                       | 20px      |
-  | Sheets, hero cards, boarding passes         | 28px      |
+  Paper corners: small, like cut sheets. `--radius` is 6px; Tailwind's scale derives
+  from it.
+
+  | Element                                  | Radius                          |
+  | ---------------------------------------- | ------------------------------- |
+  | Buttons, chips, segmented controls       | `rounded-md` (≈5px)             |
+  | Inputs, selects, menus                   | `rounded-lg` / `rounded-xl`     |
+  | Posters and covers                       | `rounded-sm`–`rounded-md`       |
+  | Cards, tab bar                           | `rounded-xl` (≈8px)             |
+  | Sheets, hero cards, boarding passes, LED | `rounded-2xl` (≈11px)           |
+  | Avatars, icon buttons, discs             | `rounded-full` (they are round) |
 
 - **Concentric radii:** an inner element's radius equals the outer radius minus the
   padding between them, so nested corners stay parallel.
@@ -212,12 +226,12 @@ Rules:
 
 ## 6. Surfaces and depth
 
-- **In dark mode, elevation is light, not shadow.** Each level is a lighter surface plus a
-  top highlight, `inset 0 1px 0 rgb(255 255 255 / 6%)`, like light catching an edge.
-  In light mode, use one soft shadow per level instead.
-- **Glass only for floating chrome over content:** the tab bar, sticky headers, and
-  controls over hero images. Use `backdrop-filter: blur(20px) saturate(160%)` over `ink`
-  at 70%.
+- **Sheets of paper, edge-lit.** Every level has a pale top edge (`edge-highlight`), like
+  light catching a sheet. Floating things add one soft shadow (`shadow-float`); in dark
+  mode the shadow fades and each level is a lighter surface.
+- **Vellum only for floating chrome over content:** the tab bar, sticky headers, and
+  controls over hero images (`glass`): `surface` at 64% with
+  `backdrop-filter: blur(14px) saturate(115%)`, like tracing paper over the content.
   - Never stack glass on glass; legibility collapses.
   - Under `prefers-reduced-transparency`, glass becomes a solid surface.
   - Under `prefers-contrast: more`, it becomes solid with a visible border.
@@ -232,25 +246,25 @@ Rules:
 shadcn on Base UI provides behavior and accessibility; the styling is ours. Restyle the
 components, don't fight their logic.
 
-| Component         | Style                                                                                                                                                                                                                                                                                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primary button    | Orange pill with `on-accent` label. One per view                                                                                                                                                                                                                                                     |
-| Secondary button  | `field` pill with `text` label                                                                                                                                                                                                                                                                       |
-| Ghost button      | Text only, `muted`; becomes `text` on hover                                                                                                                                                                                                                                                          |
-| Icon button       | Round, 44px touch size, always with `aria-label`                                                                                                                                                                                                                                                     |
-| Sizes             | 36px (compact) and 44px (default, touch); press `scale(0.97)`                                                                                                                                                                                                                                        |
-| Chips and filters | Pill; may carry a count ("In progress 4"). Active = `text` fill with `ink` label. Removable chips end with ×                                                                                                                                                                                         |
-| Segmented control | `field` track with a `raised` thumb that slides (ease-in-out token)                                                                                                                                                                                                                                  |
-| Tab bar and dock  | Floating glass pill above the safe area. Active item: orange icon (filled variant) and label. Desktop dock: one pill per group, 8px apart; icons only (56px circles, named by a tooltip), so a one-item pill is a circle; no top highlight on its pills (on a circle it reads as a thicker top edge) |
-| Card              | `surface`, hairline `line` border, 20px radius. Media covers never animate on hover (owner's call); other cards may change background on hover                                                                                                                                                       |
-| Detail hero       | Blurred cover as backdrop fading into `ink`; the poster/sleeve as an object; overline for the kind; title; one orange action                                                                                                                                                                         |
-| Sheet             | `ResponsiveSheet`: bottom sheet on mobile, side sheet on desktop; 28px top radius; grab handle; drawer easing                                                                                                                                                                                        |
-| Input             | `field` fill, no border at rest; 2px `accent-text` focus ring via `box-shadow`, offset 2px; 16px or larger text on touch                                                                                                                                                                             |
-| Rating            | Orange stars; hover previews on desktop, tap or drag on touch (already built)                                                                                                                                                                                                                        |
-| Toast             | Sonner on a `raised` surface; success and error with icons                                                                                                                                                                                                                                           |
-| Inline feedback   | A check next to the trigger for success; the field itself highlighted for errors                                                                                                                                                                                                                     |
-| Loading           | Skeletons shaped like the content. Spinners only inside buttons                                                                                                                                                                                                                                      |
-| Empty state       | One line saying what's missing plus one primary action ("Find something")                                                                                                                                                                                                                            |
+| Component         | Style                                                                                                                                                                                                                                                                                                     |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary button    | Blue-pencil fill with `on-signal` label, paper corners. One per view                                                                                                                                                                                                                                      |
+| Secondary button  | `field` fill with `text` label                                                                                                                                                                                                                                                                            |
+| Ghost button      | Text only, `muted`; becomes `text` on hover                                                                                                                                                                                                                                                               |
+| Icon button       | Round, 44px touch size, always with `aria-label`                                                                                                                                                                                                                                                          |
+| Sizes             | 36px (compact) and 44px (default, touch); press `scale(0.97)`                                                                                                                                                                                                                                             |
+| Chips and filters | Paper corners; may carry a count ("In progress 4"). Active = `text` fill with `ink` label. Removable chips end with ×                                                                                                                                                                                     |
+| Segmented control | `field` track with a `raised` thumb that slides (ease-in-out token)                                                                                                                                                                                                                                       |
+| Tab bar and dock  | Floating vellum bar above the safe area. Active item: blue-pencil icon (filled variant) and label. Desktop dock: one pill per group, 8px apart; icons only (56px circles, named by a tooltip), so a one-item pill is a circle; no top highlight on its pills (on a circle it reads as a thicker top edge) |
+| Card              | `surface`, hairline `line` border, `rounded-xl`. Media covers never animate on hover (owner's call); other cards may change background on hover                                                                                                                                                           |
+| Detail hero       | Blurred cover as backdrop fading into `ink`; the poster/sleeve as an object; overline for the kind; title; one blue-pencil action                                                                                                                                                                         |
+| Sheet             | `ResponsiveSheet`: bottom sheet on mobile, side sheet on desktop; `rounded-2xl` top; grab handle; drawer easing                                                                                                                                                                                           |
+| Input             | `field` fill, no border at rest; 2px `signal` focus ring via `box-shadow`, offset 2px; 16px or larger text on touch                                                                                                                                                                                       |
+| Rating            | Blue-pencil stars; hover previews on desktop, tap or drag on touch (already built)                                                                                                                                                                                                                        |
+| Toast             | Sonner on a `raised` surface; success and error with icons                                                                                                                                                                                                                                                |
+| Inline feedback   | A check next to the trigger for success; the field itself highlighted for errors                                                                                                                                                                                                                          |
+| Loading           | Skeletons shaped like the content. Spinners only inside buttons                                                                                                                                                                                                                                           |
+| Empty state       | One line saying what's missing plus one primary action ("Find something")                                                                                                                                                                                                                                 |
 
 Other rules:
 
@@ -270,15 +284,15 @@ full-width form fields.
 
 Each kind looks like the thing it is:
 
-| Kind             | Object treatment                                                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Movies and shows | The cover alone: 2:3 poster, 10px radius, hairline. No case or frame (owner's call). Heroes use the backdrop image                                |
-| Games            | The cover alone, no case. The hero uses a landscape screenshot behind the title                                                                   |
-| Books            | The cover alone, like the other kinds (owner's call)                                                                                              |
-| Records          | Square sleeve. On the detail page, a vinyl disc peeks out from behind the sleeve (static, CSS only)                                               |
-| Flights          | Boarding pass: Doto codes and times, paper grain, perforation notches, airline logo. No barcode. Map planes fly each route in the direction flown |
+| Kind             | Object treatment                                                                                                                                                                                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Movies and shows | The cover alone: 2:3 poster, 10px radius, hairline. No case or frame (owner's call). Heroes use the backdrop image                                                                                                                                         |
+| Games            | The cover alone, no case. The hero uses a landscape screenshot behind the title                                                                                                                                                                            |
+| Books            | The cover alone, like the other kinds (owner's call)                                                                                                                                                                                                       |
+| Records          | Square sleeve. On the detail page, a vinyl disc peeks out from behind the sleeve (static, CSS only)                                                                                                                                                        |
+| Flights          | Upcoming/live: amber LED board (Doto, unlit dot grid, countdown; spec in `design-system.md`). Flown: boarding pass with Doto codes and times, paper grain, perforation notches, airline logo. No barcode. Map planes fly each route in the direction flown |
 
-- **Missing covers** show a typed fallback: the kind icon plus the title in Archivo on
+- **Missing covers** show a typed fallback: the kind icon plus the title in Erode on
   `field`. Never a broken image.
 - **Future:** a shelf view of spines (the VHS-archive reference) as an alternative library
   layout. It's a rarely used view, so a little delight is allowed there.
@@ -386,17 +400,17 @@ A simple hover or fade never needs a library; use CSS.
 - [ ] Hover styles gated by `(hover: hover)`
 - [ ] Reduced motion handled
 - [ ] Worst-case data tried (long, empty, one, many, missing)
-- [ ] At most one orange call to action in the view
+- [ ] At most one blue-pencil call to action in the view
 - [ ] Dot-matrix text has a plain-text accessible name
 - [ ] Checked on a real phone (sticky hover, safe areas, keyboard)
 
 ## Where it lives in code
 
-| Piece                                                                                                                             | File                                                                              |
-| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Color tokens (both themes), fonts                                                                                                 | `packages/ui/src/styles/globals.css`                                              |
-| Type roles (`type-display`, `type-title`, `type-heading`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, motion tokens | `apps/archive/src/styles/app.css`                                                   |
-| Buttons, inputs, toggles                                                                                                          | `packages/ui/src/components/*` (restyled shadcn)                                  |
-| Dock (desktop) and tab bar (phones)                                                                                               | `apps/archive/src/components/app-shell.tsx`                                         |
-| Covers (record sleeve + vinyl)                                                                                                    | `components/poster.tsx`                                                           |
-| Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                      | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |
+| Piece                                                                                                                                                                    | File                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Color tokens (both themes), fonts                                                                                                                                        | `packages/ui/src/styles/globals.css`                                              |
+| Type roles (`type-display`, `type-title`, `type-heading`, `type-prose`, `type-overline`, `font-dots`), `glass`, `edge-highlight`, `shadow-float`, `led-*`, motion tokens | `apps/archive/src/styles/app.css`                                                 |
+| Buttons, inputs, toggles                                                                                                                                                 | `packages/ui/src/components/*` (restyled shadcn)                                  |
+| Dock (desktop) and tab bar (phones)                                                                                                                                      | `apps/archive/src/components/app-shell.tsx`                                       |
+| Covers (record sleeve + vinyl)                                                                                                                                           | `components/poster.tsx`                                                           |
+| Flights: map highlight and planes, boarding pass, trip legs, aircraft photos                                                                                             | `components/flights/*`, `routes/flights/*`, `lib/aircraft.ts`, `public/aircraft/` |

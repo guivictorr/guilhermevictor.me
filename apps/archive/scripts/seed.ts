@@ -14,7 +14,10 @@ import { sql } from "drizzle-orm"
 import { pgRepository } from "../src/server/archive.server"
 import { getDb } from "../src/server/db/client.server"
 
-if (existsSync(".env")) process.loadEnvFile(".env")
+// .env.local first so it wins over .env, like Vite (loadEnvFile never
+// overwrites a variable that's already set).
+for (const file of [".env.local", ".env"])
+  if (existsSync(file)) process.loadEnvFile(file)
 
 const args = process.argv.slice(2)
 const file = args.find((a) => !a.startsWith("--"))

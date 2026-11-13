@@ -6,8 +6,8 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Your rating is "you": it uses the signal orange (design.md §3). */
-  --color-star: #ff6a1f;
+  /* Your rating is "you": it uses the blue pencil (design.md §3). */
+  --color-star: var(--signal-text);
 
   /* Height of the mobile tab bar, excluding the safe area. */
   --tab-bar-height: 4rem;
@@ -31,34 +31,42 @@
   );
 }
 
-/* Type roles (docs/design.md §4). Archivo's width axis gives the expanded
-   display style; Doto is only for flight codes, times and big counters. */
+/* Type roles (docs/design.md §4). Erode sets names, titles and prose; the
+   interface is IBM Plex Mono (the body default); Doto is only for flight
+   codes, times and big counters. */
 @utility type-display {
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  line-height: 0.95;
-  font-weight: 900;
-  font-stretch: 125%;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 @utility type-title {
-  line-height: 1.05;
-  font-weight: 750;
+  font-family: var(--font-serif);
+  line-height: 1.08;
+  font-weight: 600;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
 @utility type-heading {
+  font-family: var(--font-serif);
   line-height: 1.25;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
+@utility type-prose {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
 @utility type-overline {
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   line-height: 1.2;
-  font-weight: 600;
-  font-stretch: 112%;
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 @utility font-dots {
@@ -68,17 +76,58 @@
   line-height: 1;
 }
 
-/* Raised surfaces in dark mode: light catching the top edge, not a shadow. */
+/* The pale top edge of a sheet catching light (both themes). */
 @utility edge-highlight {
   box-shadow: inset 0 1px 0 var(--highlight);
 }
 
-/* Floating chrome over content (tab bar, sticky headers). Solid when the
-   user asks for less transparency or more contrast. */
+/* Flights' LED board (docs/design-system.md): a recessed panel with a grid
+   of unlit dots; lit text glows amber. The board is the same in both themes,
+   like a real display. */
+@utility led-panel {
+  color: #ff9d2e;
+  background-color: #0d0b08;
+  background-image: radial-gradient(
+    circle,
+    rgb(255 157 46 / 7.5%) 1px,
+    transparent 1.35px
+  );
+  background-size: 5px 5px;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 6%),
+    inset 0 2px 14px rgb(0 0 0 / 70%);
+}
+@utility led-glow {
+  text-shadow:
+    0 0 6px rgb(255 140 30 / 55%),
+    0 0 18px rgb(255 120 20 / 22%);
+  @media (prefers-contrast: more) {
+    text-shadow: none;
+  }
+}
+/* 5.4:1 on the panel. */
+@utility led-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8f8170;
+}
+
+/* One soft shadow for anything floating over the page (design.md §6). */
+@utility shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+/* Vellum: tracing paper over content, for floating chrome only (tab bar,
+   sticky headers, controls over images). One layer, never stacked. Solid
+   when the user asks for less transparency or more contrast. */
 @utility glass {
-  background: color-mix(in oklab, var(--background) 72%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  background: color-mix(in oklab, var(--surface) 64%, transparent);
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
   @media (prefers-reduced-transparency: reduce) {
     background: var(--raised);
     backdrop-filter: none;

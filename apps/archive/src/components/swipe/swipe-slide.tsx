@@ -180,7 +180,7 @@ export function SwipeSlide({ item }: { item: LibraryItemInput }) {
         </div>
       </div>
 
-      {/* Quick actions; the one orange button is Log. */}
+      {/* Quick actions; the one signal button is Log. */}
       <div className="pb-safe px-4 pt-4">
         <div className="mx-auto flex max-w-md flex-col items-center gap-3 pb-4">
           {/* Shows are rated per season (in Seasons); "Mine" shows the

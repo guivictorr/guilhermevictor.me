@@ -390,7 +390,7 @@ function KindPills({
               aria-checked={active}
               onClick={() => onChange(type)}
               className={cn(
-                "pressable inline-flex h-9 shrink-0 items-center rounded-full px-4 text-sm font-medium",
+                "pressable inline-flex h-9 shrink-0 items-center rounded-md px-4 text-sm font-medium",
                 active
                   ? "bg-foreground text-background"
                   : "bg-muted text-foreground"

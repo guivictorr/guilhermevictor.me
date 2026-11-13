@@ -277,7 +277,7 @@ function Deck({
           >
             <ChevronLeftIcon className="size-5" />
           </Button>
-          <div className="glass pointer-events-auto min-w-0 rounded-full border px-3.5 py-1.5 text-sm">
+          <div className="glass pointer-events-auto min-w-0 rounded-md border px-3.5 py-1.5 text-sm">
             <span className="truncate font-medium">{title}</span>{" "}
             <span
               className="text-muted-foreground tabular-nums"

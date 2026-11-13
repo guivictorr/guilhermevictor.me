@@ -153,7 +153,7 @@ export function FlightMap({
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
       aria-label={`Map of ${routes.length} routes`}
-      className={cn("w-full rounded-[20px] border bg-card", className)}
+      className={cn("w-full rounded-xl border bg-card", className)}
     >
       <path
         d={scene.path(geoGraticule10()) ?? ""}

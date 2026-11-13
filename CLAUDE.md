@@ -80,7 +80,8 @@ docs/                project documentation (start at docs/README.md)
   with absolute paths.
 - **New env vars go in `turbo.json` (`tasks.build.env`)**. Turbo runs in strict env
   mode: undeclared vars never reach `turbo build`, so they are missing on Vercel.
-- **Never read `apps/archive/.env`**. API keys live there and are only used inside
+- **Never read `.env` or `.env.local` in any app** (`vercel env pull` writes
+  `.env.local`). API keys live there and are only used inside
   `*.server.ts` / `createServerFn`. `.env.example` lists the variables.
 - The owner may be running `pnpm dev` on port 3000 with real keys. Don't kill it;
   run your own server on another port (`pnpm exec vite dev --port 3005 --strictPort`).
@@ -111,7 +112,9 @@ docs/                project documentation (start at docs/README.md)
 - Search params: the router parses numeric-looking values as numbers — use
   `z.coerce.string()` for free text (ISBNs, "1984").
 - **Before any front-end work, read `docs/design.md`** (brand, color, type, motion,
-  component rules) and the skills and articles it lists.
+  component rules) and the skills and articles it lists. Every app follows
+  `docs/web-interface-guidelines.md`; shared components are planned in
+  `docs/design-system.md` (Base UI is the only primitive layer).
 - Native feel: bottom sheets via `ResponsiveSheet`, press feedback `pressable`,
   safe-area utilities (`pt-safe`, `px-safe`, `pb-tab-bar`), hover only under
   `(hover: hover)`, inputs ≥16px. See `docs/ui.md`.

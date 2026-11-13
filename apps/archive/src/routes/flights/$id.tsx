@@ -126,7 +126,7 @@ function FlightPage() {
         {flight.notes ? (
           <section>
             <h2 className="type-heading mb-2 text-lg">Notes</h2>
-            <p className="rounded-[20px] border bg-card px-4 py-3 text-sm whitespace-pre-line">
+            <p className="rounded-xl border bg-card px-4 py-3 text-sm whitespace-pre-line">
               {flight.notes}
             </p>
           </section>
@@ -184,7 +184,7 @@ function TripLegs({
                 <Link
                   to="/flights/$id"
                   params={{ id: leg.id }}
-                  className="pressable block rounded-[24px]"
+                  className="pressable block rounded-2xl"
                 >
                   <BoardingPass
                     flight={leg}
