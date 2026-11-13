@@ -80,7 +80,8 @@ docs/                project documentation (start at docs/README.md)
   with absolute paths.
 - **New env vars go in `turbo.json` (`tasks.build.env`)**. Turbo runs in strict env
   mode: undeclared vars never reach `turbo build`, so they are missing on Vercel.
-- **Never read `apps/archive/.env`**. API keys live there and are only used inside
+- **Never read `.env` or `.env.local` in any app** (`vercel env pull` writes
+  `.env.local`). API keys live there and are only used inside
   `*.server.ts` / `createServerFn`. `.env.example` lists the variables.
 - The owner may be running `pnpm dev` on port 3000 with real keys. Don't kill it;
   run your own server on another port (`pnpm exec vite dev --port 3005 --strictPort`).

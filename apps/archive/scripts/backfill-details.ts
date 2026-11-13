@@ -19,7 +19,10 @@ import {
   ensureSeasonDetails,
 } from "../src/server/details.server"
 
-if (existsSync(".env")) process.loadEnvFile(".env")
+// .env.local first so it wins over .env, like Vite (loadEnvFile never
+// overwrites a variable that's already set).
+for (const file of [".env.local", ".env"])
+  if (existsSync(file)) process.loadEnvFile(file)
 
 const refresh = process.argv.includes("--refresh")
 const only = process.argv
