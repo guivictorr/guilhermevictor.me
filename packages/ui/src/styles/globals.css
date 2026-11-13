@@ -3,9 +3,27 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/doto";
 
-/* Vellum type (docs/design.md §4): Erode for names, titles and prose; IBM
-   Plex Mono for the interface and metadata; Doto only for flights.
-   Self-hosted, see ../fonts/README.md. */
+/* Vellum type (docs/design.md §4): Erode for names, titles and prose;
+   Switzer for the interface; IBM Plex Mono only for small catalogue labels;
+   Doto only for flights. Self-hosted, see ../fonts/README.md. */
+@font-face {
+  font-family: "Switzer";
+  src: url("../fonts/switzer-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("../fonts/switzer-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("../fonts/switzer-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
 @font-face {
   font-family: "Erode";
   src: url("../fonts/erode-400.woff2") format("woff2");
@@ -80,8 +98,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-sans:
-    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: "Switzer", ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-serif: "Erode", "Iowan Old Style", Georgia, serif;

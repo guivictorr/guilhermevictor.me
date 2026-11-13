@@ -32,8 +32,8 @@
 }
 
 /* Type roles (docs/design.md §4). Erode sets names, titles and prose; the
-   interface is IBM Plex Mono (the body default); Doto is only for flight
-   codes, times and big counters. */
+   interface is Switzer (the body default); Plex Mono is only for overlines
+   and LED labels; Doto is only for flight codes, times and big counters. */
 @utility type-display {
   font-family: var(--font-serif);
   font-size: clamp(2rem, 6vw, 3.25rem);

@@ -265,7 +265,7 @@ board.
 ### Overall direction: Vellum (decided 2026-11-12)
 
 Paper and tracing paper, Acme-like plainness, glass as a material, a serif for names and
-monospace for the interface, one blue pencil. Rules and tokens live in `design.md`
+a grotesk (Switzer) for the interface, one blue pencil. Rules and tokens live in `design.md`
 (§3 colour, §4 type, §5 shape, §6 surfaces) and `packages/ui/src/styles/globals.css`.
 Flights keep the amber LED board above.
 

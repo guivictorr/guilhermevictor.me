@@ -31,7 +31,8 @@ Read the relevant guide first. They are the source of most rules below.
 **Idea: a personal museum of what you lived.** Every movie, show, game, book, record and
 flight is an object you collected: a poster, a game case, a book with a spine, a record
 sleeve, a boarding pass. The chrome around them is **Vellum**: paper and tracing paper,
-monospace labels like a catalogue, a serif for names, and one blue pencil. Plain like a
+a serif for names, a quiet grotesk for the interface, catalogue-style overlines, and one
+blue pencil. Plain like a
 text editor, warm like paper. Flights are the one exception: an amber LED board.
 
 **Personality:** collected · precise · warm · plain. It is not playful-bouncy, and it is
@@ -60,8 +61,8 @@ considered too simple, and Stats is to be rebuilt.
    rating, your active tab, focus). Never more than one blue call to action per view.
 3. **Objects, not rows.** Each kind has a physical form (§8). Prefer showing the object
    over a text row whenever there's room.
-4. **Catalogue precision.** Numbers line up (tabular), data aligns to a grid, labels
-   read like a catalogue (monospace), and flight codes and times use the dot-matrix
+4. **Catalogue precision.** Numbers line up (tabular), data aligns to a grid, overlines
+   read like catalogue labels (monospace), and flight codes and times use the dot-matrix
    face on an LED board.
 5. **Native feel first.** It should feel like an installed app on a phone. The
    mobile-native rules in `ui.md` are not optional.
@@ -159,12 +160,15 @@ Rules:
 
 ## 4. Typography
 
-Three families, each with one job (self-hosted, `packages/ui/src/fonts/README.md`):
+Four families, each with one job (self-hosted, `packages/ui/src/fonts/README.md`):
 
 - **Erode** (Fontshare, 400–600), a warm serif, for names, titles and prose: the
   things you collected and what you wrote about them.
-- **IBM Plex Mono** (400–600) for the interface: labels, buttons, metadata, numbers.
-  It's the body default, so UI reads like a catalogue card.
+- **Switzer** (Fontshare, 400–600), a neutral grotesk from the same foundry as Erode,
+  for the interface: labels, buttons, metadata, numbers. It's the body default.
+- **IBM Plex Mono** (400–500) **only** for small catalogue labels: overlines and the LED
+  board's labels. Never for body text or UI (the owner tried monospace everywhere and
+  didn't like it).
 - **Doto** (`@fontsource-variable/doto`), a dot-matrix face, **only** for airport codes,
   flight times and big counters or countdowns. Minimum size 20px; below that the dots
   stop reading as letters.
@@ -175,8 +179,8 @@ Three families, each with one job (self-hosted, `packages/ui/src/fonts/README.md
 | Title       | `type-title`    | 1.75–2.5rem / 1.08              | Erode 600            | −0.02em  | Detail hero title             |
 | Heading     | `type-heading`  | 1.125–1.25rem / 1.25            | Erode 600            | −0.01em  | Section headings              |
 | Prose       | `type-prose`    | 1.0625rem / 1.55                | Erode 400            | 0        | Descriptions, notes           |
-| Label/body  | (default)       | 0.8125–0.875rem / 1.4           | Plex Mono 400–500    | 0        | Buttons, field labels, lists  |
-| Caption     | (default)       | 0.75rem / 1.35                  | Plex Mono 400        | 0        | Metadata: year, runtime       |
+| Label/body  | (default)       | 0.875–1rem / 1.45               | Switzer 400–500      | 0        | Buttons, field labels, lists  |
+| Caption     | (default)       | 0.75–0.8125rem / 1.35           | Switzer 400          | +0.01em  | Metadata: year, runtime       |
 | Overline    | `type-overline` | 0.6875rem / 1.2                 | Plex Mono 500, UPPER | +0.06em  | Eyebrows: "RECORD", "BOOKING" |
 | Code (Doto) | `font-dots`     | 1.25–3.5rem / 1                 | Doto 700–800         | +0.02em  | `GRU` · `21:30`               |
 
@@ -191,7 +195,6 @@ Rules:
 - **Every number people compare uses `tabular-nums`:** ratings, years, durations, prices,
   counts.
 - **Uppercase is for overlines only,** never for titles or paragraphs.
-- **Monospace is wide:** keep UI labels short, and let titles (Erode) carry long text.
 - Titles use `text-wrap: balance`; prose uses `text-wrap: pretty`.
 - **Doto text must stay readable to everyone.** A dot-matrix code gets an accessible name
   with plain text, for example `aria-label="São Paulo, GRU"`.
