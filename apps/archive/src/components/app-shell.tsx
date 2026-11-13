@@ -26,11 +26,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Shared by both bars: the glass pill around a group of items. */
-const PILL =
-  "glass flex rounded-full border border-border shadow-[0_8px_32px_rgb(0_0_0/0.35)]"
+/** Shared by both bars: a sheet of vellum around a group of items. */
+const PILL = "glass shadow-float flex rounded-xl border border-border"
 
-/** Floating glass pill above the home indicator; the active tab is orange. */
+/** Floating vellum bar above the home indicator; the active tab is "you". */
 function TabBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   return (
@@ -135,7 +134,7 @@ function NavItem({
       aria-label={iconOnly ? label : undefined}
       className={cn(
         // Hover switches instantly (no transition): it's frequent.
-        "pressable flex flex-col items-center justify-center gap-0.5 rounded-full text-[0.6875rem] font-medium",
+        "pressable flex flex-col items-center justify-center gap-0.5 rounded-lg text-[0.6875rem] font-medium",
         active ? "text-primary" : "text-muted-foreground hover:text-foreground",
         className
       )}

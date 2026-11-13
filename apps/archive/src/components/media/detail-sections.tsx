@@ -96,7 +96,7 @@ export function LogsTabLabel({
     <>
       {label}
       {data?.length ? (
-        <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground tabular-nums">
+        <span className="rounded-sm bg-muted px-1.5 text-xs text-muted-foreground tabular-nums">
           {data.length}
         </span>
       ) : null}

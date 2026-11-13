@@ -62,7 +62,7 @@ export function CardRowSkeleton({ count = 3 }: { count?: number }) {
       <TitleSkeleton />
       <div className="-mx-4 flex gap-3 overflow-hidden px-4 *:w-[85%] *:shrink-0 md:mx-0 md:grid md:grid-cols-3 md:px-0 md:*:w-auto">
         {Array.from({ length: count }, (_, i) => (
-          <Skeleton key={i} className="h-44 rounded-[24px]" />
+          <Skeleton key={i} className="h-44 rounded-2xl" />
         ))}
       </div>
     </section>

@@ -85,7 +85,7 @@ export function ViewSwitch<T extends string>({
     <div
       role="group"
       aria-label="View"
-      className="flex shrink-0 rounded-full bg-muted p-[3px]"
+      className="flex shrink-0 rounded-md bg-muted p-[3px]"
     >
       {options.map((option) => (
         <ViewButton
@@ -126,7 +126,7 @@ function ViewButton({
       aria-pressed={on}
       onClick={onClick}
       className={cn(
-        "pressable flex size-[38px] items-center justify-center rounded-full",
+        "pressable flex size-[38px] items-center justify-center rounded-[calc(var(--radius-md)-3px)]",
         on
           ? "edge-highlight bg-popover text-foreground"
           : "text-muted-foreground hover:text-foreground"

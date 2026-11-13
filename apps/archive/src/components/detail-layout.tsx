@@ -329,7 +329,7 @@ export function SideCard({
   children: React.ReactNode
 }) {
   return (
-    <section className="edge-highlight rounded-[20px] border bg-card p-4">
+    <section className="edge-highlight rounded-xl border bg-card p-4">
       <h2 className="type-heading mb-3 text-sm">{title}</h2>
       {children}
     </section>

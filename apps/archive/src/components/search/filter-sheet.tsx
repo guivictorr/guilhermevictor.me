@@ -383,7 +383,7 @@ function FilterControl({
               <ToggleGroupItem
                 key={value}
                 value={value}
-                className="h-9 rounded-full px-3.5 data-pressed:border-foreground data-pressed:bg-foreground data-pressed:text-background"
+                className="h-9 rounded-md px-3.5 data-pressed:border-foreground data-pressed:bg-foreground data-pressed:text-background"
               >
                 {value === ANY ? "Any" : `${value}★+`}
               </ToggleGroupItem>
@@ -443,7 +443,7 @@ function GenreChips({
               onClick={() => cycle(option.value)}
               aria-label={`${option.label}${state === "include" ? ", included" : state === "exclude" ? ", excluded" : ""}`}
               className={cn(
-                "pressable inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium",
+                "pressable inline-flex h-9 items-center gap-1.5 rounded-md border px-3.5 text-sm font-medium",
                 state === "include" &&
                   "border-foreground bg-foreground ps-3 text-background",
                 state === "exclude" &&
@@ -515,7 +515,7 @@ function YearRange({
                     : patch({ from: decade, to: end })
                 }
                 className={cn(
-                  "pressable h-8 shrink-0 rounded-full px-3 text-sm font-medium tabular-nums",
+                  "pressable h-8 shrink-0 rounded-md px-3 text-sm font-medium tabular-nums",
                   on ? "bg-foreground text-background" : "bg-muted"
                 )}
               >
@@ -560,7 +560,7 @@ function PeoplePicker({
                 type="button"
                 onClick={() => onChange(ids.filter((x) => x !== pid))}
                 aria-label={`Remove ${people[i]?.data?.name ?? "person"}`}
-                className="pressable inline-flex h-8 items-center gap-1 rounded-full bg-foreground ps-3 pe-2 text-sm font-medium text-background"
+                className="pressable inline-flex h-8 items-center gap-1 rounded-md bg-foreground ps-3 pe-2 text-sm font-medium text-background"
               >
                 {people[i]?.data?.name ?? "…"}
                 <XIcon className="size-3.5" />

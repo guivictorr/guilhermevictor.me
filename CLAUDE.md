@@ -111,7 +111,9 @@ docs/                project documentation (start at docs/README.md)
 - Search params: the router parses numeric-looking values as numbers — use
   `z.coerce.string()` for free text (ISBNs, "1984").
 - **Before any front-end work, read `docs/design.md`** (brand, color, type, motion,
-  component rules) and the skills and articles it lists.
+  component rules) and the skills and articles it lists. Every app follows
+  `docs/web-interface-guidelines.md`; shared components are planned in
+  `docs/design-system.md` (Base UI is the only primitive layer).
 - Native feel: bottom sheets via `ResponsiveSheet`, press feedback `pressable`,
   safe-area utilities (`pt-safe`, `px-safe`, `pb-tab-bar`), hover only under
   `(hover: hover)`, inputs ≥16px. See `docs/ui.md`.

@@ -23,7 +23,7 @@ export function LibraryNav() {
           <Link
             key={key}
             to={to}
-            className="pressable inline-flex h-9 shrink-0 items-center rounded-full bg-muted px-4 text-sm font-medium text-foreground data-[status=active]:bg-foreground data-[status=active]:text-background"
+            className="pressable inline-flex h-9 shrink-0 items-center rounded-md bg-muted px-4 text-sm font-medium text-foreground data-[status=active]:bg-foreground data-[status=active]:text-background"
           >
             {plural}
           </Link>

@@ -50,7 +50,7 @@ export function ActiveFilters({
         <button
           type="button"
           onClick={onOpenFilters}
-          className="pressable inline-flex h-9 items-center gap-1.5 rounded-full border ps-3 pe-3 text-sm font-medium"
+          className="pressable inline-flex h-9 items-center gap-1.5 rounded-md border ps-3 pe-3 text-sm font-medium"
         >
           <SlidersHorizontalIcon className="size-4" />
           Filters
@@ -67,7 +67,7 @@ export function ActiveFilters({
             type="button"
             onClick={() => onChange(withoutField(type, filters, chip.key))}
             aria-label={`Remove filter ${chip.label}`}
-            className="pressable inline-flex h-9 max-w-64 items-center gap-1 rounded-full bg-foreground ps-3.5 pe-2 text-sm font-medium text-background"
+            className="pressable inline-flex h-9 max-w-64 items-center gap-1 rounded-md bg-foreground ps-3.5 pe-2 text-sm font-medium text-background"
           >
             <span className="truncate">{chip.label}</span>
             <XIcon className="size-4 shrink-0" />
@@ -174,7 +174,7 @@ export function ResultsList({
     return <ReleaseResultList results={results} dimOwned={false} />
   if (layout === "list")
     return (
-      <ul className="divide-y overflow-hidden rounded-[20px] border bg-card">
+      <ul className="divide-y overflow-hidden rounded-xl border bg-card">
         {results.map((media) => (
           <li
             key={`${media.type}-${media.id}`}
@@ -274,7 +274,7 @@ export function EmptyResults({
         </p>
       </div>
       {!hidden && relax.length ? (
-        <ul className="edge-highlight divide-y overflow-hidden rounded-[20px] border bg-card">
+        <ul className="edge-highlight divide-y overflow-hidden rounded-xl border bg-card">
           {relax.map((r) => (
             <li key={r.key}>
               <button

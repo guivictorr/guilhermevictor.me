@@ -57,12 +57,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         {
           name: "theme-color",
           media: "(prefers-color-scheme: light)",
-          content: "#f5f2eb",
+          content: "#efece4",
         },
         {
           name: "theme-color",
           media: "(prefers-color-scheme: dark)",
-          content: "#0b0b0c",
+          content: "#15140f",
         },
         { name: "color-scheme", content: "light dark" },
         { name: "apple-mobile-web-app-capable", content: "yes" },

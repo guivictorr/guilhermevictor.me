@@ -50,7 +50,7 @@ function FeatureCard({
   return (
     <article
       className={cn(
-        "edge-highlight relative isolate overflow-hidden rounded-[24px] border bg-card",
+        "edge-highlight relative isolate overflow-hidden rounded-2xl border bg-card",
         className
       )}
     >
@@ -79,7 +79,7 @@ function FeatureCard({
           title={item.title}
           className={cn(
             // Concentric with the card: 24px corner − 16px inset.
-            "shrink-0 rounded-[8px] shadow-lg",
+            "shrink-0 rounded-sm shadow-lg",
             item.type === "record" ? "w-24" : "w-20 md:w-24"
           )}
         />

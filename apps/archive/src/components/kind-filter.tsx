@@ -22,7 +22,7 @@ export function KindFilter({
 }) {
   const pill = (selected: boolean) =>
     cn(
-      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium",
+      "pressable inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium",
       selected ? "bg-foreground text-background" : "bg-muted text-foreground"
     )
   const count = (n: number) => (

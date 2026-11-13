@@ -1,8 +1,47 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/archivo/wdth.css";
 @import "@fontsource-variable/doto";
+
+/* Vellum type (docs/design.md §4): Erode for names, titles and prose; IBM
+   Plex Mono for the interface and metadata; Doto only for flights.
+   Self-hosted, see ../fonts/README.md. */
+@font-face {
+  font-family: "Erode";
+  src: url("../fonts/erode-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Erode";
+  src: url("../fonts/erode-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Erode";
+  src: url("../fonts/erode-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/ibm-plex-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/ibm-plex-mono-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../fonts/ibm-plex-mono-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
 
 @custom-variant dark (&:is(.dark *));
 @source "../../../apps/**/*.{ts,tsx}";
@@ -10,7 +49,7 @@
 @source "../**/*.{ts,tsx}";
 
 @theme inline {
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-serif);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -41,9 +80,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-serif: "Erode", "Iowan Old Style", Georgia, serif;
   --font-dots: "Doto Variable", ui-monospace, monospace;
-  /* Archive tokens beyond shadcn's set (see docs/design.md §3). */
+  /* Tokens beyond shadcn's set (see docs/design.md §3). */
   --color-ink: var(--background);
   --color-surface: var(--surface);
   --color-raised: var(--raised);
@@ -56,76 +99,80 @@
 }
 
 :root {
-  /* Light: paper. Same roles as dark; see docs/design.md §3 for contrast. */
-  --background: #f5f2eb;
-  --foreground: #121212;
-  --surface: #ffffff;
-  --raised: #ffffff;
-  --field: #ece8df;
-  --subtle: #6b665e;
-  --signal-text: #b8410a;
-  --success: #187040;
-  --info: #1f66c9;
+  /* Light: paper. The hero theme. See docs/design.md §3 for contrast. */
+  --background: #efece4;
+  --foreground: #1e1d1a;
+  --surface: #fbf9f3;
+  --raised: #fbf9f3;
+  --field: #e5e1d6;
+  --subtle: #67635a;
+  /* Blue pencil: the one colour. Primary action, "you", focus. */
+  --signal-text: #2f4fb3;
+  --success: #1f6b3a;
+  --info: #2f4fb3;
   --card: var(--surface);
   --card-foreground: var(--foreground);
   --popover: var(--raised);
   --popover-foreground: var(--foreground);
-  --primary: #ff6a1f;
-  --primary-foreground: #121212;
+  --primary: #2f4fb3;
+  --primary-foreground: #fbf9f3;
   --secondary: var(--field);
   --secondary-foreground: var(--foreground);
   --muted: var(--field);
-  --muted-foreground: #5c5850;
-  --accent: #e4dfd3;
+  --muted-foreground: #524f47;
+  --accent: #dcd7ca;
   --accent-foreground: var(--foreground);
-  --destructive: #c8243f;
-  --border: rgb(0 0 0 / 10%);
-  --input: rgb(0 0 0 / 14%);
-  /* Orange fill is only 2.6:1 on paper, so rings use the darker text-orange. */
+  --destructive: #b3261e;
+  --border: rgb(60 50 30 / 14%);
+  --input: rgb(60 50 30 / 20%);
   --ring: var(--signal-text);
-  --chart-1: #ff6a1f;
-  --chart-2: #b8410a;
-  --chart-3: #5c5850;
-  --chart-4: #1f66c9;
-  --chart-5: #187040;
-  --radius: 0.75rem;
-  --highlight: rgb(255 255 255 / 0%);
+  --chart-1: #2f4fb3;
+  --chart-2: #1e1d1a;
+  --chart-3: #8a8578;
+  --chart-4: #c06a3a;
+  --chart-5: #1f6b3a;
+  /* Paper corners: small, like cut sheets. */
+  --radius: 0.375rem;
+  /* The pale edge of a sheet of vellum catching light. */
+  --highlight: rgb(255 255 255 / 70%);
+  /* One soft shadow for anything floating on paper. */
+  --shadow-float: 0 1px 2px rgb(40 30 10 / 8%), 0 8px 24px rgb(40 30 10 / 10%);
 }
 
 .dark {
-  /* Dark: ink. The hero theme. */
-  --background: #0b0b0c;
-  --foreground: #f4f1ea;
-  --surface: #151517;
-  --raised: #1d1d20;
-  --field: #26262a;
-  --subtle: #837e75;
-  --signal-text: #ff7e3d;
-  --success: #3fd27f;
-  --info: #5aa9ff;
+  /* Dark: the same paper at night. */
+  --background: #15140f;
+  --foreground: #eeeae0;
+  --surface: #1e1d18;
+  --raised: #25241e;
+  --field: #2d2b25;
+  --subtle: #8f8a7c;
+  --signal-text: #9fb4ff;
+  --success: #5fd08e;
+  --info: #9fb4ff;
   --card: var(--surface);
   --card-foreground: var(--foreground);
   --popover: var(--raised);
   --popover-foreground: var(--foreground);
-  --primary: #ff6a1f;
-  --primary-foreground: #0b0b0c;
+  --primary: #9fb4ff;
+  --primary-foreground: #15140f;
   --secondary: var(--field);
   --secondary-foreground: var(--foreground);
   --muted: var(--field);
-  --muted-foreground: #ada79c;
-  --accent: #2c2c31;
+  --muted-foreground: #aaa596;
+  --accent: #34322b;
   --accent-foreground: var(--foreground);
-  --destructive: #ff5c7a;
-  --border: rgb(255 255 255 / 8%);
-  --input: rgb(255 255 255 / 12%);
+  --destructive: #ff7a6b;
+  --border: rgb(255 255 255 / 10%);
+  --input: rgb(255 255 255 / 14%);
   --ring: var(--signal-text);
-  --chart-1: #ff6a1f;
-  --chart-2: #ff9a62;
-  --chart-3: #ada79c;
-  --chart-4: #5aa9ff;
-  --chart-5: #3fd27f;
-  /* Light catching the top edge of raised surfaces (design.md §6). */
+  --chart-1: #9fb4ff;
+  --chart-2: #eeeae0;
+  --chart-3: #8f8a7c;
+  --chart-4: #e09a6a;
+  --chart-5: #5fd08e;
   --highlight: rgb(255 255 255 / 6%);
+  --shadow-float: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 35%);
 }
 
 @layer base {

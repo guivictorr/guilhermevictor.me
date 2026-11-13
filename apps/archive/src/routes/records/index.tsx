@@ -192,7 +192,7 @@ function RecordsPage() {
                       media={cards[i]!}
                       badge={
                         entry.copies > 1 ? (
-                          <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-semibold tabular-nums shadow-md backdrop-blur-md">
+                          <span className="rounded-sm bg-background/80 px-2 py-0.5 text-xs font-semibold tabular-nums shadow-md backdrop-blur-md">
                             ×{entry.copies}
                           </span>
                         ) : null

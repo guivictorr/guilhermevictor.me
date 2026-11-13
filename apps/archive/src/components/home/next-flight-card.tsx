@@ -97,63 +97,71 @@ function NextFlight() {
       to="/flights/$id"
       params={{ id: flight.id }}
       aria-label={`Next flight ${from?.city ?? flight.from} to ${to?.city ?? flight.to}`}
-      className="pressable relative isolate block overflow-hidden rounded-[24px] border border-white/10 bg-[#0d0d0f] p-4 text-[#f4f1ea] shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]"
+      className="pressable led-panel block rounded-2xl p-4 md:p-5"
     >
-      {/* A faint runway grid, like a departures screen. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 [background-image:linear-gradient(rgb(255_255_255/0.04)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.04)_1px,transparent_1px)] [background-size:16px_16px] opacity-40"
-      />
       <div className="flex items-center justify-between gap-3">
-        <p className="type-overline text-[#ffb547]">
-          {airborne ? "In the air" : "Next flight"}
+        <p className="led-label">
+          {airborne ? "In the air" : "Next departure"}
         </p>
-        <span className="opacity-90 [&_img]:brightness-0 [&_img]:invert">
+        <span className="opacity-80 [&_img]:brightness-0 [&_img]:invert">
           <AirlineMark flight={flight} />
         </span>
       </div>
 
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-3">
         <div className="min-w-0">
-          <p className="font-dots text-[2.25rem] leading-none">{flight.from}</p>
-          <p className="mt-1 truncate text-xs text-white/60">
+          <p className="led-glow font-dots text-[clamp(2.5rem,9vw,3.25rem)] leading-none font-extrabold">
+            {flight.from}
+          </p>
+          <p className="led-label mt-1.5 truncate tracking-normal normal-case">
             {from?.city || from?.name}
           </p>
         </div>
-        <PlaneIcon className="size-5 rotate-45 text-white/70" />
+        <PlaneIcon className="mb-6 size-5 rotate-45 text-[#8f8170]" />
         <div className="min-w-0 text-right">
-          <p className="font-dots text-[2.25rem] leading-none">{flight.to}</p>
-          <p className="mt-1 truncate text-xs text-white/60">
+          <p className="led-glow font-dots text-[clamp(2.5rem,9vw,3.25rem)] leading-none font-extrabold">
+            {flight.to}
+          </p>
+          <p className="led-label mt-1.5 truncate tracking-normal normal-case">
             {to?.city || to?.name}
           </p>
         </div>
       </div>
 
+      <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-[rgb(255_157_46/0.14)] pt-3">
+        {[
+          ["Flight", flight.flightNumber ?? "—"],
+          ["Departs", localTime(flight.departure)],
+          ["Seat", flight.seat ?? "—"],
+        ].map(([label, value]) => (
+          <div key={label} className="min-w-0">
+            <dt className="led-label">{label}</dt>
+            <dd className="led-glow mt-1.5 truncate font-dots text-[1.375rem] leading-none font-extrabold">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
       <div
-        className="mt-4 grid grid-cols-4 gap-2"
+        className="mt-4 flex items-end justify-between gap-3 border-t border-[rgb(255_157_46/0.14)] pt-3"
         role="timer"
         aria-label={airborne ? "Time until landing" : "Time until departure"}
       >
-        {parts.map(([label, value]) => (
-          <div
-            key={label}
-            className="rounded-xl bg-white/[0.04] px-2 py-2 text-center ring-1 ring-white/10"
-          >
-            <p className="font-dots text-[1.75rem] leading-none text-[#ffb547] tabular-nums">
-              {String(value).padStart(2, "0")}
-            </p>
-            <p className="mt-1 text-[0.625rem] tracking-[0.12em] text-white/50 uppercase">
-              {label}
-            </p>
-          </div>
-        ))}
+        <p className="led-label">{airborne ? "Lands in" : "Departs in"}</p>
+        <p className="led-glow font-dots text-[1.75rem] leading-none font-extrabold tabular-nums">
+          {parts
+            .filter(([label, value]) => label !== "Days" || value > 0)
+            .map(([, value]) => String(value).padStart(2, "0"))
+            .join(":")}
+        </p>
       </div>
 
-      <p className="mt-3 truncate text-xs text-white/60 tabular-nums">
+      <p className="led-label mt-3 truncate tracking-normal normal-case tabular-nums">
         {joinDefined([
-          `${dayFormat.format(new Date(`${localDate(flight.departure)}T00:00:00Z`))} · ${localTime(flight.departure)}`,
-          flight.flightNumber,
-          flight.seat ? `Seat ${flight.seat}` : undefined,
+          dayFormat.format(
+            new Date(`${localDate(flight.departure)}T00:00:00Z`)
+          ),
           legsAfter
             ? `+${legsAfter} connection${legsAfter === 1 ? "" : "s"}`
             : undefined,
